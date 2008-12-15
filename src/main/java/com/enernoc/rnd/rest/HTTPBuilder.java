@@ -70,7 +70,7 @@ import static com.enernoc.rnd.rest.URIBuilder.convertToURI;
  *   
  * <pre>
  *   http.request(GET,TEXT) { req ->
- *     response.success = { resp, stream -> // single closure is for all responses
+ *     response.success = { resp, stream ->
  *       println 'my response handler!'
  *       assert resp.statusLine.statusCode == 200
  *       println resp.statusLine
@@ -83,7 +83,7 @@ import static com.enernoc.rnd.rest.URIBuilder.convertToURI;
  *   }
  * </pre>
  *   
- * You can also set a default response handler called for any staus
+ * You can also set a default response handler called for any status
  * code > 399 that is not matched to a specific handler. Setting the value
  * outside a request closure means it will apply to all future requests with
  * this HTTPBuilder instance:

@@ -1,0 +1,29 @@
+                                    ------
+                                    Download
+                                    ------
+                                    ------
+                                    ------
+
+Project Archive and JAR
+  
+  The latest JAR can be obtained from the Codehaus Maven repository.  The 
+  repository also contains project assemblies, which include the source code,
+  generated JavaDoc, and dependency JARs.  
+  
+  {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/http-builder/}
+  Download the latest snapshot here.}}
+  
+  Download the latest stable build here.
+  
+  
+Maven Users
+
+  Maven users can simply copy the dependency tag into their own project:
+  
+---------------------------------------
+  <dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>http-builder</artifactId>
+    <version>0.2-SNAPSHOT</version>
+  </dependency>
+---------------------------------------

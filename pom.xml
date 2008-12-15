@@ -8,39 +8,14 @@
 	<name>HTTP client builder DSL for Groovy</name>
 	<url>http://groovy.codehaus.org/</url>
 	<inceptionYear>2008</inceptionYear>
-	<description> This project provides a simple builder-style HTTP client
+	
+	<description>
+	  This project provides a simple builder-style HTTP client
 		API, including common authentication mechanisms, and easy handling of
 		common content-types such as JSON and XML. It is built on top of
 		Apache's HttpClient. 
 	</description>
 		
-	<scm>
-		<developerConnection>scm:https://svn.codehaus.org/groovy-contrib/httpbuilder/</developerConnection>
-		<connection>http://svn.codehaus.org/groovy-contrib/httpbuilder/</connection>
-		<tag>trunk</tag>
-		<url>http://fisheye.codehaus.org/browse/groovy-contrib/httpbuilder/</url>
-	</scm>
-		
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	
-	<developers>
-		<developer>
-			<name>Tom Nichols</name>
-			<id>tomstrummer</id>
-			<email>tomstrummer@gmail.com</email>
-			<timezone>-5</timezone>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
-	</developers>
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -236,6 +211,13 @@
 		</plugins>
 	</reporting>
 	
+	<scm>
+		<developerConnection>scm:https://svn.codehaus.org/groovy-contrib/httpbuilder/</developerConnection>
+		<connection>scm:http://svn.codehaus.org/groovy-contrib/httpbuilder/</connection>
+		<tag>trunk</tag>
+		<url>http://fisheye.codehaus.org/browse/groovy-contrib/httpbuilder/</url>
+	</scm>
+	
 	<distributionManagement>
 		<repository>
 			<id>Groovy-Contrib</id>
@@ -248,4 +230,33 @@
 			<url>dav:https://dav.codehaus.org/snapshots.repository/groovy/</url>
 		</snapshotRepository>
 	</distributionManagement>
+
+	<mailingLists>
+		<mailingList>
+			<name>Groovy-User</name>
+			<post>user@groovy.codehaus.org</post>
+			<subscribe>http://xircles.codehaus.org/manage_email</subscribe>
+		</mailingList>
+	</mailingLists>
+		
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Tom Nichols</name>
+			<id>tomstrummer</id>
+			<email>tomstrummer+httpbuilder@gmail.com</email>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
+	
 </project>

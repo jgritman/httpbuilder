@@ -1,3 +1,8 @@
+                                    ------
+                                    Home
+                                    ------
+                                    ------
+                                    ------
 
 HTTPBuilder Overview
 
@@ -7,29 +12,32 @@ HTTPBuilder Overview
     also inspired partially by Prototype.js Ajax.Request.  In short, it allows
     you to make HTTP requests like this:
     
-    ----------------------------------------
-    def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
-    
-    http.request( GET, JSON ) {
-    	url.path = '/ajax/services/search/web'
-    	url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
-    	
-    	headers.'User-Agent' = 'Mozilla/5.0 Ubuntu/8.10 Firefox/3.0.4'
-    	
-    	response.success = { resp, JSON ->
-    		println resp.statusLine
-    		
-    		json.responseData.results.each { 
-					println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
-				}
-    	}
-    	
-    	response.failure = { resp ->
-    		println "Unexpected error: ${resp.statusLine.statusCode} : ${resp.statusLine.reasonPhrase}" 
-    	}
+----------------------------------------
+def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
+
+// perform a GET request, expecting JSON response data
+http.request( GET, JSON ) {
+  url.path = '/ajax/services/search/web'
+  url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+
+  headers.'User-Agent' = 'Mozilla/5.0 Ubuntu/8.10 Firefox/3.0.4'
+
+  // response handler for a success response code:
+  response.success = { resp, json ->
+    println resp.statusLine
+
+    // parse the JSON response object:
+    json.responseData.results.each { 
+      println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
     }
-    
-    ----------------------------------------
+  }
+
+  // handler for any failure status code:
+  response.failure = { resp ->
+    println "Unexpected error: ${resp.statusLine.statusCode} : ${resp.statusLine.reasonPhrase}" 
+  }
+}
+----------------------------------------
     
     
     But it actually goes much farther to handle common tasks such as building 
@@ -41,10 +49,15 @@ HTTPBuilder Overview
 Features
     
     * Builder and parser support for XML, JSON, and HTML
+    
     * Built-in support for GZIP and Deflate content-encoding
+    
     * Built-in support for HTTP Basic, Digest, and SSL certificate authentication
+    
     * Status code based response handling
+    
     * Convenience methods for GET and POST
+    
     * Fully Extensible
     
     

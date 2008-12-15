@@ -1,0 +1,81 @@
+                                    ------
+                                    Examples
+                                    ------
+                                    ------
+                                    ------
+ 
+Basics
+
+ Perform a simple HTTP GET and print the response:
+ 
+------------------------
+def http = new HTTPBuilder('http://www.google.com')
+
+http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
+  println "response status: ${resp.statusLine}"
+  println 'Response data: -----'
+  System.out << reader
+  println '\n--------------------'
+}
+------------------------
+
+ Note that in this version, the closure is a response handler block, that is 
+ only executed on a _successful_ response.  A failure response (i.e. status code
+ of 400 or greater) is handled by the builder's default failure handler. (TODO link.)
+
+
+More Verbose (and Flexible) Request
+
+ This is a longer request form for other HTTP methods, which also allows for 
+ response-code-specific handlers:
+  
+------------------------
+http.request(GET,TEXT) { req ->
+  url.host = 'www.google.com' // overrides default URL
+  headers.'User-Agent' = 'Mozilla/5.0'
+  
+  response.success = { resp, reader ->
+    println 'my response handler!'
+    assert resp.statusLine.statusCode == 200
+    println resp.statusLine
+    System.out << reader // print response stream
+  }
+  
+  response.'401' = { resp ->  // fired only for a 401 (access denied) status code
+    println 'access denied'
+  }
+}
+------------------------
+  
+	You can also set a default response handler called for any status
+	code > 399 that is not matched to a specific handler. Setting the value
+	outside a request closure means it will apply to all future requests with
+	this HTTPBuilder instance:
+	
+------------------------
+http.handler.failure = { resp ->
+  println "Unexpected failure: ${resp.statusLine}"
+}
+------------------------
+
+  
+The Magic: Built-in Content-Type Parsing
+
+  In this example, a registered content-type parser recognizes the response 
+  content-type header, and automatically parses the response data into a 
+  JSON object before it is passed to the 'success' response handler closure.
+
+------------------------
+http.request( 'http://ajax.googleapis.com', GET, JSON ) {
+  url.path = '/ajax/services/search/web'
+  url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  
+  response.success = { resp, json ->
+    assert json.size() == 3
+    println "Query response: "
+    json.responseData.results.each {
+      println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
+    }
+  }
+}
+------------------------
