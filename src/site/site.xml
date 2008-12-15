@@ -1,0 +1,31 @@
+<project name="HTTPBuilder">
+	<!-- 
+	<bannerLeft>
+		<name>HTTPBuilder</name>
+		<src>http://www.apache.org/images/asf_logo_wide.gif
+		</src>
+		<href>http://www.apache.org/</href>
+	</bannerLeft>
+	 -->
+	<bannerRight>
+		<name>Groovy</name>
+		<src>http://media.xircles.codehaus.org/_projects/groovy/_logos/medium.png</src>
+		<href>http://groovy.codehaus.org/</href>
+	</bannerRight>
+	<body>
+		<menu name="Overview">
+			<item name="Description" href="index.html" />
+			<item name="Download" href="download.html" />
+			<item name="Examples" href="examples.html" />
+		</menu>
+		<menu name="Reference">
+			<item name="Groovy" href="http://groovy.codehaus.org/Documentation/" />
+			<item name="HttpClient" href="http://hc.apache.org/httpcomponents-client/" />
+			<item name="HttpCore" href="http://hc.apache.org/httpcomponents-core/" />
+			<item name="JSON-Lib" href="http://json-lib.sourceforge.net/" />
+			<item name="NekoHTML" href="http://nekohtml.sourceforge.net/" />
+		</menu>
+
+		<menu ref="reports" />
+	</body>
+</project>

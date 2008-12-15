@@ -1,0 +1,40 @@
+<assembly>
+	<!-- Assembles source, compiled JARs, and site documentation into a single 
+	     distributable package.  
+	  -->
+  <id>all</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>zip</format>
+  </formats>
+
+  <fileSets>
+    <fileSet>
+      <directory>.</directory>
+      <outputDirectory></outputDirectory>
+      <useDefaultExcludes>true</useDefaultExcludes>
+      <excludes>
+        <exclude>target/</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+    	<directory>target</directory>
+    	<includes>
+    		<include>*.jar</include>
+    		<include>site</include>
+    		<include>*report*</include>
+    	</includes>
+    </fileSet>
+  </fileSets>
+  
+  <dependencySets>
+    <dependencySet>
+    	<unpack>false</unpack>
+    	<scope>runtime</scope>
+    	<useProjectArtifact>false</useProjectArtifact>
+    	<useProjectAttachments>false</useProjectAttachments>
+    	<outputDirectory>target/dependencies</outputDirectory>
+    </dependencySet>
+  </dependencySets>
+  
+</assembly>

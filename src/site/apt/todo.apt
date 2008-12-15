@@ -1,0 +1,13 @@
+To Do
+
+    * Proper unit testing for all methods & encoders/parsers, failure codes
+      (use Simple framework)
+    * Request encoding support
+    * Support for async request/ response? 
+    * Add SLF4J logging? (waaaay better than commons-logging)
+    * Complex Header values if value is another map or list?
+    * CSV content-type support??
+    * Convenience methods:
+      DELETE, HEAD quick access to location header -- or just use path?
+    * Support for Apache HTTPClient objects ?? 
+      (i.e. passing a Header[] for headers, NameValuePairs, etc.)

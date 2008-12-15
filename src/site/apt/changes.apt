@@ -1,0 +1,17 @@
+Change Log
+ v0.2.1 - 12 Dec 2008
+
+    * Added support for GZIP and deflate response content-encoding
+    * Support for default request headers & changing headers via map access
+    * Fixed bug from json-lib
+    * Built-in HTML parsing support via Neko
+    * Support for multiple equivalent content-types
+    * Differing request and response content-types
+    * Only attempt to parse response if the receiving response handler accepts 
+      two parameters
+    * Added license to source code
+
+ v0.1 - 8 Dec 2008</h4>
+
+    * Initial release
+
