@@ -26,10 +26,8 @@ import groovyx.net.http.ContentEncoding.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.AbstractHttpClient;
-
-import sun.net.www.http.HttpClient;
-
 
 /**
  * Keeps track of available content-encoding handlers.

@@ -29,16 +29,16 @@ Maven Users
   </dependency>
 ---------------------------------------
 
-You might also need to add the Codehaus repository to your project POM as well:
+  You might also need to add the Codehaus repository to your project POM as well:
 
 ---------------------------------------
-		<repository>
-			<id>Codehaus</id>
-			<url>http://repository.codehaus.org</url>
-		</repository>
-		<repository>
-			<id>Codehaus.Snapshots</id>
-			<url>http://snapshots.repository.codehaus.org</url>
-		</repository>
+  <repository>
+    <id>Codehaus</id>
+    <url>http://repository.codehaus.org</url>
+  </repository>
+  <repository>
+    <id>Codehaus.Snapshots</id>
+    <url>http://snapshots.repository.codehaus.org</url>
+  </repository>
 ---------------------------------------
 		

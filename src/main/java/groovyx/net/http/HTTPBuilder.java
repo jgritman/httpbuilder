@@ -238,8 +238,8 @@ public class HTTPBuilder {
 	 * @param method {@link Method HTTP method}
 	 * @param contentType either a {@link ContentType} or valid content-type string.
 	 * @param configClosure closure from which to configure options like 
-	 *   {@link SendDelegate#setPath(String) path}, 
-	 *   {@link SendDelegate#setParams(Map) request parameters}, 
+	 *   {@link SendDelegate#getURL() url.path}, 
+	 *   {@link URIBuilder#setQuery(Map) request parameters}, 
 	 *   {@link SendDelegate#setHeaders(Map) headers},
 	 *   {@link SendDelegate#setBody(Object) request body} and
 	 *   {@link SendDelegate#getResponse() response handlers}. 
@@ -528,7 +528,7 @@ public class HTTPBuilder {
 	
 	/**
 	 * Encloses all properties and method calls used within the 
-	 * {@link HTTPBuilder#request(URI, Method, ContentType, Closure)} 'config' 
+	 * {@link HTTPBuilder#request(Object, Method, Object, Closure)} 'config' 
 	 * closure argument. 
 	 */
 	protected class SendDelegate {
@@ -637,8 +637,8 @@ public class HTTPBuilder {
 			Map headers = (Map)args.get( "headers" );
 			if ( headers != null ) this.setHeaders( headers );
 			
-			String path = (String)args.get( "path" );
-			if ( path != null ) this.url.setPath( path );
+			Object path = args.get( "path" );
+			if ( path != null ) this.url.setPath( path.toString() );
 			
 			Object contentType = args.get( "contentType" );
 			if ( contentType != null ) this.setContentType( contentType );
@@ -732,8 +732,7 @@ public class HTTPBuilder {
 		 * by the {@link HTTPBuilder} class in order to find the proper handler
 		 * based on the response status code.
 		 *  
-		 * @param status
-		 * @param delegate
+		 * @param statusCode HTTP response status code
 		 * @return the response handler
 		 */
 		protected Closure findResponseHandler( int statusCode ) {
