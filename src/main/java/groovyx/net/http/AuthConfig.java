@@ -19,7 +19,7 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,8 +53,8 @@ public class AuthConfig {
 	 */
 	public void basic( String user, String pass ) {
 		URL url = (URL)builder.getURL();
-		this.basic( url.getHost(), url.getPort(),
-				user, pass );
+		if ( url == null ) throw new IllegalStateException( "a default URL must be set" );
+		this.basic( url.getHost(), url.getPort(), user, pass );
 	}
 	
 	/**

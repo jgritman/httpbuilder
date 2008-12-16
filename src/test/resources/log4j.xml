@@ -9,7 +9,7 @@
 		</layout>
 	</appender>
 	
-	<category name="com.enernoc">
+	<category name="groovyx.net.http">
 		<priority value="DEBUG" />
 	</category>
 

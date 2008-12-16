@@ -19,7 +19,7 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
 
 import java.util.Iterator;
 

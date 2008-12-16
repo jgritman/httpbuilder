@@ -19,11 +19,12 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.lang.Writable;
 import groovy.xml.StreamingMarkupBuilder;
+import groovyx.net.http.HTTPBuilder.SendDelegate;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -52,7 +53,6 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.groovy.runtime.MethodClosure;
 
-import com.enernoc.rnd.rest.HTTPBuilder.SendDelegate;
 
 /**
  * This factory (or registry) handles request body "encoding." This is not

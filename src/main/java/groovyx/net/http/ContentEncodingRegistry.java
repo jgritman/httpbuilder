@@ -19,7 +19,9 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
+
+import groovyx.net.http.ContentEncoding.Type;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,6 @@ import org.apache.http.impl.client.AbstractHttpClient;
 
 import sun.net.www.http.HttpClient;
 
-import com.enernoc.rnd.rest.ContentEncoding.Type;
 
 /**
  * Keeps track of available content-encoding handlers.

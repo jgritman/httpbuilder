@@ -19,11 +19,12 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
+import groovyx.net.http.HTTPBuilder.SendDelegate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +51,6 @@ import org.codehaus.groovy.runtime.MethodClosure;
 import org.cyberneko.html.parsers.SAXParser;
 import org.xml.sax.SAXException;
 
-import com.enernoc.rnd.rest.HTTPBuilder.SendDelegate;
 
 /**
  * Keeps track of response parsers for each content type.  Each parser 

@@ -19,58 +19,56 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
 
-import static com.enernoc.rnd.rest.ContentEncoding.Type.GZIP;
+import static groovyx.net.http.ContentEncoding.Type.DEFLATE;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.InflaterInputStream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.HttpEntityWrapper;
 
 /**
- * Content encoding used to handle GZIP responses.
+ * Content encoding used to handle Deflate responses.
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  */
-public class GZIPEncoding extends ContentEncoding {
-
-	/**
-	 * Returns the {@link Type#GZIP} encoding string which is added to the 
-	 * <code>Accept</code> header by the base class.
-	 */
+public class DeflateEncoding extends ContentEncoding {
+	
 	@Override
 	public String getContentEncoding() {
-		return GZIP.toString();
+		return DEFLATE.toString();
 	}
 	
+	
 	/**
-	 * Wraps the raw entity in a {@link GZIPDecompressingEntity}.
+	 * Wraps the raw entity in a {@link InflaterEntity}.
 	 */
 	@Override
 	public HttpEntity wrapResponseEntity( HttpEntity raw ) {
-		return new GZIPDecompressingEntity( raw );
+		return new InflaterEntity( raw );
 	}
-	
+
 	/**
-	 * Entity used to interpret a GZIP-encoded response
+	 * Entity used to interpret a Deflate-encoded response
 	 * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
 	 */
-    protected static class GZIPDecompressingEntity extends HttpEntityWrapper {
+    public static class InflaterEntity extends HttpEntityWrapper {
 
-        public GZIPDecompressingEntity(final HttpEntity entity) {
+        public InflaterEntity(final HttpEntity entity) {
             super(entity);
         }
     
         /**
-         * returns a {@link GZIPInputStream} which wraps the original entity's
+         * returns a {@link DeflaterInputStream} which wraps the original entity's
          * content stream
          * @see HttpEntity#getContent()
          */
         @Override
         public InputStream getContent() throws IOException, IllegalStateException {
-            return new GZIPInputStream( wrappedEntity.getContent() );
+            return new InflaterInputStream( wrappedEntity.getContent() );
         }
 
         /**
@@ -78,8 +76,9 @@ public class GZIPEncoding extends ContentEncoding {
          */
         @Override
         public long getContentLength() {
-            // length of un-gzipped content is not known
+            // length of ungzipped content is not known
             return -1;
         }
     }
+
 }

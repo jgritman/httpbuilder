@@ -19,7 +19,7 @@
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
-package com.enernoc.rnd.rest;
+package groovyx.net.http;
 
 import groovy.lang.Closure;
 
@@ -44,7 +44,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
-import static com.enernoc.rnd.rest.URIBuilder.convertToURI;
+import static groovyx.net.http.URIBuilder.convertToURI;
 
 /** <p>
  * Groovy DSL for easily making HTTP requests, and handling request and response

@@ -1,7 +1,7 @@
-package com.enernoc.rnd.rest
+package groovyx.net.http
 
-import static com.enernoc.rnd.rest.Method.*
-import static com.enernoc.rnd.rest.ContentType.*
+import static groovyx.net.http.Method.*
+import static groovyx.net.http.ContentType.*
 import org.junit.Test
 
 class HTTPBuilderTest {
@@ -95,6 +95,13 @@ class HTTPBuilderTest {
 				}
 			}
 		}
+	}
+	
+	@Test public void testAuth() {
+		def http = new HTTPBuilder( 'http://www.google.com' )
+		
+		http.auth.basic( 'someUser', 'somePass' )
+		//TODO a site to test this against
 	}
 }
 

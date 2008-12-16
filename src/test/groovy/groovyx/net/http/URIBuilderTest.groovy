@@ -1,4 +1,4 @@
-package com.enernoc.rnd.rest
+package groovyx.net.http
 
 import org.junit.Test
 
