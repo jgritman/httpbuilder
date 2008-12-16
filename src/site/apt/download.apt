@@ -13,7 +13,8 @@ Project Archive and JAR
   {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/http-builder/}
   Download the latest snapshot here.}}
   
-  Download the latest stable build here.
+  {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}
+  Download the latest stable build here.}}
   
   
 Maven Users
@@ -24,6 +25,6 @@ Maven Users
   <dependency>
     <groupId>org.codehaus.groovy</groupId>
     <artifactId>http-builder</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2.1</version>
   </dependency>
 ---------------------------------------

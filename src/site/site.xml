@@ -16,6 +16,7 @@
 			<item name="Examples" href="examples.html" />
 			<item name="Changelog" href="changes.html" />
 			<item name="To Do" href="todo.html" />
+			<item name="JavaDoc" href="apidocs/index.html" />
 		</menu>
 		<menu name="Reference">
 			<item name="Groovy" href="http://groovy.codehaus.org/Documentation/" />

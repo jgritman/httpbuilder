@@ -7,7 +7,9 @@
 
 Change Log
 
-* v0.2.1 - 12 Dec 2008
+* v0.2.1 - 16 Dec 2008
+
+  * Changed package name & added to Groovy-contrib
 
   * Added support for GZIP and deflate response content-encoding
   

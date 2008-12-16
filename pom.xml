@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>http-builder</artifactId>
 	<groupId>org.codehaus.groovy</groupId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.2.1</version>
 	<name>HTTP client builder DSL for Groovy</name>
-	<url>http://groovy.codehaus.org/</url>
+	<url>http://groovy.codehaus.org/modules/http-builder/</url>
 	<inceptionYear>2008</inceptionYear>
 	
 	<description>
@@ -138,46 +138,71 @@
 				<configuration>
 					<check>
 						<haltOnFailure>false</haltOnFailure>
-						<branchRate>85</branchRate>
-						<lineRate>85</lineRate>
-						<totalBranchRate>85</totalBranchRate>
-						<totalLineRate>85</totalLineRate>
-						<packageLineRate>85</packageLineRate>
-						<packageBranchRate>85</packageBranchRate>
+						<lineRate>60</lineRate>
+						<packageLineRate>60</packageLineRate>
+						<totalLineRate>60</totalLineRate>
+						<branchRate>50</branchRate>
+						<packageBranchRate>50</packageBranchRate>
+						<totalBranchRate>50</totalBranchRate>
 					</check>
 				</configuration>
 				<executions>
 					<execution>
+						<id>test</id>
+						<phase>test</phase>
+						<goals><goal>cobertura</goal></goals>
+					</execution>
+					<execution>
+						<id>defaults</id>
 						<goals>
 							<goal>clean</goal>
-							<!--<goal>cobertura</goal>
-							-->
 							<goal>check</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <executions>
+        	<execution>
+        		<phase>package</phase>
+        		<goals><goal>report</goal></goals>
+        	</execution>
+        </executions>
+      </plugin>			
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>javadoc</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/assembly/all.xml</descriptor>
 					</descriptors>
-					<!--
-						<descriptorRefs> <descriptorRef>project</descriptorRef>
-						</descriptorRefs>
-					-->
 				</configuration>
 				<executions>
 					<execution>
-						<id>make-assembly</id>
 						<phase>package</phase>
-						<goals>
-							<goal>attached</goal>
-						</goals>
+						<goals><goal>attached</goal></goals>
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.0-beta-8</version>
+        <configuration>
+          <preparationGoals>clean verify</preparationGoals>
+        </configuration>
+      </plugin>
 		</plugins>
 	</build>
 	
@@ -225,10 +250,15 @@
 			<url>dav:https://dav.codehaus.org/repository/groovy/</url>
 		</repository>
 		<snapshotRepository>
-			<id>Groovy-Contrib Snapshots</id>
+			<id>Groovy-Contrib</id>
 			<name>Codehaus Groovy Snapshots Repo</name>
 			<url>dav:https://dav.codehaus.org/snapshots.repository/groovy/</url>
 		</snapshotRepository>
+    <site>
+			<id>Groovy-Contrib</id>
+			<name>Codehaus Groovy WebDAV</name>
+      <url>dav:https://dav.codehaus.org/groovy/modules/http-builder/</url>
+    </site>
 	</distributionManagement>
 
 	<mailingLists>
@@ -238,6 +268,11 @@
 			<subscribe>http://xircles.codehaus.org/manage_email</subscribe>
 		</mailingList>
 	</mailingLists>
+	
+	<issueManagement>
+		<system>JIRA</system>
+		<url>http://jira.codehaus.org/secure/BrowseProject.jspa?id=10242</url>
+	</issueManagement>
 		
 	<licenses>
 		<license>

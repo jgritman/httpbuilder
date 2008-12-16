@@ -6,11 +6,12 @@
 
 HTTPBuilder Overview
 
-    HTTPBuilder is basically a wrapper for Apache's 
-    {{{http://hc.apache.org/httpcomponents-client/}HttpClient}}, with some 
-    Groovy syntactical sugar thrown on top.  The request/response model is 
-    also inspired partially by Prototype.js Ajax.Request.  In short, it allows
-    you to make HTTP requests like this:
+  HTTPBuilder is basically a wrapper for Apache's 
+  {{{http://hc.apache.org/httpcomponents-client/}HttpClient}}, with some 
+  Groovy syntactical sugar thrown on top.  The request/response model is 
+  also inspired partially by Prototype.js 
+  {{{http://prototypejs.org/api/ajax/request}Ajax.Request}}.  In short, it 
+  allows you to make HTTP requests like this:
     
 ----------------------------------------
 def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
@@ -40,32 +41,35 @@ http.request( GET, JSON ) {
 ----------------------------------------
     
     
-    But it actually goes much farther to handle common tasks such as building 
-    and parsing common content-types, handling common content-encodings, and 
-    built-in support for common authentication mechanisms.  It works equally as 
-    well for simple REST-based requests, or ad-hoc HTTP queries.
+  But it actually goes much farther to handle common tasks such as building 
+  and parsing common content-types, handling common content-encodings, and 
+  built-in support for common authentication mechanisms.  It works equally as 
+  well for simple REST-based requests, or ad-hoc HTTP queries.
     
     
 Features
     
-    * Builder and parser support for XML, JSON, and HTML
-    
-    * Built-in support for GZIP and Deflate content-encoding
-    
-    * Built-in support for HTTP Basic, Digest, and SSL certificate authentication
-    
-    * Status code based response handling
-    
-    * Convenience methods for GET and POST
-    
-    * Fully Extensible
+  * Builder and parser support for XML, JSON, and HTML
+  
+  * Built-in support for GZIP and Deflate content-encoding
+  
+  * Built-in support for HTTP Basic, Digest, and SSL certificate authentication
+  
+  * Status code based response handling
+  
+  * Convenience methods for GET and POST
+  
+  * Fully Extensible
     
     
 Components
     
-    HTTPBuilder is the main API class which is used to make requests and parse
-    respones.  URIBuilder is also a convenient class for manipulating complex 
-    URLs.  It is also used internally by HTTPBuilder to handle path and query
-    string modification. 
+  {{{apidocs/groovyx/net/http/HTTPBuilder.html}HTTPBuilder}} is the main 
+  API class which is used to make requests and parse responses.  
+  {{{apidocs/groovyx/net/http/URIBuilder.html}URIBuilder}} is also a 
+  convenient class for manipulating complex URLs.  It is also used internally 
+  by HTTPBuilder to handle path and query string modification.
+  
+  See the {{{apidocs/index.html}JavaDoc}} for full documentation. 
     
     
