@@ -19,7 +19,7 @@
 			<item name="JavaDoc" href="apidocs/index.html" />
 		</menu>
 		<menu name="Reference">
-			<item name="Groovy" href="http://groovy.codehaus.org/Documentation/" />
+			<item name="Groovy" href="http://groovy.codehaus.org/Documentation" />
 			<item name="HttpClient" href="http://hc.apache.org/httpcomponents-client/" />
 			<item name="HttpCore" href="http://hc.apache.org/httpcomponents-core/" />
 			<item name="JSON-Lib" href="http://json-lib.sourceforge.net/" />
