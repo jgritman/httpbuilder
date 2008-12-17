@@ -6,7 +6,7 @@
  
 Basics
 
- Perform a simple HTTP GET and print the response:
+ Perform a simple HTTP <<<GET>>> and print the response:
  
 ------------------------
 def http = new HTTPBuilder('http://www.google.com')
@@ -20,8 +20,9 @@ http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
 ------------------------
 
  Note that in this version, the closure is a response handler block, that is 
- only executed on a _successful_ response.  A failure response (i.e. status code
- of 400 or greater) is handled by the builder's default failure handler. (TODO link.)
+ only executed on a <successful> response.  A failure response (i.e. status code
+ of 400 or greater) is handled by the builder's 
+ {{{apidocs/groovyx/net/http/HTTPBuilder.html#defaultFailureHandler(org.apache.http.HttpResponse)}default failure handler}}.
 
 
 More Verbose (and Flexible) Request
@@ -30,6 +31,9 @@ More Verbose (and Flexible) Request
  response-code-specific handlers:
   
 ------------------------
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.TEXT
+
 http.request(GET,TEXT) { req ->
   url.host = 'www.google.com' // overrides default URL
   headers.'User-Agent' = 'Mozilla/5.0'
@@ -47,12 +51,17 @@ http.request(GET,TEXT) { req ->
 }
 ------------------------
   
-	You can also set a default response handler called for any status
-	code > 399 that is not matched to a specific handler. Setting the value
-	outside a request closure means it will apply to all future requests with
-	this HTTPBuilder instance:
+	As mentioned above, you can also set a default "failure" response handler 
+	which is called for any status code > 399 that is not matched to a specific 
+	handler. Setting the value outside a request closure means it will apply to 
+	all future requests with this <<<HTTPBuilder>>> instance:
 	
 ------------------------
+http.handler.'404' = { resp ->
+  println "Page not found"
+}
+
+// Used for all other failure codes not handled by a code-specific handler:
 http.handler.failure = { resp ->
   println "Unexpected failure: ${resp.statusLine}"
 }
@@ -62,10 +71,14 @@ http.handler.failure = { resp ->
 The Magic: Built-in Content-Type Parsing
 
   In this example, a registered content-type parser recognizes the response 
-  content-type header, and automatically parses the response data into a 
-  JSON object before it is passed to the 'success' response handler closure.
+  <<<content-type>>> header, and automatically parses the response data into a 
+  <<<JSON>>> object before it is passed to the 'success' response handler 
+  closure.
 
 ------------------------
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.JSON
+
 http.request( 'http://ajax.googleapis.com', GET, JSON ) {
   url.path = '/ajax/services/search/web'
   url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
@@ -79,3 +92,52 @@ http.request( 'http://ajax.googleapis.com', GET, JSON ) {
   }
 }
 ------------------------
+
+  Note that the <<<JSON>>> argument passed to <<<http.request>>> in the above 
+  example is actually only used to set the <<<Accept>>> header in the request.  
+  The response content-type string is actually what determines which parser is 
+  used, regardless of what you send in the <<<Accept>>> header.  This is 
+  partially because a server may ignore the <<<Accept>>> header, especially 
+  if it is serving an error response (i.e. a default 404 page) which might be 
+  a completely different content-type than was expected for a 200 (success) 
+  response.  Using the <<<Accept>>> header to choose a parser should also cut down 
+  on the number of vague parser exceptions thrown because, say, the response 
+  data was XML but it was being parsed as JSON. 
+  
+  Most importantly, passing the content-type as a parameter to the <<<request>>>
+  method serves as a visual queue to aid readability of the code.
+  
+  To add parsing for new content types, simply add a new entry to the builder's 
+  <<<{{{apidocs/groovyx/net/http/ParserRegistry.html}ParserRegistry}}>>>.  For 
+  example, to parse comma-separated-values using 
+  {{{http://opencsv.sourceforge.net/}OpenCSV}}:
+  
+------------------------
+import au.com.bytecode.opencsv.CSVReader
+
+http.parser.'text/csv' = { resp ->
+  return new CSVReader( new InputStreamReader( resp.entity.content ) )
+}
+------------------------
+
+  A <<<CSVReader>>> instance will then be passed as the second argument to the 
+  response handler.  See {{{http://www.iana.org/assignments/media-types/}IANA}}
+  for a list of registered content-type names.
+  
+  If you're not sure how a response is being parsed (or why it's being parsed a 
+  certain way) simply <<<println response.entity.contentType>>> from your 
+  response handler closure to see how the response is being sent back.  If by 
+  chance an incorrect content-type is sent  (i.e. the response content-type is 
+  <<<application/html>>> when it should be <<<application/json>>>) simply 
+  re-define the HTML parser for that HTTPBuilder instance:
+  
+------------------------  
+/* The JSON parser already exists as a default parser, so we can simply reuse 
+   it for both content-types.  We wouldn't want to do this all the time, as it 
+   would mean we couldn't parse HTML with this HTTPBuilder instance.  But it 
+   gets around a bad content-type string sent by a particular server. */
+    
+http.parser.'application/html' = http.parser.'application/json'
+------------------------  
+
+  

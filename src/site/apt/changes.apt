@@ -7,6 +7,12 @@
 
 Change Log
 
+* v0.2.2 -
+
+  * Fixed bug when 'path' named parameter is a GString
+  
+  * Documentation 
+
 * v0.2.1 - 16 Dec 2008
 
   * Changed package name & added to Groovy-contrib

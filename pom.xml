@@ -16,6 +16,11 @@
 		Apache's HttpClient.
 	</description>
 	
+	<properties>
+		<!-- Needed because this value is used in Site filtering and Velocity doesn't like the dot. -->
+		<project-version>${project.version}</project-version>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

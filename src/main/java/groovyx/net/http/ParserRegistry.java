@@ -169,11 +169,14 @@ public class ParserRegistry {
 	protected Map<String,Closure> registeredParsers = buildDefaultParserMap();
 	
 	/**
-	 * Register a new parser for the given content-type.  The parser
-	 * should accept an HttpResponse argument and return a type suitable
+	 * Register a new parser for the given content-type.  The parser closure
+	 * should accept an {@link HttpResponse} argument and return a type suitable
 	 * to be passed to a {@link SendDelegate#getResponse() response handler}.
-	 * @param contentType
-	 * @param closure
+	 * The value returned from the parser closure is always the second parameter 
+	 * of the response handler closure.  
+	 * @param contentType  <code>content-type</code> string
+	 * @param closure code that will parse the HttpResponse and return parsed 
+	 *   data to the response handler. 
 	 */
 	public void register( String contentType, Closure closure ) {
 		registeredParsers.put( contentType, closure );
