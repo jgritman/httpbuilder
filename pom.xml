@@ -245,6 +245,27 @@
 					</links>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<configuration>
+					<linkJavadoc>true</linkJavadoc>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<configuration>
+					<component>13625</component>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>jira-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
 		</plugins>
 	</reporting>
 
@@ -284,8 +305,9 @@
 
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://jira.codehaus.org/browse/GMOD/component/13625</url>
-	</issueManagement>
+		<url>http://jira.codehaus.org/browse/GMOD</url>
+		<!--<url>http://jira.codehaus.org/browse/GMOD/component/13625</url>
+	--></issueManagement>
 
 	<licenses>
 		<license>
