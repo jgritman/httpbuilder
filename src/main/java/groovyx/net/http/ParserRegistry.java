@@ -68,19 +68,24 @@ public class ParserRegistry {
 	protected final Log log = LogFactory.getLog( getClass() );
 	
 	/**
-	 * Get the charset from the response
+	 * Helper method to get the charset from the response.  This should be done 
+	 * when manually parsing any text response to ensure it is decoded using the
+	 * correct charset. For instance:<pre>
+	 * Reader reader = new InputStreamReader( resp.getEntity().getContent(), 
+	 *   ParserRegistry.getCharset( resp ) );</pre>
 	 * @param resp
 	 */
-	protected String getCharset( HttpResponse resp ) {
+	public static String getCharset( HttpResponse resp ) {
 		return resp.getEntity().getContentType()
 			.getElements()[0].getParameterByName("charset").getValue();
 	}
 	
 	/**
-	 * Get the content-type string from the response (no charset)
+	 * Helper method to get the content-type string from the response 
+	 * (no charset).
 	 * @param resp
 	 */
-	protected String getContentType( HttpResponse resp ) {
+	public static String getContentType( HttpResponse resp ) {
 		return resp.getEntity().getContentType()
 			.getElements()[0].getName();
 	}

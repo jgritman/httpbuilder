@@ -116,7 +116,8 @@ http.request( 'http://ajax.googleapis.com', GET, JSON ) {
 import au.com.bytecode.opencsv.CSVReader
 
 http.parser.'text/csv' = { resp ->
-  return new CSVReader( new InputStreamReader( resp.entity.content ) )
+  return new CSVReader( new InputStreamReader( resp.entity.content,
+                                ParserRegistry.getCharset( resp ) ) )
 }
 ------------------------
 
