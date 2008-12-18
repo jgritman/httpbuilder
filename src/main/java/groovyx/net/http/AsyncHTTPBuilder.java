@@ -96,7 +96,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	protected Future<Object> doRequest( final SendDelegate delegate )
 			throws ClientProtocolException, IOException {
 		return threadPool.submit( new Callable<Object>() {
-			@Override public Object call() throws IOException {
+			/*@Override*/ public Object call() throws IOException {
 				return doRequestSuper(delegate);
 			}
 		});
