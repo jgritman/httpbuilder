@@ -7,11 +7,11 @@
 
 Change Log
 
-* v0.2.2 -
+* v0.2.2 - 18 Dec 2008
 
   * Fixed bug when 'path' named parameter is a GString
   
-  * Removed Java 1.6 dependency due to unnecessary DeflaterInputStream import
+  * Removed Java 1.6 dependencies
   
   * Documentation 
 

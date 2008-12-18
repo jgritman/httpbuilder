@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>http-builder</artifactId>
 	<groupId>org.codehaus.groovy</groupId>
-	<version>0.2.2-SNAPSHOT</version>
+	<version>0.2.2</version>
 	<name>HTTP client builder DSL for Groovy</name>
 	<url>http://groovy.codehaus.org/modules/http-builder/</url>
 	<inceptionYear>2008</inceptionYear>
