@@ -39,6 +39,7 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -115,7 +116,7 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  */
 public class HTTPBuilder {
 	
-	protected AbstractHttpClient client = new DefaultHttpClient();	
+	protected AbstractHttpClient client;
 	protected URI defaultURI = null; // TODO make this a URIBuilder?
 	protected AuthConfig auth = new AuthConfig( this );
 	
@@ -130,6 +131,7 @@ public class HTTPBuilder {
 	
 	public HTTPBuilder() { 
 		super();
+		this.client = new DefaultHttpClient();
 		this.setContentEncoding( ContentEncoding.Type.GZIP, 
 				ContentEncoding.Type.DEFLATE );
 	}
@@ -524,6 +526,14 @@ public class HTTPBuilder {
 		this.contentEncodingHandler = cer;
 	}
 	
+	/**
+	 * Release any system resources held by this instance.
+	 * @see ClientConnectionManager#shutdown()
+	 */
+	public void shutdown() {
+		client.getConnectionManager().shutdown();
+	}	
+
 	
 	
 	/**
@@ -755,5 +765,5 @@ public class HTTPBuilder {
 		 * @return
 		 */
 		public Map<String,Closure> getResponse() { return responseHandlers; }
-	}	
+	}
 }
