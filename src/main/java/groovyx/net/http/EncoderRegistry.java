@@ -71,7 +71,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  */
 public class EncoderRegistry {
 	
-	Charset charset = Charset.defaultCharset();
+	Charset charset = Charset.defaultCharset(); // 1.5
 	public void setCharset( String charset ) { 
 		this.charset = Charset.forName(charset);
 	}
@@ -214,7 +214,7 @@ public class EncoderRegistry {
 	}
 	
 	protected HttpEntity createEntity( ContentType ct, String data ) throws UnsupportedEncodingException {
-		ByteArrayEntity entity = new ByteArrayEntity( data.getBytes( charset ) );
+		ByteArrayEntity entity = new ByteArrayEntity( data.getBytes( charset.name() ) );
 		entity.setContentType( ct.toString() + "; charset=" + charset.name() );
 		return entity;
 	}
