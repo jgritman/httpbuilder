@@ -25,7 +25,6 @@ import static groovyx.net.http.ContentEncoding.Type.DEFLATE;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.DeflaterInputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.apache.http.HttpEntity;
@@ -62,7 +61,7 @@ public class DeflateEncoding extends ContentEncoding {
         }
     
         /**
-         * returns a {@link DeflaterInputStream} which wraps the original entity's
+         * returns a {@link InflaterInputStream} which wraps the original entity's
          * content stream
          * @see HttpEntity#getContent()
          */
