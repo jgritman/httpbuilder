@@ -7,6 +7,14 @@
 
 Change Log
 
+* v0.3.0 - 20 Dec 2008
+  
+  * Added AsyncHTTPBuilder 
+  
+  * Fixed bug in ParserRegistry.getCharset
+  
+  * Added xref report to site documentation
+
 * v0.2.2 - 18 Dec 2008
 
   * Fixed bug when 'path' named parameter is a GString

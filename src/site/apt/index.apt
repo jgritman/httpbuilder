@@ -66,6 +66,8 @@ Features
   
   * Convenience methods for GET and POST
   
+  * AsyncHTTPBuilder for asynchronous requests
+  
   * Fully Extensible
     
     
@@ -75,7 +77,10 @@ Components
   API class which is used to make requests and parse responses.  
   {{{apidocs/groovyx/net/http/URIBuilder.html}URIBuilder}} is also a 
   convenient class for manipulating complex URLs.  It is also used internally 
-  by HTTPBuilder to handle path and query string modification.
+  by HTTPBuilder to handle path and query string modification. 
+  {{{apidocs/groovyx/net/http/AsyncHTTPBuilder.html}AsyncHTTPBuilder}} is a 
+  subclass of the base HTTPBuilder which transparently delegates all 
+  requests to a thread pool for execution.  
   
   See the {{{apidocs/index.html}JavaDoc}} for full documentation. 
     

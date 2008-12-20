@@ -19,7 +19,7 @@ http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
 }
 ------------------------
 
- Note that in this version, the closure is a response handler block, that is 
+ Note that in this version, the closure is a response handler block that is 
  only executed on a <successful> response.  A failure response (i.e. status code
  of 400 or greater) is handled by the builder's 
  {{{apidocs/groovyx/net/http/HTTPBuilder.html#defaultFailureHandler(org.apache.http.HttpResponse)}default failure handler}}.
@@ -27,8 +27,8 @@ http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
 
 More Verbose (and Flexible) Request
 
- This is a longer request form for other HTTP methods, which also allows for 
- response-code-specific handlers:
+ This is a longer <<<request>>> form may be used for other HTTP methods, and 
+ also allows for response-code-specific handlers:
   
 ------------------------
 import static groovyx.net.http.Method.GET
