@@ -76,8 +76,10 @@ public class ParserRegistry {
 	 * @param resp
 	 */
 	public static String getCharset( HttpResponse resp ) {
-		return resp.getEntity().getContentType()
-			.getElements()[0].getParameterByName("charset").getValue();
+		NameValuePair charset = resp.getEntity().getContentType()
+				.getElements()[0].getParameterByName("charset"); 
+		return ( charset == null || charset.getValue().trim().equals("") ) ?
+			Charset.defaultCharset().name() : charset.getValue();
 	}
 	
 	/**
@@ -112,10 +114,8 @@ public class ParserRegistry {
 	 * @throws IOException
 	 */
 	public Reader parseText( HttpResponse resp ) throws IOException {
-		String charset = getCharset( resp );
-		if ( charset == null || charset.trim().equals("") )
-			charset = Charset.defaultCharset().name();
-		return new InputStreamReader( resp.getEntity().getContent(), charset );
+		return new InputStreamReader( resp.getEntity().getContent(), 
+				ParserRegistry.getCharset( resp ) );
 	}
 	
 	/**
