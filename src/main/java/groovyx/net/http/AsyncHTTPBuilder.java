@@ -60,7 +60,8 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 */
 	public static final int DEFAULT_POOL_SIZE = 4;
 	
-	protected final ThreadPoolExecutor threadPool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+	protected final ThreadPoolExecutor threadPool = 
+		(ThreadPoolExecutor)Executors.newCachedThreadPool();
 	
 	/**
 	 * Accepts the following named parameters:
@@ -77,10 +78,11 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 		this.initThreadPools( (Integer)poolSize );
 		
 		Object defaultURL = args.get("url");
-		super.setURL(defaultURL);
+		if ( defaultURL != null ) super.setURL(defaultURL);
 
-		Object defaultContentType = args.get("defaultContentType");
-		super.setContentType(defaultContentType);
+		Object defaultContentType = args.get("contentType");
+		if ( defaultContentType != null ) 
+			super.setContentType(defaultContentType);
 	}
 	
 	/**
@@ -93,11 +95,17 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 * handler closure. 
 	 */
 	@Override
-	protected Future<Object> doRequest( final SendDelegate delegate )
-			throws ClientProtocolException, IOException {
+	protected Future<?> doRequest( final SendDelegate delegate ) {
 		return threadPool.submit( new Callable<Object>() {
-			/*@Override*/ public Object call() throws IOException {
-				return doRequestSuper(delegate);
+			/*@Override*/ public Object call() throws Exception {
+				try {
+					return doRequestSuper(delegate);
+				}
+				catch( Exception ex ) {
+					log.error( "Exception thrown from request delegate: " + 
+							delegate, ex );
+					throw ex;
+				}
 			}
 		});
 	}
