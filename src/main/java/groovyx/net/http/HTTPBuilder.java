@@ -31,6 +31,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpResponse;
@@ -119,6 +121,8 @@ public class HTTPBuilder {
 	protected AbstractHttpClient client;
 	protected URI defaultURI = null; // TODO make this a URIBuilder?
 	protected AuthConfig auth = new AuthConfig( this );
+	
+	protected final Log log = LogFactory.getLog( getClass() );
 	
 	protected Object defaultContentType = ContentType.TEXT;
 	protected final Map<String,Closure> defaultResponseHandlers = buildDefaultResponseHandlers();
@@ -276,9 +280,10 @@ public class HTTPBuilder {
 		return this.doRequest( delegate );
 	}
 	
-	protected Object doRequest( SendDelegate delegate ) throws ClientProtocolException, IOException {
+	protected Object doRequest( final SendDelegate delegate ) 
+			throws ClientProtocolException, IOException {
 		
-		HttpRequestBase reqMethod = delegate.getRequest();
+		final HttpRequestBase reqMethod = delegate.getRequest();
 		
 		Object contentType = delegate.getContentType();
 		String acceptContentTypes = contentType.toString();
@@ -293,8 +298,9 @@ public class HTTPBuilder {
 		for ( String key : headers.keySet() ) reqMethod.setHeader( key, headers.get( key ) );
 		
 		HttpResponse resp = client.execute( reqMethod );
-		Closure responseClosure = delegate.findResponseHandler( 
-				resp.getStatusLine().getStatusCode() );
+		int status = resp.getStatusLine().getStatusCode();
+		Closure responseClosure = delegate.findResponseHandler( status );
+		log.debug( "Response code: " + status + "; found handler: " + responseClosure );
 		
 		Object[] closureArgs = null;
 		switch ( responseClosure.getMaximumNumberOfParameters() ) {
@@ -302,8 +308,11 @@ public class HTTPBuilder {
 			closureArgs = new Object[] { resp };
 			break;
 		case 2 :
-			String responseContentType = parsers.getContentType( resp );
-			Object parsedData = parsers.get( responseContentType ).call( resp );			
+			String responseContentType = ParserRegistry.getContentType( resp );
+			Object parsedData = parsers.get( responseContentType ).call( resp );
+			if ( parsedData == null ) log.warn( "Parsed data is null!!!" );
+			else log.debug( "Parsed data from content-type '" + responseContentType 
+					+ "' to object: " + parsedData.getClass() );
 			closureArgs = new Object[] { resp, parsedData };
 			break;
 		default:
@@ -312,6 +321,7 @@ public class HTTPBuilder {
 		}
 		
 		Object returnVal = responseClosure.call( closureArgs );
+		log.debug( "response handler result: " + returnVal );
 		if ( resp.getEntity().isStreaming() ) resp.getEntity().consumeContent();
 		return returnVal;
 	}
@@ -746,9 +756,9 @@ public class HTTPBuilder {
 		 * @return the response handler
 		 */
 		protected Closure findResponseHandler( int statusCode ) {
-			Closure handler = getResponse().get( Integer.toString( statusCode ) );
+			Closure handler = this.getResponse().get( Integer.toString( statusCode ) );
 			if ( handler == null ) handler = 
-				getResponse().get( Status.find( statusCode ).toString() );
+				this.getResponse().get( Status.find( statusCode ).toString() );
 			return handler;
 		}
 		
@@ -764,6 +774,6 @@ public class HTTPBuilder {
 		 * }</pre>
 		 * @return
 		 */
-		public Map<String,Closure> getResponse() { return responseHandlers; }
+		public Map<String,Closure> getResponse() { return this.responseHandlers; }
 	}
 }
