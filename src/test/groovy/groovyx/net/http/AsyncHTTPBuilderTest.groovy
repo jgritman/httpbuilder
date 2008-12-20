@@ -66,6 +66,7 @@ public class AsyncHTTPBuilderTest {
 			time += 2000
 			if ( time > timeout ) assert false
 		}
+		http.shutdown()
 		println 'done.'
 	}
 }
