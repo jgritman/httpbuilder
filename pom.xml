@@ -151,14 +151,14 @@
 					</check>
 				</configuration>
 				<executions>
-					<execution>
+					<!--<execution>
 						<id>test</id>
 						<phase>test</phase>
 						<goals>
 							<goal>cobertura</goal>
 						</goals>
 					</execution>
-					<execution>
+					--><execution>
 						<id>defaults</id>
 						<goals>
 							<goal>clean</goal>
