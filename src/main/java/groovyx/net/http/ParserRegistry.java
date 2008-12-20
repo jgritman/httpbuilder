@@ -88,6 +88,8 @@ public class ParserRegistry {
 	 * @param resp
 	 */
 	public static String getContentType( HttpResponse resp ) {
+		/* TODO how do we handle a very rude server who does not return a 
+		   content-type header?  It could cause an NPE here. and in getCharset */
 		return resp.getEntity().getContentType()
 			.getElements()[0].getName();
 	}
@@ -192,7 +194,8 @@ public class ParserRegistry {
 	 * be resolved prior to executing the response handler. 
 	 * @param contentType
 	 * @return parser that can interpret the given response content type,
-	 *   or null if no parser is registered for the given content-type
+	 *   or the default parser if no parser is registered for the given 
+	 *   content-type.  It should NOT return a null value.
 	 */
 	Closure get( String contentType ) { 
 		Closure parser = registeredParsers.get(contentType);
