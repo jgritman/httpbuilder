@@ -2,7 +2,7 @@
 	<bannerLeft>
 		<name>HTTPBuilder</name>
 		<src>images/logo.png</src>
-		<href>/modules/http-builder/</href>
+		<href>http://groovy.codehaus.org/modules/http-builder/</href>
 	</bannerLeft>
 	<bannerRight>
 		<name>Groovy</name>
