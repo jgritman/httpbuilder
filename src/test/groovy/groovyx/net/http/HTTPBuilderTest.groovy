@@ -3,7 +3,7 @@ package groovyx.net.http
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
 import org.junit.Test
-
+import java.lang.AssertionError
 class HTTPBuilderTest {
 	
 	@Test public void testGET() {
@@ -98,10 +98,28 @@ class HTTPBuilderTest {
 	}
 	
 	@Test public void testAuth() {
-		def http = new HTTPBuilder( 'http://www.google.com' )
+		def http = new HTTPBuilder( 'http://test.webdav.org' )
 		
-		http.auth.basic( 'someUser', 'somePass' )
-		//TODO a site to test this against
+		/* The path issues a 404, but it does an auth challenge first. */
+		http.handler.'404' = { println 'Auth successful' }
+		
+		http.request( GET, HTML ) {
+			url.path = '/auth-digest/'
+			response.failure = { "expected failure" }
+			response.success = {
+				throw new AssertionError("request should have failed.")
+			}
+		}
+		
+		http.auth.basic( 'user2', 'user2' )
+
+		http.request( GET, HTML ) {
+			url.path = '/auth-digest/'
+		}
+		
+		http.request( GET, HTML ) {
+			url.path = '/auth-basic/'
+		}
 	}
 }
 
