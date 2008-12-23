@@ -112,12 +112,13 @@ public abstract class ContentEncoding {
 		
 		protected boolean hasEncoding( final HttpResponse response, final String encoding ) {
 			HttpEntity entity = response.getEntity();
-			Header ceheader = entity.getContentEncoding();
-			if ( ceheader == null ) return false;
+			if ( entity == null ) return false;
+			Header ceHeader = entity.getContentEncoding();
+			if ( ceHeader == null ) return false;
 
-			HeaderElement[] codecs = ceheader.getElements();
+			HeaderElement[] codecs = ceHeader.getElements();
 			for ( int i = 0; i < codecs.length; i++ )
-				if ( codecs[i].getName().equalsIgnoreCase( encoding ) )
+				if ( encoding.equalsIgnoreCase( codecs[i].getName() ) )
 					return true;
 			
 			return false;
