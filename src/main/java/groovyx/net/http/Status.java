@@ -21,6 +21,10 @@
  */
 package groovyx.net.http;
 
+/**
+ * Mapping of HTTP response codes to a constant 'success' or 'failure' value.
+ * @author tnichols
+ */
 public enum Status {
 	SUCCESS ( 100, 399 ),		
 	FAILURE ( 400, 999 );
@@ -35,6 +39,11 @@ public enum Status {
 		return min <= code && code <= max;
 	}
 	
+	/**
+	 * Find the Status value that matches the given status code. 
+	 * @param code HTTP response code
+	 * @return a 'success' or 'failure' Status value
+	 */
 	public static Status find( int code ) {
 		for ( Status s : Status.values() ) 
 			if ( s.matches( code ) ) return s;

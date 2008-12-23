@@ -26,9 +26,9 @@ import java.util.Iterator;
 import org.apache.commons.collections.iterators.ArrayIterator;
 
 /**
- * Enumeration of common IANA content-types.  This may be used to specify a 
- * request or response content-type more easily than specifying the full 
- * string each time.  i.e.
+ * Enumeration of common <a href="http://www.iana.org/assignments/media-types/">IANA</a>
+ * content-types.  This may be used to specify a request or response 
+ * content-type more easily than specifying the full string each time.  i.e.
  * <pre>
  * http.request( GET, JSON ) {...}</pre>
  * 

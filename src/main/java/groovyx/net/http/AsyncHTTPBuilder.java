@@ -170,14 +170,19 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 		return this.threadPool;
 	}
 	
-	@Override
-	public void shutdown() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public void shutdown() {
 		super.shutdown(); 
 		this.threadPool.shutdown();
 	}
 	
-	@Override
-	protected void finalize() throws Throwable {
+	/**
+	 * {@inheritDoc}
+	 * @see #shutdown()
+	 */
+	@Override protected void finalize() throws Throwable {
 		this.shutdown();
 		super.finalize();
 	}

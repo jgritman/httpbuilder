@@ -46,32 +46,40 @@ import net.sf.json.JSONObject;
 import net.sf.json.groovy.JsonGroovyBuilder;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 
 /**
- * This factory (or registry) handles request body "encoding." This is not
+ * <p>This factory (or registry) handles request body "encoding." This is not
  * to be confused with HTTP content-encoding header.  When a 
  * {@link SendDelegate#setBody(Object) body} is set from the builder, it is 
  * processed based on the request content-type.  For instance, if the body
- * is set to a map and the request cotnent-type is JSON, the map will be 
- * transformed to a JSON Object.  
+ * is set to a map and the request content-type is JSON, the map will be 
+ * transformed to a JSON Object.  </p>
  * 
- * Most default encoders can handle a closure as a request body.  In this 
+ * <p>Most default encoders can handle a closure as a request body.  In this 
  * case, the closure is executed and a suitable 'builder' passed to the 
  * closure that is  used for constructing the content.  In the case of 
  * binary encoding this would be an OutputStream; for TEXT encoding it would
  * be a PrintWriter, and for XML it would be an already-bound 
- * {@link StreamingMarkupBuilder}. 
+ * {@link StreamingMarkupBuilder}. </p>
  */
 public class EncoderRegistry {
 	
 	Charset charset = Charset.defaultCharset(); // 1.5
+	
+	/**
+	 * Set the charset used in the content-type header of all requests that send
+	 * textual data.  This must be a chaset supported by the Java platform
+	 * @see Charset#forName(String)
+	 * @param charset 
+	 */
 	public void setCharset( String charset ) { 
 		this.charset = Charset.forName(charset);
 	}
@@ -88,10 +96,10 @@ public class EncoderRegistry {
 	 * as the single closure argument.  Any data sent to the stream from the 
 	 * body of the closure is used as the request content body.
 	 * @param data
-	 * @return
+	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public HttpEntity encodeStream( Object data ) throws UnsupportedEncodingException {
+	public InputStreamEntity encodeStream( Object data ) throws UnsupportedEncodingException {
 		if ( data instanceof InputStream ) {
 			return new InputStreamEntity( (InputStream)data, -1 );
 		}
@@ -113,7 +121,7 @@ public class EncoderRegistry {
 	}
 	
 	/**
-	 * Default handler used for a text content-type.  Acceptable argument
+	 * Default handler used for a plain text content-type.  Acceptable argument
 	 * types are:
 	 * <ul>
 	 *   <li>Closure</li>
@@ -124,7 +132,7 @@ public class EncoderRegistry {
 	 * argument to the closure.  Any data sent to the writer from the 
 	 * closure will be sent to the request content body.
 	 * @param data
-	 * @return
+	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws IOException
 	 */
 	public HttpEntity encodeText( Object data ) throws IOException {
@@ -161,10 +169,11 @@ public class EncoderRegistry {
 	 * Set the request body as a url-encoded list of parameters.  This is 
 	 * typically used to simulate a HTTP form POST. 
 	 * @param params
-	 * @return
+	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public HttpEntity encodeForm( Map<String,Object> params ) throws UnsupportedEncodingException {
+	public UrlEncodedFormEntity encodeForm( Map<String,Object> params ) 
+			throws UnsupportedEncodingException {
 		List<NameValuePair> paramList = new ArrayList<NameValuePair>();
 
 		for ( Map.Entry<String, Object> entry : params.entrySet() ) 
@@ -177,7 +186,7 @@ public class EncoderRegistry {
 	/**
 	 * Executes the given closure and passes a bound {@link StreamingMarkupBuilder}.
 	 * @param xmlBuilder
-	 * @return
+	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
 	public HttpEntity encodeXML( Closure xmlBuilder ) throws UnsupportedEncodingException {
@@ -191,8 +200,8 @@ public class EncoderRegistry {
 	 * a Closure is passed, it will be executed with a 
 	 * {@link JsonGroovyBuilder} as the closure's delegate.  The closure 
 	 * must return the result of the outermost builder method call. 
-	 * @param model
-	 * @return
+	 * @param model data to be converted to JSON, as specified above.
+	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
 	@SuppressWarnings("unchecked")
@@ -213,9 +222,22 @@ public class EncoderRegistry {
 		return this.createEntity( ContentType.JSON, json.toString() );
 	}
 	
-	protected HttpEntity createEntity( ContentType ct, String data ) throws UnsupportedEncodingException {
-		ByteArrayEntity entity = new ByteArrayEntity( data.getBytes( charset.name() ) );
-		entity.setContentType( ct.toString() + "; charset=" + charset.name() );
+	/**
+	 * Helper method used by encoder methods to creates an {@link HttpEntity} 
+	 * instance that encapsulates the request data.  This may be used by any 
+	 * non-streaming encoder that needs to send textual data.  It also sets the 
+	 * {@link #setCharset(String) charset} portion of the content-type header. 
+	 * 
+	 * @param ct content-type of the data
+	 * @param data textual request data to be encoded 
+	 * @return an instance to be used for the 
+	 *  {@link HttpEntityEnclosingRequest#setEntity(HttpEntity) request content} 
+	 * @throws UnsupportedEncodingException
+	 */
+	protected StringEntity createEntity( ContentType ct, String data ) 
+			throws UnsupportedEncodingException {
+		StringEntity entity = new StringEntity( data, charset.toString() );
+		entity.setContentType( ct.toString() );
 		return entity;
 	}
 	
