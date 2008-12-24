@@ -53,13 +53,19 @@ import org.xml.sax.SAXException;
 
 
 /**
- * Keeps track of response parsers for each content type.  Each parser 
+ * <p>Keeps track of response parsers for each content type.  Each parser 
  * should should be a closure that accepts an {@link HttpResponse} instance,
  * and returns whatever handler is appropriate for reading the response 
  * data for that content-type.  For example, a plain-text response should 
  * probably be parsed with a <code>Reader</code>, while an XML response 
  * might be parsed by an XmlSlurper, which would then be passed to the 
- * response closure. 
+ * response closure. </p>
+ * 
+ * <p>Note that all methods in this class assume {@link HttpResponse#getEntity()}
+ * return a non-null value.  It is the job of the HTTPBuilder instance to ensure
+ * a NullPointerException is not thrown by passing a response that contains no
+ * entity.</p>
+ * 
  * @see ContentType
  */
 public class ParserRegistry {

@@ -329,7 +329,11 @@ public class HTTPBuilder {
 
 		// set any request headers from the delegate
 		Map<String,String> headers = delegate.getHeaders(); 
-		for ( String key : headers.keySet() ) reqMethod.setHeader( key, headers.get( key ) );
+		for ( String key : headers.keySet() ) {
+			String val = headers.get( key );
+			if ( val == null ) reqMethod.removeHeaders( key ); 
+			else reqMethod.setHeader( key, val );
+		}
 		
 		HttpResponse resp = client.execute( reqMethod );
 		int status = resp.getStatusLine().getStatusCode();
@@ -342,6 +346,16 @@ public class HTTPBuilder {
 			closureArgs = new Object[] { resp };
 			break;
 		case 2 :
+			// For HEAD or DELETE requests, there should be no response entity.
+			if ( resp.getEntity() == null ) {
+				log.warn( "Response contains no entity, but response closure " +
+						"expects parsed data.  Passing null as second closure arg." );
+				closureArgs = new Object[] { resp, null };
+				break;
+			}
+			
+			// Otherwise, parse the response entity:
+			
 			// first, start with the _given_ content-type
 			String responseContentType = contentType.toString();
 			// if the given content-type is ANY ("*/*") then use the response content-type
@@ -361,7 +375,10 @@ public class HTTPBuilder {
 		
 		Object returnVal = responseClosure.call( closureArgs );
 		log.debug( "response handler result: " + returnVal );
-		if ( resp.getEntity().isStreaming() ) resp.getEntity().consumeContent();
+		
+		HttpEntity responseContent = resp.getEntity(); 
+		if ( responseContent != null && responseContent.isStreaming() ) 
+			responseContent.consumeContent();
 		return returnVal;
 	}
 	
@@ -694,7 +711,7 @@ public class HTTPBuilder {
 			Map params = (Map)args.get( "params" );
 			if ( params != null ) this.url.setQuery( params );
 			Map headers = (Map)args.get( "headers" );
-			if ( headers != null ) this.setHeaders( headers );
+			if ( headers != null ) this.getHeaders().putAll( headers );
 			
 			Object path = args.get( "path" );
 			if ( path != null ) this.url.setPath( path.toString() );
