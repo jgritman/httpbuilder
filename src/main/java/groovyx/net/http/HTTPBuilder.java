@@ -56,12 +56,39 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  * require building and parsing JSON or XML.  Convenient access to a few common
  * authentication methods is also available.</p>
  * 
+ * 
+ * <h3>Conventions</h3>
+ * <p>HTTPBuilder has properties for default headers, URL, contentType, etc.  
+ * All of these values are also assignable (and in many cases, in much finer 
+ * detail) from the {@link SendDelegate} as well.  In any cases where the value
+ * is not set on the delegate (from within a request closure,) the builder's 
+ * default value is used.  </p>
+ * 
+ * <p>For instance, any methods that do not take a URL parameter assume you will
+ * set a URL value in the request closure or use the builder's assigned 
+ * {@link #getURL() default URL}.</p>
+ * 
+ * 
+ * <h3>Response Parsing</h3>
+ * <p>By default, HTTPBuilder uses {@link ContentType#ANY} as the default 
+ * content-type.  This means the value of the request's <code>Accept</code> 
+ * header is <code>&#42;/*</code>, and the response parser is determined 
+ * based on the response <code>content-type</code> header. </p>
+ * 
+ * <p><strong>If</strong> any contentType is given (either in 
+ * {@link #setContentType(Object)} or as a request method parameter), the 
+ * builder will attempt to parse the response using that content-type, 
+ * regardless of what the server actually responds with.  </p>
+ * 
+ *  
  * <h3>Examples:</h3>
  * Perform an HTTP GET and print the response:
  * <pre>
  *   def http = new HTTPBuilder('http://www.google.com')
  *   
- *   http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
+ *   http.get( path : '/search', 
+ *             contentType : TEXT,
+ *             query : [q:'Groovy'] ) { resp, reader ->
  *     println "response status: ${resp.statusLine}"
  *     println 'Response data: -----'
  *     System.out << reader
@@ -69,19 +96,25 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  *   }
  * </pre>
  *   
- * Long form for other HTTP methods, and response-code-specific handlers:
+ * Long form for other HTTP methods, and response-code-specific handlers.  
+ * This is roughly equivalent to the above example.
  *   
  * <pre>
- *   http.request(GET,TEXT) { req ->
- *     response.success = { resp, stream ->
+ *   def http = new HTTPBuilder('http://www.google.com/search?q=groovy')
+ *   
+ *   http.request( GET, TEXT ) { req ->
+ *   
+ *     // executed for all successful responses:
+ *     response.success = { resp, reader ->
  *       println 'my response handler!'
  *       assert resp.statusLine.statusCode == 200
  *       println resp.statusLine
- *       //System.out << stream // print response stream
+ *       System.out << reader // print response stream
  *     }
  *     
- *     response.'401' = { resp ->
- *       println 'access denied'
+ *     // executed only if the response status code is 401:
+ *     response.'404' = { resp -> 
+ *       println 'not found!'
  *     }
  *   }
  * </pre>
@@ -114,6 +147,7 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  *   }
  * </pre>
  * 
+ * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  */
 public class HTTPBuilder {
@@ -124,7 +158,7 @@ public class HTTPBuilder {
 	
 	protected final Log log = LogFactory.getLog( getClass() );
 	
-	protected Object defaultContentType = ContentType.TEXT;
+	protected Object defaultContentType = ContentType.ANY;
 	protected final Map<String,Closure> defaultResponseHandlers = buildDefaultResponseHandlers();
 	protected ContentEncodingRegistry contentEncodingHandler = new ContentEncodingRegistry();
 	
@@ -308,7 +342,12 @@ public class HTTPBuilder {
 			closureArgs = new Object[] { resp };
 			break;
 		case 2 :
-			String responseContentType = ParserRegistry.getContentType( resp );
+			// first, start with the _given_ content-type
+			String responseContentType = contentType.toString();
+			// if the given content-type is ANY ("*/*") then use the response content-type
+			if ( ContentType.ANY.toString().equals( responseContentType ) )
+				responseContentType = ParserRegistry.getContentType( resp );
+			
 			Object parsedData = parsers.get( responseContentType ).call( resp );
 			if ( parsedData == null ) log.warn( "Parsed data is null!!!" );
 			else log.debug( "Parsed data from content-type '" + responseContentType 
