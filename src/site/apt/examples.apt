@@ -11,7 +11,10 @@ Basics
 ------------------------
 def http = new HTTPBuilder('http://www.google.com')
 
-http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
+http.get( path : '/search', 
+          contentType : TEXT,
+          query : [q:'Groovy'] ) { resp, reader ->
+          
   println "response status: ${resp.statusLine}"
   println 'Response data: -----'
   System.out << reader
@@ -45,8 +48,8 @@ http.request(GET,TEXT) { req ->
     System.out << reader // print response stream
   }
   
-  response.'401' = { resp ->  // fired only for a 401 (access denied) status code
-    println 'access denied'
+  response.'404' = { resp ->  // fired only for a 401 (access denied) status code
+    println 'Not found'
   }
 }
 ------------------------
@@ -57,8 +60,8 @@ http.request(GET,TEXT) { req ->
 	all future requests with this <<<HTTPBuilder>>> instance:
 	
 ------------------------
-http.handler.'404' = { resp ->
-  println "Page not found"
+http.handler.'401' = { resp ->
+  println "Access denied"
 }
 
 // Used for all other failure codes not handled by a code-specific handler:
@@ -93,19 +96,21 @@ http.request( 'http://ajax.googleapis.com', GET, JSON ) {
 }
 ------------------------
 
-  Note that the <<<JSON>>> argument passed to <<<http.request>>> in the above 
-  example is actually only used to set the <<<Accept>>> header in the request.  
-  The response content-type string is actually what determines which parser is 
-  used, regardless of what you send in the <<<Accept>>> header.  This is 
-  partially because a server may ignore the <<<Accept>>> header, especially 
-  if it is serving an error response (i.e. a default 404 page) which might be 
-  a completely different content-type than was expected for a 200 (success) 
-  response.  Using the <<<Accept>>> header to choose a parser should also cut down 
-  on the number of vague parser exceptions thrown because, say, the response 
-  data was XML but it was being parsed as JSON. 
+
+*Parser Resolution
+
+  By default, HTTPBuilder uses <<<ContentType.ANY>>> as the default 
+  content-type.  This means the value of the request's <<<Accept>>> 
+  header is <<<*/*>>>, and the response parser is determined 
+  based on the response <<<content-type>>> header value.
   
-  Most importantly, passing the content-type as a parameter to the <<<request>>>
-  method serves as a visual queue to aid readability of the code.
+  <If> any <<<contentType>>> is given (either in 
+  <<<HTTPBuilder.setContentType(...)>>> or as a <<<request>>> method parameter),
+  the builder will attempt to parse the response using that content-type, 
+  regardless of what the server actually responds with.  
+
+
+*Support for new Content Types
   
   To add parsing for new content types, simply add a new entry to the builder's 
   <<<{{{apidocs/groovyx/net/http/ParserRegistry.html}ParserRegistry}}>>>.  For 
@@ -124,21 +129,4 @@ http.parser.'text/csv' = { resp ->
   A <<<CSVReader>>> instance will then be passed as the second argument to the 
   response handler.  See {{{http://www.iana.org/assignments/media-types/}IANA}}
   for a list of registered content-type names.
-  
-  If you're not sure how a response is being parsed (or why it's being parsed a 
-  certain way) simply <<<println response.entity.contentType>>> from your 
-  response handler closure to see how the response is being sent back.  If by 
-  chance an incorrect content-type is sent  (i.e. the response content-type is 
-  <<<application/html>>> when it should be <<<application/json>>>) simply 
-  re-define the HTML parser for that HTTPBuilder instance:
-  
-------------------------  
-/* The JSON parser already exists as a default parser, so we can simply reuse 
-   it for both content-types.  We wouldn't want to do this all the time, as it 
-   would mean we couldn't parse HTML with this HTTPBuilder instance.  But it 
-   gets around a bad content-type string sent by a particular server. */
-    
-http.parser.'application/html' = http.parser.'application/json'
-------------------------  
-
   

@@ -16,6 +16,8 @@ To Do
   
   * CSV content-type support?
   
+  * Allow for 'extended' HTTP methods?
+  
   * Convenience methods:
     DELETE, HEAD quick access to location header -- or just use path?
     

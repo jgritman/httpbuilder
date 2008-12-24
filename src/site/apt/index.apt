@@ -12,11 +12,12 @@ HTTPBuilder Overview
   also inspired partially by Prototype.js' 
   {{{http://prototypejs.org/api/ajax/request}Ajax.Request}}.  
   
-  Note that at the current point in time, HTTPBuilder should still be considered
+  Note that at the current point in time, HTTPBuilder should be considered
   beta quality.  There are significant pieces of code that remain largely 
   untested, so please use at your own risk.  That being said, please report 
-  any problems or errors to the mailing list and it should be resolved without 
-  too much trouble.
+  any problems or errors to the mailing list (or 
+  {{{http://jira.codehaus.org/browse/GMOD/component/13625}JIRA}}) and it should 
+  be resolved quickly.
   
   In short, HTTPBuilder allows you to make HTTP requests like this:
     
@@ -68,7 +69,7 @@ Features
   
   * AsyncHTTPBuilder for asynchronous requests
   
-  * Fully Extensible
+  * Easily extensible API
     
     
 Components
@@ -84,4 +85,14 @@ Components
   
   See the {{{apidocs/index.html}JavaDoc}} for full documentation. 
     
+    
+Requirements
+
+  * At least Java 1.5.  This is because HttpClient 4 requires Java 5.  
+    If you need Java 1.4, let me know.
+  
+  * Groovy 1.5 or later, although it should work with earlier versions
+  
+  * JAR dependencies can be found in the packaged distributions linked from the
+    {{{download.html}download page}}. 
     
