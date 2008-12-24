@@ -130,3 +130,11 @@ http.parser.'text/csv' = { resp ->
   response handler.  See {{{http://www.iana.org/assignments/media-types/}IANA}}
   for a list of registered content-type names.
   
+
+
+Debugging
+
+  Probably the quickest way to debug is to turn on logging for HTTPBuilder and 
+  HttpClient.  An example 
+  {{{https://svn.codehaus.org/gmod/httpbuilder/trunk/src/test/resources/log4j.xml}log4j configuration}}
+  can be used to output headers and request/response body content.
