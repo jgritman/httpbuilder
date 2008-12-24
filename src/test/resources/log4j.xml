@@ -10,10 +10,13 @@
 	</appender>
 	
 	<category name="groovyx.net.http">
-		<priority value="DEBUG" />
+		<priority value="INFO" />
 	</category>
 
-	<category name="org.apache.http">
+	<category name="org.apache.http.headers">
+		<priority value="INFO" />
+	</category>
+	<category name="org.apache.http.wire">
 		<priority value="INFO" />
 	</category>
 	
