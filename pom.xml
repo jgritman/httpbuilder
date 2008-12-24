@@ -118,6 +118,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>retrotranslator-maven-plugin</artifactId>
@@ -136,6 +137,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			 -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>cobertura-maven-plugin</artifactId>
@@ -236,6 +238,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
+					<linksource>true</linksource>
 					<links>
 						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
 						<link>http://hc.apache.org/httpcomponents-client/httpclient/apidocs/</link>
@@ -257,6 +260,7 @@
 				<artifactId>maven-changes-plugin</artifactId>
 				<configuration>
 					<component>13625</component>
+					<statusIds>5,6</statusIds>
 				</configuration>
 				<reportSets>
 					<reportSet>
@@ -270,10 +274,10 @@
 	</reporting>
 
 	<scm>
-		<developerConnection>scm:https://svn.codehaus.org/groovy-contrib/httpbuilder/</developerConnection>
-		<connection>scm:http://svn.codehaus.org/groovy-contrib/httpbuilder/</connection>
+		<developerConnection>scm:https://svn.codehaus.org/gmod/httpbuilder/</developerConnection>
+		<connection>scm:http://svn.codehaus.org/gmod/httpbuilder/</connection>
 		<tag>trunk</tag>
-		<url>http://fisheye.codehaus.org/browse/groovy-contrib/httpbuilder/</url>
+		<url>http://fisheye.codehaus.org/browse/gmod/httpbuilder/</url>
 	</scm>
 
 	<distributionManagement>
