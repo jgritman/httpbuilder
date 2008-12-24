@@ -3,41 +3,106 @@ package groovyx.net.http
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
 import org.junit.Test
-import java.lang.AssertionError
+import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResult
 class HTTPBuilderTest {
 	
+	/**
+	 * This method will parse the content based on the response content-type
+	 */
 	@Test public void testGET() {
 		def http = new HTTPBuilder('http://www.google.com')
-		http.get( path:'/search', query:[q:'Groovy'] ) { resp, reader ->
+		http.get( path:'/search', query:[q:'Groovy'] ) { resp, html ->
 			println "response status: ${resp.statusLine}"
 			
-			println 'Response data: -----'
-			System.out << reader
-			println '\n--------------------'
+			assert html
+			assert html.HEAD.size() == 1
+			assert html.HEAD.TITLE.size() == 1
+			println "Title: ${html.HEAD.TITLE.text()}"
+			assert html.BODY.size() == 1
 		}
 	}
 	
-	/* Well, Google doesn't like a POST request.  This may have to wait until I 
-	 * have a proper test framework set up.  Maybe Jetty?  Jetty + RESTlet??
-	 * Groovy-XMLRPC does testing against a localhost server too, maybe that 
-	 * would work...
+	/**
+	 * This method is similar to the above, but it will will parse the content 
+	 * based on the given content-type, i.e. TEXT (text/plain).  
 	 */
-	//@Test 
-	public void testPOST() {
-		def http = new HTTPBuilder('http://www.google.com')
-		http.post( contentType:HTML, path:'/search', body:[q:'Groovy'] ) { resp, reader ->
+	@Test public void testReader() {
+		def http = new HTTPBuilder('http://w3c.org')
+		http.get( url:'http://validator.w3.org/about.html', 
+				  contentType: TEXT ) { resp, reader ->
 			println "response status: ${resp.statusLine}"
 			
-			println 'Response data: -----'
-			System.out << reader
-			println '\n--------------------'
+			assert reader instanceof Reader
+			
+			// we'll validate the reader by passing it to an XmlSlurper manually.
+			def parsedData = new XmlSlurper().parse(reader)
+			assert parsedData.children().size() > 0
 		}
 	}
 	
-	@Test public void testRequest() {
+	/* REST testing with Twitter!
+	 */
+	@Test public void testPOSTwithXML() {
+		def http = new HTTPBuilder('http://twitter.com/statuses/')
+		
+		http.auth.basic( 'httpbuilder', 'c0deH@us!' )
+		
+		def msg = "HTTPBuilder unit test was run on ${new Date()}"
+		
+		http.request( POST, XML ) { req ->
+			url.path = 'update.xml'
+			send URLENC, [status:msg]
+			
+			/* twitter doesn't like the Expect: 100 header because it would have
+			   replied with a 401 error --- but since "Expect: 100" is there, it 
+			   will actually reply with a 417 (Expectation failed) instead!  So
+			   the easiest solution is to remove the Expect header.  You might 
+			   also be able to add an "Expect: 401?" 
+			   
+			   This could also be solved by doing a GET request or the like first, 
+			   which will cause the client to encounter the 401.  Another option 
+			   would be 'preemptive auth' but that would take some more code to 
+			   implement.  */
+			req.params.setBooleanParameter 'http.protocol.expect-continue', false
+			
+			 response.success = { resp, xml ->
+				println "response status: ${resp.statusLine}"
+				assert resp.statusLine.statusCode == 200
+				assert xml instanceof GPathResult 
+				
+				assert xml.text == msg
+				assert xml.user.name == 'httpbuilder'
+			}
+		}
+	}
+	
+	@Test public void testHeadMethod() {
+		def http = new HTTPBuilder('http://twitter.com/statuses/')
+		
+		http.auth.basic( 'httpbuilder', 'c0deH@us!' )
+		
+		http.request( HEAD, XML ) { // this will result in a 401 status code
+			url.path = 'friends_timeline.xml' 
+			
+//			response.'401' = { }
+			
+			response.success = { resp ->
+				assert resp.getFirstHeader('Status').value == "200 OK"
+			}
+		}
+		
+//		http.request( HEAD, XML ) { 
+//			url.path = 'friends_timeline.xml' 
+//			response.success = { resp ->
+//				assert resp.statusLine.statusCode == 200
+//			}
+//		}
+	}
+	
+	@Test public void testRequestAndDefaultResponseHandlers() {
 		def http = new HTTPBuilder()
 
-//		 defatult response handlers.
+//		 default response handlers.
 		http.handler.'401' = { resp ->
 			println 'access denied'
 		}
@@ -59,6 +124,9 @@ class HTTPBuilderTest {
 		}	
 	}
 	
+	/**
+	 * Test a response handler that is assigned within a request config closure:
+	 */
 	@Test public void test404() {
 		new HTTPBuilder().request('http://www.google.com',GET,TEXT) {
 			url.path = '/asdfg/asasdfs' // should produce 404
@@ -93,6 +161,7 @@ class HTTPBuilderTest {
 				json.responseData.results.each { 
 					println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
 				}
+				null
 			}
 		}
 	}
@@ -122,5 +191,3 @@ class HTTPBuilderTest {
 		}
 	}
 }
-
-
