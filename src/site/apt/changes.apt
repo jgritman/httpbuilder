@@ -16,6 +16,10 @@ Change Log
   * Changed parser resolution to always use given charset unless 'ANY' is used 
   
   * Added xref report to site documentation
+  
+  * Improved header handling
+   
+  * Fix for NPE when response has no entity (i.e. HEAD)
 
 * v0.2.2 - 18 Dec 2008
 
