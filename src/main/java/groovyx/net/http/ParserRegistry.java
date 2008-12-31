@@ -102,6 +102,7 @@ public class ParserRegistry {
 	
 	/**
 	 * Default parser used for binary data.
+	 * @see ContentType#BINARY
 	 * @param resp
 	 * @return an InputStream 
 	 * @throws IllegalStateException
@@ -115,6 +116,7 @@ public class ParserRegistry {
 	 * Default parser used to handle plain text data.  The response text 
 	 * is decoded using the charset passed in the response content-type 
 	 * header. 
+	 * @see ContentType#TEXT
 	 * @param resp
 	 * @return
 	 * @throws UnsupportedEncodingException
@@ -128,6 +130,7 @@ public class ParserRegistry {
 	
 	/**
 	 * Default parser used to decode a URL-encoded response.
+	 * @see ContentType#URLENC
 	 * @param resp
 	 * @return
 	 * @throws IOException
@@ -142,6 +145,7 @@ public class ParserRegistry {
 	
 	/**
 	 * Parse an HTML document by passing it through the NekoHTML parser.
+	 * @see ContentType#HTML
 	 * @see SAXParser
 	 * @see XmlSlurper#parse(Reader)
 	 * @param resp HTTP response from which to parse content
@@ -156,6 +160,7 @@ public class ParserRegistry {
 	
 	/**
 	 * Default parser used to decode an XML response.  
+	 * @see ContentType#XML
 	 * @see XmlSlurper#parse(Reader)
 	 * @param resp HTTP response from which to parse content
 	 * @return the {@link GPathResult} from calling {@link XmlSlurper#parse(Reader)}
@@ -169,6 +174,7 @@ public class ParserRegistry {
 	
 	/**
 	 * Default parser used to decode a JSON response.
+	 * @see ContentType#JSON
 	 * @param resp
 	 * @return
 	 * @throws IOException

@@ -44,12 +44,31 @@ import org.apache.commons.collections.iterators.ArrayIterator;
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  */
 public enum ContentType {
+	/** <code>&#42;/*</code> */
 	ANY("*/*"),
+	/** <code>text/plain</code> */
 	TEXT("text/plain"), 
+	/** 
+	 * <ul>
+	 *  <li><code>application/json</code></li>
+	 *  <li><code>application/javascript</code></li>
+	 *  <li><code>text/javascript</code></li>
+	 * </ul>
+	 */
 	JSON("application/json","application/javascript","text/javascript"),
+	/** 
+	 * <ul>
+	 *  <li><code>application/json</code></li>
+	 *  <li><code>application/javascript</code></li>
+	 *  <li><code>text/javascript</code></li>
+	 * </ul>
+	 */
 	XML("application/xml","text/xml","application/xhtml+xml"),
+	/** <code>text/html</code> */
 	HTML("text/html"),
+	/** <code>application/x-www-form-urlencoded</code> */
 	URLENC("application/x-www-form-urlencoded"),
+	/** <code>binary/octet-stream</code> */
 	BINARY("binary/octet-stream");
 	
 	private final String[] ctStrings;
