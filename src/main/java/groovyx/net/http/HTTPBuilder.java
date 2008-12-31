@@ -21,6 +21,7 @@
  */
 package groovyx.net.http;
 
+import static groovyx.net.http.URIBuilder.convertToURI;
 import groovy.lang.Closure;
 
 import java.io.IOException;
@@ -44,10 +45,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
-
-import static groovyx.net.http.URIBuilder.convertToURI;
 
 /** <p>
  * Groovy DSL for easily making HTTP requests, and handling request and response
@@ -201,11 +199,35 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Convenience method to perform an HTTP GET.  The response closure will be 
-	 * called only on a successful response; a 'failed' response (i.e. any 
-	 * HTTP status code > 399) will be handled by the registered 'failure' 
-	 * handler.  The {@link #defaultFailureHandler(HttpResponse) default 
-	 * failure handler} throws an {@link HttpResponseException}
+	 * Convenience method to perform an HTTP GET.  It will use the HTTPBuilder's
+	 * {@link #getHandler() registered response handlers} to handle success or 
+	 * failure status codes.  By default, the <code>success</code> response 
+	 * handler will attempt to parse the data and simply return the parsed 
+	 * object.
+	 * 
+	 * @see #getHandler()
+	 * @see #defaultSuccessHandler(HttpResponse, Object)
+	 * @see #defaultFailureHandler(HttpResponse)
+	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
+	 * @return whatever was returned from the response closure.  
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws ClientProtocolException 
+	 */
+	public Object get( Map<String,?> args ) 
+			throws ClientProtocolException, IOException, URISyntaxException {
+		return this.get( args, null );
+	}
+	
+	/**
+	 * <p>Convenience method to perform an HTTP GET.  The response closure will 
+	 * be called only on a successful response.  </p>
+	 * 
+	 * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled 
+	 * by the registered 'failure' handler.  The 
+	 * {@link #defaultFailureHandler(HttpResponse) default failure handler} 
+	 * throws an {@link HttpResponseException}.</p>
+	 * 
 	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
 	 * @param responseClosure code to handle a successful HTTP response
 	 * @return any value returned by the response closure.
@@ -220,14 +242,41 @@ public class HTTPBuilder {
 				this.defaultRequestHeaders,
 				this.defaultResponseHandlers );
 		
-		delegate.setPropertiesFromMap( args );		
-		delegate.getResponse().put( Status.SUCCESS.toString(), responseClosure );
+		delegate.setPropertiesFromMap( args );
+		if ( responseClosure != null ) delegate.getResponse().put( 
+				Status.SUCCESS.toString(), responseClosure );
 		return this.doRequest( delegate );
+	}
+	
+	/**
+	 * Convenience method to perform an HTTP POST.  It will use the HTTPBuilder's
+	 * {@link #getHandler() registered response handlers} to handle success or 
+	 * failure status codes.  By default, the <code>success</code> response 
+	 * handler will attempt to parse the data and simply return the parsed 
+	 * object.
+	 * 
+	 * @see #getHandler()
+	 * @see #defaultSuccessHandler(HttpResponse, Object)
+	 * @see #defaultFailureHandler(HttpResponse)
+	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
+	 * @return whatever was returned from the response closure.  
+	 * @throws IOException 
+	 * @throws URISyntaxException 
+	 * @throws ClientProtocolException 
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws ClientProtocolException 
+	 */
+	public Object post( Map<String,?> args ) 
+			throws ClientProtocolException, URISyntaxException, IOException {
+		return this.post( args, null );
 	}
 	
 	/** <p>
 	 * Convenience method to perform an HTTP form POST.  The response closure will be 
-	 * called only on a successful response; a 'failed' response (i.e. any 
+	 * called only on a successful response.</p>   
+	 * 
+	 * <p>A 'failed' response (i.e. any 
 	 * HTTP status code > 399) will be handled by the registered 'failure' 
 	 * handler.  The {@link #defaultFailureHandler(HttpResponse) default 
 	 * failure handler} throws an {@link HttpResponseException}.</p>  
@@ -255,16 +304,39 @@ public class HTTPBuilder {
 		   the 'requestContentType' named argument to override this if it is 
 		   given */ 
 		delegate.setRequestContentType( ContentType.URLENC.toString() );
-		delegate.setPropertiesFromMap( args );		
-		delegate.getResponse().put( Status.SUCCESS.toString(), responseClosure );
+		delegate.setPropertiesFromMap( args );
+		
+		if ( responseClosure != null ) delegate.getResponse().put( 
+				Status.SUCCESS.toString(), responseClosure );
 
 		return this.doRequest( delegate );
 	}
 	
+	/**
+	 * Make an HTTP request to the default URL and content-type.
+	 * @see #request(Object, Method, Object, Closure)
+	 * @param method {@link Method HTTP method}
+	 * @param contentType either a {@link ContentType} or valid content-type string.
+	 * @param configClosure request configuration options
+	 * @return whatever value was returned by the executed response handler.
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
 	public Object request( Method m, Closure configClosure ) throws ClientProtocolException, IOException {
 		return this.doRequest( this.defaultURI, m, this.defaultContentType, configClosure );
 	}
 
+	/**
+	 * Make an HTTP request using the default URL, with the given method, 
+	 * content-type, and configuration.
+	 * @see #request(Object, Method, Object, Closure)
+	 * @param method {@link Method HTTP method}
+	 * @param contentType either a {@link ContentType} or valid content-type string.
+	 * @param configClosure request configuration options
+	 * @return whatever value was returned by the executed response handler.
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
 	public Object request( Method m, Object contentType, Closure configClosure ) 
 			throws ClientProtocolException, IOException {
 		return this.doRequest( this.defaultURI, m, contentType, configClosure );
@@ -285,8 +357,6 @@ public class HTTPBuilder {
 	 *   {@link SendDelegate#getResponse() response handlers}. 
 	 *   
 	 * @return whatever value was returned by the executed response handler.
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 * @throws URISyntaxException if a URI string or URL was invalid.
@@ -296,6 +366,11 @@ public class HTTPBuilder {
 		return this.doRequest( convertToURI( uri ), method, contentType, configClosure );
 	}
 
+	/**
+	 * Create a {@link SendDelegate} from the given arguments, execute the 
+	 * config closure, then pass the delegate to {@link #doRequest(SendDelegate)},
+	 * which actually executes the request.
+	 */
 	protected Object doRequest( URI uri, Method method, Object contentType, Closure configClosure ) 
 			throws ClientProtocolException, IOException {
 
@@ -314,6 +389,9 @@ public class HTTPBuilder {
 		return this.doRequest( delegate );
 	}
 	
+	/**
+	 * All <code>request</code> methods delegate to this method.
+	 */
 	protected Object doRequest( final SendDelegate delegate ) 
 			throws ClientProtocolException, IOException {
 		
@@ -395,18 +473,17 @@ public class HTTPBuilder {
 	/**
 	 * This is the default <code>response.success</code> handler.  It will be 
 	 * executed if no status-code-specific handler is set (i.e. 
-	 * <code>response.'200'= {..}</code>).  This simply prints the status line 
-	 * and the response stream to <code>System.out</code>.  In most cases you
-	 * will want to define a <code>response.success = {...}</code> handler from 
-	 * the request closure, which will replace this method.   
+	 * <code>response.'200'= {..}</code>).  This simply returns the parsed data
+	 * (if any).  In most cases you will want to define a 
+	 * <code>response.success = {...}</code> handler from the request closure, 
+	 * which will replace this method.   
 	 *  
-	 * @param resp
-	 * @throws IllegalStateException
-	 * @throws IOException
+	 * @param resp HTTP response
+	 * @param parsedData parsed data as resolved from this instance's {@link ParserRegistry}
+	 * @return the parsed data
 	 */
-	protected void defaultSuccessHandler( HttpResponse resp ) throws IllegalStateException, IOException {
-		System.out.println( resp.getStatusLine() );
-		System.out.println( DefaultGroovyMethods.getText( resp.getEntity().getContent() ) ); 
+	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData ) {
+		return parsedData;
 	}
 	
 	/**

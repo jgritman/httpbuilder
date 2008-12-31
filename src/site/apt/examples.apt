@@ -6,7 +6,30 @@
  
 Basics
 
- Perform a simple HTTP <<<GET>>> and print the response:
+ Perform a simple HTTP <<<GET>>> and parse the response as a DOM object:
+ 
+------------------------
+def http = new HTTPBuilder('http://www.google.com')
+
+def html = http.get( path : '/search', query : [q:'Groovy'] )
+
+assert html instanceof GPathResult
+assert html.HEAD.size() == 1
+assert html.BODY.size() == 1
+------------------------
+
+ In the above example, we are making a request, and automatically parsing the 
+ HTML response based on the response's content-type header.  The HTML stream is 
+ normalized (thanks to {{{http://nekohtml.sourceforge.net/}Neko,}}) and then 
+ parsed by an
+ {{{http://groovy.codehaus.org/Reading+XML+using+Groovy%27s+XmlSlurper}XmlSlurper}}
+ for easy DOM parsing. 
+ 
+ <<Keep reading for more examples of how the HTTPBuilder can handle more complex 
+ request/ response logic, as well as parsing other content-types...>>
+ 
+ Next is another <<<GET>>> request, with custom response-handling logic that 
+ prints the response to <<<System.out>>>:
  
 ------------------------
 def http = new HTTPBuilder('http://www.google.com')
@@ -26,6 +49,11 @@ http.get( path : '/search',
  only executed on a <successful> response.  A failure response (i.e. status code
  of 400 or greater) is handled by the builder's 
  {{{apidocs/groovyx/net/http/HTTPBuilder.html#defaultFailureHandler(org.apache.http.HttpResponse)}default failure handler}}.
+ 
+ Additionally, we are telling HTTPBuilder to parse the response as 
+ <<<ContentType.TEXT>>> - which is built-in content-type handled by the default   
+ <<<{{{http://groovy.codehaus.org/modules/http-builder/apidocs/groovyx/net/http/ParserRegistry.html#parseText(org.apache.http.HttpResponse)}ParserRegistry}}>>>
+ to automatically create a <<<Reader>>> from the response data.
 
 
 More Verbose (and Flexible) Request

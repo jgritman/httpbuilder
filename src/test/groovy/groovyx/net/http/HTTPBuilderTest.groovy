@@ -3,7 +3,7 @@ package groovyx.net.http
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
 import org.junit.Test
-import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResult
+import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseException
 class HTTPBuilderTest {
 	
 	/**
@@ -21,6 +21,37 @@ class HTTPBuilderTest {
 			assert html.BODY.size() == 1
 		}
 	}
+	
+	@Test public void testDefaultSuccessHandler() {
+		def http = new HTTPBuilder('http://www.google.com')
+		def html = http.request( GET ) {
+			url.path = '/search'
+			url.query = [q:'Groovy']
+		}
+		assert html instanceof GPathResult
+		assert html.HEAD.size() == 1
+		assert html.BODY.size() == 1
+
+		// short form where GET takes no response handler.
+		html = http.get( path:'/search', query:[q:'Groovy'] )
+		assert html instanceof GPathResult
+		assert html.HEAD.size() == 1
+		assert html.BODY.size() == 1
+	}
+	
+	@Test public void testDefaultFailureHandler() {
+		def http = new HTTPBuilder('http://www.google.com')
+
+		try {
+			http.get( path:'/adsasf/kjsslkd' ) {
+				assert false 
+			}
+		}
+		catch( HttpResponseException ex ) {
+			assert ex.statusCode == 404
+		}
+		
+	}	
 	
 	/**
 	 * This method is similar to the above, but it will will parse the content 
