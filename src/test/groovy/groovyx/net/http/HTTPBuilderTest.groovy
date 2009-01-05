@@ -3,7 +3,7 @@ package groovyx.net.http
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
 import org.junit.Test
-import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseException
+import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStream
 class HTTPBuilderTest {
 	
 	/**
@@ -37,6 +37,27 @@ class HTTPBuilderTest {
 		assert html instanceof GPathResult
 		assert html.HEAD.size() == 1
 		assert html.BODY.size() == 1
+	}
+	
+	/* This tests a potential bug -- the reader is being accessed after the 
+	 * request/response sequence has finished and response.consumeContent() 
+	 * has already been called internally.  In practice, it appears that the 
+	 * response data is being buffered, probably for any non-chunked responses.
+	 * A warning should probably be added, however, that the default response 
+	 * handler will not work well with a chunked response if it is parsed as 
+	 * TEXT or BINARY.
+	 */
+	@Test public void testReaderWithDefaultResponseHandler() {
+		def http = new HTTPBuilder('http://www.google.com')
+		
+		def reader = http.get( contentType:TEXT )
+		
+		assert reader instanceof Reader
+		def out = new ByteArrayOutputStream()
+		out << reader
+		assert out.toString().length() > 0
+		assert out.toString().endsWith( '</html>' )
+		//println out.toString()
 	}
 	
 	@Test public void testDefaultFailureHandler() {

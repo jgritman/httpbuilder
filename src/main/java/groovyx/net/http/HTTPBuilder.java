@@ -24,7 +24,14 @@ package groovyx.net.http;
 import static groovyx.net.http.URIBuilder.convertToURI;
 import groovy.lang.Closure;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,6 +52,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 /** <p>
@@ -199,11 +207,15 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Convenience method to perform an HTTP GET.  It will use the HTTPBuilder's
+	 * <p>Convenience method to perform an HTTP GET.  It will use the HTTPBuilder's
 	 * {@link #getHandler() registered response handlers} to handle success or 
 	 * failure status codes.  By default, the <code>success</code> response 
 	 * handler will attempt to parse the data and simply return the parsed 
-	 * object.
+	 * object.</p>
+	 * 
+	 * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponse, Object)
+	 * default <code>success</code> response handler}, be sure to read the 
+	 * caveat regarding streaming response data.</p>
 	 * 
 	 * @see #getHandler()
 	 * @see #defaultSuccessHandler(HttpResponse, Object)
@@ -249,11 +261,15 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Convenience method to perform an HTTP POST.  It will use the HTTPBuilder's
+	 * <p>Convenience method to perform an HTTP POST.  It will use the HTTPBuilder's
 	 * {@link #getHandler() registered response handlers} to handle success or 
 	 * failure status codes.  By default, the <code>success</code> response 
 	 * handler will attempt to parse the data and simply return the parsed 
-	 * object.
+	 * object. </p>
+	 * 
+	 * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponse, Object)
+	 * default <code>success</code> response handler}, be sure to read the 
+	 * caveat regarding streaming response data.</p>
 	 * 
 	 * @see #getHandler()
 	 * @see #defaultSuccessHandler(HttpResponse, Object)
@@ -471,18 +487,47 @@ public class HTTPBuilder {
 	}
 
 	/**
-	 * This is the default <code>response.success</code> handler.  It will be 
-	 * executed if no status-code-specific handler is set (i.e. 
-	 * <code>response.'200'= {..}</code>).  This simply returns the parsed data
-	 * (if any).  In most cases you will want to define a 
-	 * <code>response.success = {...}</code> handler from the request closure, 
-	 * which will replace this method.   
+	 * <p>This is the default <code>response.success</code> handler.  It will be 
+	 * executed if the response is not handled by a status-code-specific handler 
+	 * (i.e. <code>response.'200'= {..}</code>) and no generic 'success' handler 
+	 * is given (i.e. <code>response.success = {..}</code>.)  This handler simply 
+	 * returns the parsed data from the response body.  In most cases you will 
+	 * probably want to define a <code>response.success = {...}</code> handler 
+	 * from the request closure, which will replace the response handler defined 
+	 * by this method.  </p>
+	 * 
+	 * <h4>Note for parsers that return streaming content:</h4>
+	 * <p>For responses parsed as {@link ParserRegistry#parseStream(HttpResponse) 
+	 * BINARY} or {@link ParserRegistry#parseText(HttpResponse) TEXT}, the 
+	 * parser will return streaming content -- an <code>InputStream</code> or 
+	 * <code>Reader</code>.  In these cases, this handler will buffer the the 
+	 * response content before the network connection is closed.  </p>
+	 * 
+	 * <p>In practice, a user-supplied response handler closure is 
+	 * <i>designed</i> to handle streaming content so it can be read directly from 
+	 * the response stream without buffering, which will be much more efficient.
+	 * Therefore, it is recommended that request method variants be used which 
+	 * explicitly accept a response handler closure in these cases.</p>
 	 *  
 	 * @param resp HTTP response
 	 * @param parsedData parsed data as resolved from this instance's {@link ParserRegistry}
-	 * @return the parsed data
+	 * @return the parsed data object (whatever the parser returns).
 	 */
-	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData ) {
+	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData ) throws IOException {
+		//If response is streaming, buffer it in a byte array:
+		if ( parsedData instanceof InputStream ) {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
+			parsedData = new ByteArrayInputStream( buffer.toByteArray() );
+		}
+		else if ( parsedData instanceof Reader ) {
+			StringWriter buffer = new StringWriter();
+			DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
+			parsedData = new StringReader( buffer.toString() );
+		}
+		else if ( parsedData instanceof Closeable )
+			log.warn( "Parsed data is streaming, but will be accessible after " +
+					"the network connection is closed.  Use at your own risk!" );
 		return parsedData;
 	}
 	
