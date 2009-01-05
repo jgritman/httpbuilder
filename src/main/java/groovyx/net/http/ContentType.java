@@ -68,8 +68,8 @@ public enum ContentType {
 	HTML("text/html"),
 	/** <code>application/x-www-form-urlencoded</code> */
 	URLENC("application/x-www-form-urlencoded"),
-	/** <code>binary/octet-stream</code> */
-	BINARY("binary/octet-stream");
+	/** <code>application/octet-stream</code> */
+	BINARY("application/octet-stream");
 	
 	private final String[] ctStrings;
 	public String[] getContentTypeStrings() { return ctStrings; } 
