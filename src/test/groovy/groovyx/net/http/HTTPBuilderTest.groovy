@@ -93,37 +93,51 @@ class HTTPBuilderTest {
 	}
 	
 	/* REST testing with Twitter!
+	 * Tests POST with XML response, and DELETE with a JSON response.
 	 */
 	@Test public void testPOSTwithXML() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic( 'httpbuilder', 'c0deH@us!' )
+		http.auth.basic 'httpbuilder', 'c0deH@us!'
+		/* twitter doesn't like the Expect: 100 header because it would have
+		   replied with a 401 error --- but since "Expect: 100" is there, it 
+		   will actually reply with a 417 (Expectation failed) instead!  So
+		   the easiest solution is to remove the Expect header.  You might 
+		   also be able to add an "Expect: 401?" 
+		   
+		   This could also be solved by doing a GET request or the like first, 
+		   which will cause the client to encounter the 401.  Another option 
+		   would be 'preemptive auth' but that would take some more code to 
+		   implement.  */
+		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
 		
 		def msg = "HTTPBuilder unit test was run on ${new Date()}"
 		
-		http.request( POST, XML ) { req ->
+		def postID = http.request( POST, XML ) { req ->
 			url.path = 'update.xml'
 			send URLENC, [status:msg]
 			
-			/* twitter doesn't like the Expect: 100 header because it would have
-			   replied with a 401 error --- but since "Expect: 100" is there, it 
-			   will actually reply with a 417 (Expectation failed) instead!  So
-			   the easiest solution is to remove the Expect header.  You might 
-			   also be able to add an "Expect: 401?" 
-			   
-			   This could also be solved by doing a GET request or the like first, 
-			   which will cause the client to encounter the 401.  Another option 
-			   would be 'preemptive auth' but that would take some more code to 
-			   implement.  */
-			req.params.setBooleanParameter 'http.protocol.expect-continue', false
+			//req.params.setBooleanParameter 'http.protocol.expect-continue', false
 			
 			 response.success = { resp, xml ->
-				println "response status: ${resp.statusLine}"
+				println "Tweet response status: ${resp.statusLine}"
 				assert resp.statusLine.statusCode == 200
 				assert xml instanceof GPathResult 
 				
 				assert xml.text == msg
 				assert xml.user.name == 'httpbuilder'
+				return xml.id
+			}
+		}
+		
+		// delete the test message.
+		http.request( DELETE, JSON ) { req ->
+			url.path = "destroy/${postID}.json"
+			
+			response.success = { resp, json ->
+				assert json.id != null
+				assert resp.statusLine.statusCode == 200
+				println "Test tweet ID ${json.id} was deleted."
 			}
 		}
 	}
@@ -131,9 +145,9 @@ class HTTPBuilderTest {
 	@Test public void testHeadMethod() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic( 'httpbuilder', 'c0deH@us!' )
+		http.auth.basic 'httpbuilder', 'c0deH@us!'
 		
-		http.request( HEAD, XML ) { // this will result in a 401 status code
+		http.request( HEAD, XML ) {
 			url.path = 'friends_timeline.xml' 
 			
 //			response.'401' = { }
