@@ -19,6 +19,8 @@
 	<properties>
 		<!-- Needed because this value is used in Site filtering and Velocity doesn't like the dot. -->
 		<project-version>${project.version}</project-version>
+		<twitter.user>httpbuilder</twitter.user>
+		<twitter.passwd>c0deH@us!</twitter.passwd>
 	</properties>
 	
 	<dependencies>
@@ -109,12 +111,23 @@
 				<artifactId>gmaven-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>build</id>
 						<goals>
 							<goal>generateStubs</goal>
 							<goal>compile</goal>
 							<goal>generateTestStubs</goal>
 							<goal>testCompile</goal>
 						</goals>
+					</execution>
+					<execution>
+						<id>release</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<source>${pom.basedir}/src/main/script/release_tweet.groovy</source>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
