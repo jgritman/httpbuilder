@@ -7,6 +7,15 @@
 
 Change Log
 
+* v0.4.0 -   Jan 2009
+
+  * Updated default success handler to buffer and return parsed data outside of 
+    request/response context
+
+* v0.3.1 - 5 Jan 2009
+  
+  * Corrected {{{ContentType.BINARY}}} value
+
 * v0.3.0 - 24 Dec 2008
   
   * Added AsyncHTTPBuilder 
