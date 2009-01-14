@@ -19,8 +19,8 @@
 	<properties>
 		<!-- Needed because this value is used in Site filtering and Velocity doesn't like the dot. -->
 		<project-version>${project.version}</project-version>
-		<twitter.user>httpbuilder</twitter.user>
-		<twitter.passwd>c0deH@us!</twitter.passwd>
+		<twitter_user>httpbuilder</twitter_user>
+		<twitter_passwd>c0deH@us!</twitter_passwd>
 	</properties>
 	
 	<dependencies>

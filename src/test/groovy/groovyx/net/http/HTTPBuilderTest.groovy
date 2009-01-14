@@ -6,6 +6,10 @@ import org.junit.Test
 import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStream
 class HTTPBuilderTest {
 	
+	def pom = new XmlSlurper().parse( "${System.getProperty('basedir')}/pom.xml" )
+	def twitter = [user: pom.properties.twitter_user.toString(),
+	               passwd: pom.properties.twitter_passwd.toString() ]
+	
 	/**
 	 * This method will parse the content based on the response content-type
 	 */
@@ -95,10 +99,11 @@ class HTTPBuilderTest {
 	/* REST testing with Twitter!
 	 * Tests POST with XML response, and DELETE with a JSON response.
 	 */
+
 	@Test public void testPOSTwithXML() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic 'httpbuilder', 'c0deH@us!'
+		http.auth.basic twitter.user, twitter.passwd
 		/* twitter doesn't like the Expect: 100 header because it would have
 		   replied with a 401 error --- but since "Expect: 100" is there, it 
 		   will actually reply with a 417 (Expectation failed) instead!  So
@@ -145,7 +150,7 @@ class HTTPBuilderTest {
 	@Test public void testHeadMethod() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic 'httpbuilder', 'c0deH@us!'
+		http.auth.basic twitter.user, twitter.passwd
 		
 		http.request( HEAD, XML ) {
 			url.path = 'friends_timeline.xml' 

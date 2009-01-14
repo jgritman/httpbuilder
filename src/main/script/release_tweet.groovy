@@ -7,7 +7,7 @@ import static groovyx.net.http.ContentType.*
 
 def http = new HTTPBuilder('http://twitter.com/statuses/')
 
-http.auth.basic 'httpbuilder', 'c0deH@us!'
+http.auth.basic pom.properties.twitter_user, pom.properties.twitter_passwd
 
 def msg = "HTTPBuilder v${pom.version} has been released!"
 
