@@ -7,7 +7,7 @@
 
 Change Log
 
-* v0.4.0 -   Jan 2009
+* v0.4.0 - 14 Jan 2009
 
   * Updated default success handler to buffer and return parsed data outside of 
     request/response context
