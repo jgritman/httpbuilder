@@ -4,6 +4,23 @@
                                     ------
                                     ------
 
+News
+
+  Now you can follow us on {{{http://twitter.com/httpbuilder}Twitter!}}  
+  HTTPBuilder now 'tweets' its releases as an automated part of the build 
+  process.  This is a neat proof-of-concept that could easily be added to any 
+  Maven build thanks to 
+  {{{http://groovy.codehaus.org/GMaven+-+Executing+Groovy+Code#GMaven-ExecutingGroovyCode-ExecuteaLocalGroovyScript}GMaven.}}  
+  See the 
+  {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/pom.xml?r=root:#l122}POM}}
+   and 
+  {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/script/release_tweet.groovy?r=root:}tweet script}}
+   for details.
+
+
+
+
+
 HTTPBuilder Overview
 
   HTTPBuilder is basically a wrapper for Apache's 
@@ -11,13 +28,6 @@ HTTPBuilder Overview
   Groovy syntactical sugar thrown on top.  The request/response model is 
   also inspired partially by Prototype.js' 
   {{{http://prototypejs.org/api/ajax/request}Ajax.Request}}.  
-  
-  Note that at the current point in time, HTTPBuilder should be considered
-  beta quality.  There are significant pieces of code that remain largely 
-  untested, so please use at your own risk.  That being said, please report 
-  any problems or errors to the mailing list (or 
-  {{{http://jira.codehaus.org/browse/GMOD/component/13625}JIRA}}) and it should 
-  be resolved quickly.
   
   In short, HTTPBuilder allows you to make HTTP requests like this:
     
@@ -96,3 +106,13 @@ Requirements
   * JAR dependencies can be found in the packaged distributions linked from the
     {{{download.html}download page}}. 
     
+Support
+    
+  The best place to ask for help would be the 
+  {{{http://xircles.codehaus.org/lists/user@groovy.codehaus.org}Groovy-User mailing list.}}  
+  If you do not want to subscribe to the mailing list, you can also post questions 
+  through {{{http://www.nabble.com/groovy---user-f11867.html}Nabble.}}  
+  
+  Please report any problems or errors to the mailing list (or 
+  {{{http://jira.codehaus.org/browse/GMOD/component/13625}JIRA}}) and it should 
+  be resolved quickly.
