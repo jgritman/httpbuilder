@@ -315,7 +315,7 @@
 		<mailingList>
 			<name>Groovy-User</name>
 			<post>user@groovy.codehaus.org</post>
-			<subscribe>http://xircles.codehaus.org/manage_email</subscribe>
+			<subscribe>http://xircles.codehaus.org/manage_email/user@groovy.codehaus.org</subscribe>
 			<archive>http://www.nabble.com/groovy---user-f11867.html</archive>
 		</mailingList>
 	</mailingLists>
