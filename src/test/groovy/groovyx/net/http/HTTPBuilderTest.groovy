@@ -120,7 +120,7 @@ class HTTPBuilderTest {
 		
 		def postID = http.request( POST, XML ) { req ->
 			url.path = 'update.xml'
-			send URLENC, [status:msg]
+			send URLENC, [status:msg,source:'httpbuilder']
 			
 			//req.params.setBooleanParameter 'http.protocol.expect-continue', false
 			
@@ -130,7 +130,7 @@ class HTTPBuilderTest {
 				assert xml instanceof GPathResult 
 				
 				assert xml.text == msg
-				assert xml.user.name == 'httpbuilder'
+				assert xml.user.screen_name == twitter.user
 				return xml.id
 			}
 		}

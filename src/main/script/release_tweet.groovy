@@ -15,7 +15,7 @@ println "Tweeting release for v${pom.version}..."
 
 http.request( POST, XML ) { req ->
 	url.path = 'update.xml'
-	send URLENC, [status:msg]
+	send URLENC, [status:msg, source:'httpbuilder']
 	
 	// twitter doesn't like the Expect: 100 header...
 	req.params.setBooleanParameter 'http.protocol.expect-continue', false
