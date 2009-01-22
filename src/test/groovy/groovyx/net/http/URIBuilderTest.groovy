@@ -34,7 +34,6 @@ public class URIBuilderTest {
 		assert uri.query.d == '4'
 		
 		uri.query = [z:0,y:9,x:8]
-		println uri
 		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8#frag'
 	}
 
@@ -53,5 +52,18 @@ public class URIBuilderTest {
 
 		uri.fragment = 'asdf2'
 		assert uri.toString() == 'https://localhost:8080/one/two?a=1#asdf2'
+	}
+	
+	@Test public void testParamEncoding(){
+		def builder = new URIBuilder("http://localhost");
+		
+		builder.query = [q:"war & peace"]
+		assert "http://localhost?q=war+%26+peace" == builder.toString()
+		
+		builder.query = [q:"a:b"]		
+		assert "http://localhost?q=a%3Ab" == builder.toString() 
+				
+		builder.query = ['a&b':'c+d=e']
+		assert "http://localhost?a%26b=c%2Bd%3De" == builder.toString() 
 	}
 }

@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -127,16 +128,27 @@ public class URIBuilder {
 	 */
 	public URIBuilder setQuery( Map<String,?> params ) throws URISyntaxException {
 		List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
-		for ( Map.Entry<String, ?> entry : params.entrySet() ) {
-			String val = ( entry.getValue() != null ) ? 
-					entry.getValue().toString() : ""; 
-			pairs.add( new BasicNameValuePair( 
-					entry.getKey(), val ) );
+		
+/*		Iterator<String> iter = params.keySet().iterator();
+		StringBuilder sb = new StringBuilder();
+		while ( iter.hasNext() ) {
+			String key = iter.next();
+			sb.append( key ).append( "=" );
+			Object value = params.get( key );
+			if ( value != null ) sb.append( value );
+			if ( iter.hasNext() ) sb.append( "&" );
 		}
-		String queryString = URLEncodedUtils.format( pairs, ENC );
+*/		for ( String key : params.keySet() ) {
+			Object val = params.get(key);
+			pairs.add( new BasicNameValuePair( key, 
+					( val != null ) ? val.toString() : "" ) );
+		}
+		String queryString = base.getPath() + "?" + URLEncodedUtils.format( pairs, ENC );
+		String frag = base.getFragment();
+		if ( frag != null ) queryString += ("#" + frag);
 		this.base = new URI( base.getScheme(), base.getUserInfo(), 
 				base.getHost(), base.getPort(), base.getPath(),
-				queryString, base.getFragment() );
+				null, null ).resolve( queryString );
 		return this;
 	}
 	
