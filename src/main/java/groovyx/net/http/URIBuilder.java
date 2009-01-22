@@ -127,28 +127,27 @@ public class URIBuilder {
 	 * @throws URISyntaxException
 	 */
 	public URIBuilder setQuery( Map<String,?> params ) throws URISyntaxException {
-		List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
-		
-/*		Iterator<String> iter = params.keySet().iterator();
-		StringBuilder sb = new StringBuilder();
-		while ( iter.hasNext() ) {
-			String key = iter.next();
-			sb.append( key ).append( "=" );
-			Object value = params.get( key );
-			if ( value != null ) sb.append( value );
-			if ( iter.hasNext() ) sb.append( "&" );
-		}
-*/		for ( String key : params.keySet() ) {
-			Object val = params.get(key);
-			pairs.add( new BasicNameValuePair( key, 
-					( val != null ) ? val.toString() : "" ) );
-		}
-		String queryString = base.getPath() + "?" + URLEncodedUtils.format( pairs, ENC );
-		String frag = base.getFragment();
-		if ( frag != null ) queryString += ("#" + frag);
-		this.base = new URI( base.getScheme(), base.getUserInfo(), 
+		if ( params == null || params.size() < 1 ) {
+			this.base = new URI( base.getScheme(), base.getUserInfo(), 
 				base.getHost(), base.getPort(), base.getPath(),
-				null, null ).resolve( queryString );
+				null, base.getFragment() );
+		}
+		else {
+			List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
+			StringBuilder sb = new StringBuilder();
+			String path = base.getPath();
+			if ( path != null ) sb.append( path );
+			sb.append( '?' );
+			for ( String key : params.keySet() ) {
+				Object val = params.get(key);
+				pairs.add( new BasicNameValuePair( key, 
+						( val != null ) ? val.toString() : "" ) );
+			}
+			sb.append( URLEncodedUtils.format( pairs, ENC ) ); 
+			String frag = base.getFragment();
+			if ( frag != null ) sb.append( '#' ).append( frag );
+			this.base = base.resolve( sb.toString() );
+		}
 		return this;
 	}
 	
