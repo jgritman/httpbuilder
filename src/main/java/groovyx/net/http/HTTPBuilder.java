@@ -43,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpResponseException;
@@ -50,6 +51,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -712,6 +714,19 @@ public class HTTPBuilder {
 	 */
 	public void setContentEncodingRegistry( ContentEncodingRegistry cer ) {
 		this.contentEncodingHandler = cer;
+	}
+	
+	/**
+	 * Set the default HTTP proxy to be used for all requests.
+	 * @see HttpHost#HttpHost(String, int, String)
+	 * @param host host name or IP
+	 * @param port port, or -1 for the default port
+	 * @param scheme usually "http" or "https," or <code>null</code> for the default
+	 */
+	public void setProxy( String host, int port, String scheme ) {
+		getClient().getParams().setParameter( 
+				ConnRoutePNames.DEFAULT_PROXY, 
+				new HttpHost(host,port,scheme) );
 	}
 	
 	/**
