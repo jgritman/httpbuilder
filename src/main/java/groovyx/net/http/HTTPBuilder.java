@@ -68,7 +68,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * <h3>Conventions</h3>
  * <p>HTTPBuilder has properties for default headers, URL, contentType, etc.  
  * All of these values are also assignable (and in many cases, in much finer 
- * detail) from the {@link SendDelegate} as well.  In any cases where the value
+ * detail) from the {@link RequestConfigDelegate} as well.  In any cases where the value
  * is not set on the delegate (from within a request closure,) the builder's 
  * default value is used.  </p>
  * 
@@ -222,7 +222,7 @@ public class HTTPBuilder {
 	 * @see #getHandler()
 	 * @see #defaultSuccessHandler(HttpResponse, Object)
 	 * @see #defaultFailureHandler(HttpResponse)
-	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
+	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return whatever was returned from the response closure.  
 	 * @throws URISyntaxException 
 	 * @throws IOException 
@@ -242,7 +242,7 @@ public class HTTPBuilder {
 	 * {@link #defaultFailureHandler(HttpResponse) default failure handler} 
 	 * throws an {@link HttpResponseException}.</p>
 	 * 
-	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
+	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @param responseClosure code to handle a successful HTTP response
 	 * @return any value returned by the response closure.
 	 * @throws ClientProtocolException
@@ -251,7 +251,7 @@ public class HTTPBuilder {
 	 */
 	public Object get( Map<String,?> args, Closure responseClosure ) 
 			throws ClientProtocolException, IOException, URISyntaxException {
-		SendDelegate delegate = new SendDelegate( new HttpGet(),
+		RequestConfigDelegate delegate = new RequestConfigDelegate( new HttpGet(),
 				this.defaultContentType,
 				this.defaultRequestHeaders,
 				this.defaultResponseHandlers );
@@ -276,7 +276,7 @@ public class HTTPBuilder {
 	 * @see #getHandler()
 	 * @see #defaultSuccessHandler(HttpResponse, Object)
 	 * @see #defaultFailureHandler(HttpResponse)
-	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
+	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return whatever was returned from the response closure.  
 	 * @throws IOException 
 	 * @throws URISyntaxException 
@@ -304,7 +304,7 @@ public class HTTPBuilder {
 	 * <code>requestContentType</code> named parameter is passed to this method.
 	 *  (See {@link EncoderRegistry#encodeForm(Map)}.) </p>
 	 * 
-	 * @param args see {@link SendDelegate#setPropertiesFromMap(Map)}
+	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @param responseClosure code to handle a successful HTTP response
 	 * @return any value returned by the response closure.
 	 * @throws ClientProtocolException
@@ -313,7 +313,7 @@ public class HTTPBuilder {
 	 */
 	public Object post( Map<String,?> args, Closure responseClosure ) 
 			throws URISyntaxException, ClientProtocolException, IOException {
-		SendDelegate delegate = new SendDelegate( new HttpPost(),
+		RequestConfigDelegate delegate = new RequestConfigDelegate( new HttpPost(),
 				this.defaultContentType, 
 				this.defaultRequestHeaders,
 				this.defaultResponseHandlers );
@@ -363,16 +363,16 @@ public class HTTPBuilder {
 	/**
 	 * Make a request for the given HTTP method and content-type, with 
 	 * additional options configured in the <code>configClosure</code>.  See
-	 * {@link SendDelegate} for options.
+	 * {@link RequestConfigDelegate} for options.
 	 * @param uri either a URI, URL, or String
 	 * @param method {@link Method HTTP method}
 	 * @param contentType either a {@link ContentType} or valid content-type string.
 	 * @param configClosure closure from which to configure options like 
-	 *   {@link SendDelegate#getURL() url.path}, 
+	 *   {@link RequestConfigDelegate#getURL() url.path}, 
 	 *   {@link URIBuilder#setQuery(Map) request parameters}, 
-	 *   {@link SendDelegate#setHeaders(Map) headers},
-	 *   {@link SendDelegate#setBody(Object) request body} and
-	 *   {@link SendDelegate#getResponse() response handlers}. 
+	 *   {@link RequestConfigDelegate#setHeaders(Map) headers},
+	 *   {@link RequestConfigDelegate#setBody(Object) request body} and
+	 *   {@link RequestConfigDelegate#getResponse() response handlers}. 
 	 *   
 	 * @return whatever value was returned by the executed response handler.
 	 * @throws ClientProtocolException
@@ -385,8 +385,8 @@ public class HTTPBuilder {
 	}
 
 	/**
-	 * Create a {@link SendDelegate} from the given arguments, execute the 
-	 * config closure, then pass the delegate to {@link #doRequest(SendDelegate)},
+	 * Create a {@link RequestConfigDelegate} from the given arguments, execute the 
+	 * config closure, then pass the delegate to {@link #doRequest(RequestConfigDelegate)},
 	 * which actually executes the request.
 	 */
 	protected Object doRequest( URI uri, Method method, Object contentType, Closure configClosure ) 
@@ -398,7 +398,7 @@ public class HTTPBuilder {
 		} catch ( Exception e ) { throw new RuntimeException( e ); }
 
 		reqMethod.setURI( uri );
-		SendDelegate delegate = new SendDelegate( reqMethod, contentType, 
+		RequestConfigDelegate delegate = new RequestConfigDelegate( reqMethod, contentType, 
 				this.defaultRequestHeaders,
 				this.defaultResponseHandlers );		
 		configClosure.setDelegate( delegate );
@@ -410,7 +410,7 @@ public class HTTPBuilder {
 	/**
 	 * All <code>request</code> methods delegate to this method.
 	 */
-	protected Object doRequest( final SendDelegate delegate ) 
+	protected Object doRequest( final RequestConfigDelegate delegate ) 
 			throws ClientProtocolException, IOException {
 		
 		final HttpRequestBase reqMethod = delegate.getRequest();
@@ -740,11 +740,22 @@ public class HTTPBuilder {
 	
 	
 	/**
-	 * Encloses all properties and method calls used within the 
+	 * <p>Encloses all properties and method calls used within the 
 	 * {@link HTTPBuilder#request(Object, Method, Object, Closure)} 'config' 
-	 * closure argument. 
+	 * closure argument.  That is, an instance of this class is set as the 
+	 * closure's delegate.  This allows the user to configure various parameters 
+	 * within the scope of a single request.  </p>
+	 * 
+	 * <p>All properties of this class are available from within the closure.  
+	 * For example, you can manipulate various aspects of the  
+	 * {@link HTTPBuilder#setUri(Object) default request URI} for this request 
+	 * by calling <code>uri.path = '/api/location'</code>.  This allows for the 
+	 * ability to modify parameters per-request while leaving any values set 
+	 * directly on the HTTPBuilder instance unchanged for subsequent requests.
+	 * </p>
+	 * 
 	 */
-	protected class SendDelegate {
+	protected class RequestConfigDelegate {
 		protected HttpRequestBase request;
 		protected Object contentType;
 		protected String requestContentType;
@@ -752,7 +763,7 @@ public class HTTPBuilder {
 		protected URIBuilder url;
 		protected Map<String,String> headers = new HashMap<String,String>();
 		
-		public SendDelegate( HttpRequestBase request, Object contentType, 
+		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
 				Map<String,String> defaultRequestHeaders,
 				Map<String,Closure> defaultResponseHandlers ) {
 			this.request = request;

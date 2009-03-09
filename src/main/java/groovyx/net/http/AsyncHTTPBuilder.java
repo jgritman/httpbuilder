@@ -87,7 +87,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	
 	/**
 	 * Submits a {@link Callable} instance to the job pool, which in turn will 
-	 * call {@link HTTPBuilder#doRequest(SendDelegate)} in an asynchronous 
+	 * call {@link HTTPBuilder#doRequest(RequestConfigDelegate)} in an asynchronous 
 	 * thread.  The {@link Future} instance returned by this value (which in 
 	 * turn should be returned by any of the public <code>request</code> methods
 	 * (including <code>get</code> and <code>post</code>) may be used to 
@@ -95,7 +95,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 * handler closure. 
 	 */
 	@Override
-	protected Future<?> doRequest( final SendDelegate delegate ) {
+	protected Future<?> doRequest( final RequestConfigDelegate delegate ) {
 		return threadPool.submit( new Callable<Object>() {
 			/*@Override*/ public Object call() throws Exception {
 				try {
@@ -114,7 +114,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 * Because we can't call "super.doRequest" from within the anonymous 
 	 * Callable subclass.
 	 */
-	private Object doRequestSuper( SendDelegate delegate ) throws IOException {
+	private Object doRequestSuper( RequestConfigDelegate delegate ) throws IOException {
 		return super.doRequest(delegate);
 	}
 	

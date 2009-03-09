@@ -24,7 +24,7 @@ package groovyx.net.http;
 import groovy.lang.Closure;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import groovyx.net.http.HTTPBuilder.SendDelegate;
+import groovyx.net.http.HTTPBuilder.RequestConfigDelegate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -190,7 +190,7 @@ public class ParserRegistry {
 	/**
 	 * Register a new parser for the given content-type.  The parser closure
 	 * should accept an {@link HttpResponse} argument and return a type suitable
-	 * to be passed to a {@link SendDelegate#getResponse() response handler}.
+	 * to be passed to a {@link RequestConfigDelegate#getResponse() response handler}.
 	 * The value returned from the parser closure is always the second parameter 
 	 * of the response handler closure.  
 	 * @param contentType  <code>content-type</code> string

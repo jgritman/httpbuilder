@@ -24,7 +24,7 @@ package groovyx.net.http;
 import groovy.lang.Closure;
 import groovy.lang.Writable;
 import groovy.xml.StreamingMarkupBuilder;
-import groovyx.net.http.HTTPBuilder.SendDelegate;
+import groovyx.net.http.HTTPBuilder.RequestConfigDelegate;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -58,7 +58,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
 /**
  * <p>This factory (or registry) handles request body "encoding." This is not
  * to be confused with HTTP content-encoding header.  When a 
- * {@link SendDelegate#setBody(Object) body} is set from the builder, it is 
+ * {@link RequestConfigDelegate#setBody(Object) body} is set from the builder, it is 
  * processed based on the request content-type.  For instance, if the body
  * is set to a map and the request content-type is JSON, the map will be 
  * transformed to a JSON Object.  </p>
@@ -247,7 +247,7 @@ public class EncoderRegistry {
 	 * Used to set an additional encoder for the given content type.  The 
 	 * Closure must return an {@link HttpEntity}.  It will also usually 
 	 * accept a single argument, which will be the value given in  
-	 * {@link SendDelegate#setBody(Object)}.
+	 * {@link RequestConfigDelegate#setBody(Object)}.
 	 * @param contentType
 	 * @param closure
 	 */
