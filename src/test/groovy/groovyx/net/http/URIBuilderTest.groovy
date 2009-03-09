@@ -7,6 +7,50 @@ import org.junit.Test
  */
 public class URIBuilderTest {
 	
+	@Test public void testConstructors() {
+		def uri 
+		try { uri = new URIBuilder( null ) }
+		catch( ex ) { /* Expected exception */ }
+
+		def string = 'http://google.com/search/q?one=1'
+		uri = new URIBuilder( new URI( string ) )
+		assert uri.toString() == string
+		
+		uri = new URIBuilder( new URL( string ) )
+		assert uri.toString() == string
+		
+		uri = new URIBuilder( string )
+		assert uri.toString() == string
+		
+		def uri2 = URIBuilder.convertToURI( uri )
+		assert uri2 == uri.toURI()
+	}
+	
+	@Test public void testCloneAndEquals() {
+		def string = 'http://google.com/search/q?one=1'
+		def uri = new URIBuilder( string )
+		def u2 = uri.clone()
+		assert u2 == uri
+		assert u2.toString() == uri.toString()
+	}
+	
+	@Test public void testTypecast() {
+		def string = 'http://google.com/search/q?one=1'
+		def uri = new URIBuilder( string )
+		
+		def u2 = uri as URI
+		assert ( u2 instanceof URI )
+		assert u2.toString() == uri.toString()
+
+		u2 = uri as URL
+		assert ( u2 instanceof URL )
+		assert u2.toString() == uri.toString()
+
+		u2 = uri as String
+		assert ( u2 instanceof String )
+		assert u2 == uri.toString()
+	}
+	
 	@Test public void testPath() {
 		def uri = new URIBuilder( 'http://localhost/p1/p2?a=1&b=2&c=3#frag' )
 	
@@ -21,6 +65,9 @@ public class URIBuilderTest {
 
 		uri.path = '../../p2b'
 		assert uri.toString() == 'http://localhost/p1/p2b?a=1&b=2&c=3#frag'
+				
+		uri.path = '/p4/p5'
+		assert uri.toString() == 'http://localhost/p4/p5?a=1&b=2&c=3#frag'
 	}
 	
 	@Test public void testParams() {
