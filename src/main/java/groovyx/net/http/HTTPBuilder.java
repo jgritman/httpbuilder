@@ -407,6 +407,7 @@ public class HTTPBuilder {
 				this.defaultRequestHeaders,
 				this.defaultResponseHandlers );		
 		configClosure.setDelegate( delegate );
+		configClosure.setResolveStrategy( Closure.DELEGATE_FIRST );
 		configClosure.call( client );		
 
 		return this.doRequest( delegate );
