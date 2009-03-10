@@ -47,7 +47,7 @@ public class AuthConfig {
 	
 	/**
 	 * Set authentication credentials to be used for the current 
-	 * {@link HTTPBuilder#getURL() default host}.  This method name is a bit of 
+	 * {@link HTTPBuilder#getUri() default host}.  This method name is a bit of 
 	 * a misnomer, since these credentials will actually work for "digest" 
 	 * authentication as well.
 	 * @param user
@@ -74,12 +74,11 @@ public class AuthConfig {
 	}
 
 	/**
-	 * Sets a certificate to be used for SSL authentication.
-	 * 
-	 * @param certURL
-	 *            URL to a JKS keystore where the certificate is stored
-	 * @param password
-	 *            password to decrypt the keystore
+	 * Sets a certificate to be used for SSL authentication.  See 
+	 * {@link Class#getResource(String)} for how to get a URL from a resource 
+	 * on the classpath.
+	 * @param certURL URL to a JKS keystore where the certificate is stored.  
+	 * @param password password to decrypt the keystore
 	 */
 	public void certificate( String certURL, String password ) 
 			throws GeneralSecurityException, IOException {

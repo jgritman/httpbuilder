@@ -64,15 +64,15 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * 
  * 
  * <h3>Conventions</h3>
- * <p>HTTPBuilder has properties for default headers, URL, contentType, etc.  
+ * <p>HTTPBuilder has properties for default headers, URI, contentType, etc.  
  * All of these values are also assignable (and in many cases, in much finer 
  * detail) from the {@link RequestConfigDelegate} as well.  In any cases where the value
  * is not set on the delegate (from within a request closure,) the builder's 
  * default value is used.  </p>
  * 
- * <p>For instance, any methods that do not take a URL parameter assume you will
- * set a URL value in the request closure or use the builder's assigned 
- * {@link #getURL() default URL}.</p>
+ * <p>For instance, any methods that do not take a <code>uri</code> parameter 
+ * assume you will set the <code>uri</code> property in the request closure or 
+ * use HTTPBuilder's assigned {@link #getUri() default URI}.</p>
  * 
  * 
  * <h3>Response Parsing</h3>
@@ -302,7 +302,7 @@ public class HTTPBuilder {
 	 * failure handler} throws an {@link HttpResponseException}.</p>  
 	 * 
 	 * <p>The request body (specified by a <code>body</code> named parameter) 
-	 * will be converted to a uri-encoded form string unless a different 
+	 * will be converted to a url-encoded form string unless a different 
 	 * <code>requestContentType</code> named parameter is passed to this method.
 	 *  (See {@link EncoderRegistry#encodeForm(Map)}.) </p>
 	 * 
@@ -334,7 +334,8 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Make an HTTP request to the default URI and content-type.
+	 * Make an HTTP request to the default URI, and parse using the default 
+	 * content-type.
 	 * @see #request(Object, Method, Object, Closure)
 	 * @param method {@link Method HTTP method}
 	 * @param contentType either a {@link ContentType} or valid content-type string.
@@ -373,7 +374,7 @@ public class HTTPBuilder {
 	 * @param method {@link Method HTTP method}
 	 * @param contentType either a {@link ContentType} or valid content-type string.
 	 * @param configClosure closure from which to configure options like 
-	 *   {@link RequestConfigDelegate#getURI() uri.path}, 
+	 *   {@link RequestConfigDelegate#getUri() uri.path}, 
 	 *   {@link URIBuilder#setQuery(Map) request parameters}, 
 	 *   {@link RequestConfigDelegate#setHeaders(Map) headers},
 	 *   {@link RequestConfigDelegate#setBody(Object) request body} and
@@ -456,7 +457,7 @@ public class HTTPBuilder {
 		}
 		
 		Object returnVal = responseClosure.call( closureArgs );
-		log.debug( "response handler result: " + returnVal );
+		log.trace( "response handler result: " + returnVal );
 		
 		HttpEntity responseContent = resp.getEntity(); 
 		if ( responseContent != null && responseContent.isStreaming() ) 
@@ -501,6 +502,14 @@ public class HTTPBuilder {
 		return parsedData;
 	}
 
+	/**
+	 * Creates default response handlers for {@link Status#SUCCESS success} and
+	 * {@link Status#FAILURE failure} status codes.  This is used to populate 
+	 * the handler map when a new HTTPBuilder instance is created. 
+	 * @see #defaultSuccessHandler(HttpResponse, Object)
+	 * @see #defaultFailureHandler(HttpResponse)
+	 * @return the default response handler map.
+	 */
 	protected Map<String,Closure> buildDefaultResponseHandlers() {
 		Map<String,Closure> map = new HashMap<String, Closure>();
 		map.put( Status.SUCCESS.toString(), 
@@ -600,13 +609,18 @@ public class HTTPBuilder {
 	
 	/**
 	 * Retrieve the map of registered request content-type encoders.  Use this
-	 * to set a default request encoder, e.g.
+	 * to customize a request encoder for specific content-types, e.g.
 	 * <pre>
 	 * builder.encoder.'text/javascript' = { body ->
 	 *   def json = body.call( new JsonGroovyBuilder() )
 	 *   return new StringEntity( json.toString() )
-	 * } 
-	 * @return
+	 * }</pre>
+	 * By default this map is populated by calling 
+	 * {@link EncoderRegistry#buildDefaultEncoderMap()}.  This method is also 
+	 * used by {@link RequestConfigDelegate} to retrieve the proper encoder for building 
+	 * the request content body.
+	 *   
+	 * @return a map of 'encoder' closures, keyed by content-type string.
 	 */
 	public Map<String,Closure> getEncoder() {
 		return this.encoders.registeredEncoders;
@@ -626,7 +640,6 @@ public class HTTPBuilder {
 	public void setContentType( Object ct ) {
 		this.defaultContentType = ct;
 	}
-	
 	
 	/**
 	 * Set acceptable request and response content-encodings. 
@@ -653,7 +666,7 @@ public class HTTPBuilder {
 	
 	/**
 	 * Get the default URI used for requests that do not explicitly take a 
-	 * <code>URI</code> param.
+	 * <code>uri</code> param.
 	 * @return URI a {@link URI} instance.  Note that the return type is Object
 	 * simply so that it matches with its JavaBean {@link #setUri(Object)} 
 	 * counterpart.
@@ -813,18 +826,32 @@ public class HTTPBuilder {
 		 *   uri.params = [p1:1, p2:2]
 		 *   ...
 		 * }</pre>
+		 * 
+		 * <p>This method signature returns <code>Object</code> so that the 
+		 * complementary {@link #setURI(Object)} method can accept various 
+		 * types. </p>
 		 * @return {@link URIBuilder} to manipulate the request URI
 		 */
 		public URIBuilder getUri() { return this.uri; }
 
+		/**
+		 * Directly access the Apache Http-Client instance that will 
+		 * be used to execute this request.
+		 * @see HttpRequestBase
+		 */
 		protected HttpRequestBase getRequest() { return this.request; }
 		
 		/**
 		 * Get the content-type of any data sent in the request body and the 
-		 * expected response content-type.
+		 * expected response content-type.  If the request content-type is 
+		 * expected to differ from the response content-type (i.e. a URL-encoded
+		 * POST that should return an HTML page) then this value will be used 
+		 * for the <i>response</i> content-type, while 
+		 * {@link #setRequestContentType(String)} should be used for the request.
+		 *  
 		 * @return whatever value was assigned via {@link #setContentType(Object)}
 		 * or passed from the {@link HTTPBuilder#defaultContentType} when this
-		 * SendDelegateinstance was constructed.
+		 * RequestConfigDelegate instance was constructed.
 		 */
 		protected Object getContentType() { return this.contentType; }
 		
@@ -833,7 +860,8 @@ public class HTTPBuilder {
 		 * as the <code>Accept</code> content-type that will be used for parsing
 		 * the response. The value should be either a {@link ContentType} value 
 		 * or a String, i.e. <code>"text/plain"</code>
-		 * @param ct content-type to send and recieve content
+		 * @param ct the value that will be used for the <code>Content-Type</code>
+		 * and <code>Accept</code> request headers.
 		 */
 		protected void setContentType( Object ct ) {
 			if ( ct == null ) this.contentType = defaultContentType;
@@ -884,6 +912,9 @@ public class HTTPBuilder {
 		 */
 		@SuppressWarnings("unchecked")
 		protected void setPropertiesFromMap( Map<String,?> args ) throws URISyntaxException {
+			if ( args == null ) return;
+			if ( args.get( "url" ) != null ) throw new IllegalArgumentException(
+					"The 'url' parameter is deprecated; use 'uri' instead" );
 			Object uri = args.get( "uri" );
 			if ( uri == null ) uri = defaultURI;
 			this.uri = new URIBuilder( convertToURI( uri ) );
@@ -923,14 +954,16 @@ public class HTTPBuilder {
 		}
 		
 		/**
-		 * Get request headers (including any default headers).  Note that this
-		 * will not include any <code>Accept</code>, <code>Content-Type</code>,
+		 * <p>Get request headers (including any default headers set on this 
+		 * {@link HTTPBuilder#setHeaders(Map) HTTPBuilder instance}).  Note that 
+		 * this will not include any <code>Accept</code>, <code>Content-Type</code>,
 		 * or <code>Content-Encoding</code> headers that are automatically
 		 * handled by any encoder or parsers in effect.  Note that any values 
 		 * set here <i>will</i> override any of those automatically assigned 
-		 * values.
-		 * header that is a
-		 * @return
+		 * values.</p>
+		 * 
+		 * <p>Example: <code>headers.'Accept-Language' = 'en, en-gb;q=0.8'</code></p>
+		 * @return a map of HTTP headers that will be sent in the request.
 		 */
 		public Map<String,String> getHeaders() {
 			return this.headers;
@@ -946,8 +979,8 @@ public class HTTPBuilder {
 		 * <pre>
 		 * http.request(POST,HTML) {
 		 *   
-		 *   /* request data is interpreted as a JsonBuilder closure in the 
-		 *      default EncoderRegistry implementation * /
+		 *   /* request data is interpreted as a JsonBuilder closure by 
+		 *      HTTPBuilder's default EncoderRegistry implementation * /
 		 *   send( 'text/javascript' ) {  
 		 *     a : ['one','two','three']
 		 *   }
@@ -958,6 +991,7 @@ public class HTTPBuilder {
 		 *   }
 		 * }
 		 * </pre>
+		 * 
 		 * @param contentType either a {@link ContentType} or content-type 
 		 * 	string like <code>"text/xml"</code>
 		 * @param requestBody
@@ -969,9 +1003,12 @@ public class HTTPBuilder {
 
 		/**
 		 * Set the request body.  This value may be of any type supported by 
-		 * the associated {@link EncoderRegistry request encoder}.  
+		 * the associated {@link EncoderRegistry request encoder}.  That is, 
+		 * the value of <code>body</code> will be interpreted by the encoder
+		 * associated with the current {@link #getRequestContentType() request 
+		 * content-type}.  See {@link HTTPBuilder#getEncoder()}.
 		 * @see #send(Object, Object)
-		 * @param body data or closure interpretes as the request body
+		 * @param body data or closure interpreted as the request body
 		 */
 		public void setBody( Object body ) {
 			if ( ! (request instanceof HttpEntityEnclosingRequest ) )
