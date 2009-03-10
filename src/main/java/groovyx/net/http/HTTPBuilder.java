@@ -447,28 +447,8 @@ public class HTTPBuilder {
 		case 1 :
 			closureArgs = new Object[] { resp };
 			break;
-		case 2 :
-			// For HEAD or DELETE requests, there should be no response entity.
-			if ( resp.getEntity() == null ) {
-				log.warn( "Response contains no entity, but response closure " +
-						"expects parsed data.  Passing null as second closure arg." );
-				closureArgs = new Object[] { resp, null };
-				break;
-			}
-			
-			// Otherwise, parse the response entity:
-			
-			// first, start with the _given_ content-type
-			String responseContentType = contentType.toString();
-			// if the given content-type is ANY ("*/*") then use the response content-type
-			if ( ContentType.ANY.toString().equals( responseContentType ) )
-				responseContentType = ParserRegistry.getContentType( resp );
-			
-			Object parsedData = parsers.get( responseContentType ).call( resp );
-			if ( parsedData == null ) log.warn( "Parsed data is null!!!" );
-			else log.debug( "Parsed data from content-type '" + responseContentType 
-					+ "' to object: " + parsedData.getClass() );
-			closureArgs = new Object[] { resp, parsedData };
+		case 2 : // parse the response entity if the response handler expects it:
+			closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
 			break;
 		default:
 			throw new IllegalArgumentException( 
@@ -484,6 +464,43 @@ public class HTTPBuilder {
 		return returnVal;
 	}
 	
+	/**
+	 * Parse the response data based on the given content-type.  
+	 * If the given content-type is {@link ContentType#ANY}, the 
+	 * <code>content-type</code> header from the response will be used to 
+	 * determine how to parse the response. 
+	 * @param resp
+	 * @param contentType
+	 * @return whatever was returned from the parser retrieved for the given 
+	 *  content-type, or <code>null</code> if no parser could be found for this 
+	 *  content-type.  The parser will also return <code>null</code> if the 
+	 *  response does not contain any content (e.g. in response to a HEAD request).
+	 */
+	protected Object parseResponse( HttpResponse resp, Object contentType ) {
+		// For HEAD or DELETE requests, there should be no response entity.
+		if ( resp.getEntity() == null ) {
+			log.debug( "Response contains no entity.  Parsed data is null." );
+			return null;
+		}
+		// first, start with the _given_ content-type
+		String responseContentType = contentType.toString();
+		// if the given content-type is ANY ("*/*") then use the response content-type
+		if ( ContentType.ANY.toString().equals( responseContentType ) )
+			responseContentType = ParserRegistry.getContentType( resp );
+		
+		Object parsedData = null;
+		Closure parser = parsers.get( responseContentType );
+		if ( parser == null ) log.warn( "No parser found for content-type: "
+				+ responseContentType );
+		else {
+			log.debug( "Parsing response as content-type: " + responseContentType );
+			parsedData = parser.call( resp );
+			if ( parsedData == null ) log.warn( "Parser returned null!" );
+			else log.debug( "Parsed data to instance of: " + parsedData.getClass() );
+		}
+		return parsedData;
+	}
+
 	protected Map<String,Closure> buildDefaultResponseHandlers() {
 		Map<String,Closure> map = new HashMap<String, Closure>();
 		map.put( Status.SUCCESS.toString(), 
@@ -779,6 +796,14 @@ public class HTTPBuilder {
 			this.uri = new URIBuilder(uri);
 		}
 		
+		public RequestConfigDelegate( Map<String,?> args, HttpRequestBase request, Closure successHandler ) 
+				throws URISyntaxException {
+			this( request, defaultContentType, defaultRequestHeaders, defaultResponseHandlers );
+			if ( successHandler != null ) 
+				this.responseHandlers.put( Status.SUCCESS.toString(), successHandler );
+			setPropertiesFromMap( args );
+		}
+		
 		/** 
 		 * Use this object to manipulate parts of the request URI, like 
 		 * query params and request path.  Example:
@@ -812,7 +837,7 @@ public class HTTPBuilder {
 		 */
 		protected void setContentType( Object ct ) {
 			if ( ct == null ) this.contentType = defaultContentType;
-			this.contentType = ct; 
+			else this.contentType = ct; 
 		}
 		
 		/**
@@ -861,7 +886,7 @@ public class HTTPBuilder {
 		protected void setPropertiesFromMap( Map<String,?> args ) throws URISyntaxException {
 			Object uri = args.get( "uri" );
 			if ( uri == null ) uri = defaultURI;
-			uri = new URIBuilder( convertToURI( uri ) );
+			this.uri = new URIBuilder( convertToURI( uri ) );
 			
 			Map params = (Map)args.get( "params" );
 			if ( params != null ) this.uri.setQuery( params );
