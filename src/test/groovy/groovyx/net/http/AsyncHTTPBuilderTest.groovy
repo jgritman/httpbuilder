@@ -29,9 +29,9 @@ import org.junit.Test
 public class AsyncHTTPBuilderTest {
 
 	@Test public void testAsyncRequests() {
-		def http = new AsyncHTTPBuilder(poolSize:4,
-						url:'http://hc.apache.org',
-						contentType:ContentType.HTML )
+		def http = new AsyncHTTPBuilder( poolSize : 4,
+						uri : 'http://hc.apache.org',
+						contentType : ContentType.HTML )
 		
 		def done = []
 		
@@ -50,7 +50,7 @@ public class AsyncHTTPBuilderTest {
 			true
 		}
 
-		done << http.get(url:'http://svn.apache.org/') { resp, html ->
+		done << http.get(uri:'http://svn.apache.org/') { resp, html ->
 			println ' response 4'
 			true
 		}

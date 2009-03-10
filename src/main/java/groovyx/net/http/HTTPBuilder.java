@@ -32,10 +32,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -142,8 +140,8 @@ import org.codehaus.groovy.runtime.MethodClosure;
  *   
  * <pre>
  *   http.request( 'http://ajax.googleapis.com', GET, JSON ) {
- *     url.path = '/ajax/services/search/web'
- *     url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+ *     uri.path = '/ajax/services/search/web'
+ *     uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
  *     
  *     response.success = { resp, json ->
  *       assert json.size() == 3
@@ -161,7 +159,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
 public class HTTPBuilder {
 	
 	protected AbstractHttpClient client;
-	protected URI defaultURI = null; // TODO make this a URIBuilder?
+	protected URI defaultURI = null;
 	protected AuthConfig auth = new AuthConfig( this );
 	
 	protected final Log log = LogFactory.getLog( getClass() );
@@ -183,28 +181,32 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Give a default URL to be used for all request methods that don't 
-	 * explicitly take a URL parameter.
-	 * @param defaultURL either a {@link URL}, {@link URI} or String
-	 * @throws URISyntaxException if the URL was not parse-able
+	 * Give a default URI to be used for all request methods that don't 
+	 * explicitly take a URI parameter.
+	 * @param defaultURI either a {@link URL}, {@link URI} or object whose
+	 * 	<code>toString()</code> produces a valid URI string.  See 
+	 * 	{@link URIBuilder#convertToURI(Object)}.
+	 * @throws URISyntaxException if the given argument does not represent a valid URI
 	 */
-	public HTTPBuilder( Object defaultURL ) throws URISyntaxException {
+	public HTTPBuilder( Object defaultURI ) throws URISyntaxException {
 		this();
-		this.defaultURI = convertToURI( defaultURL );
+		this.defaultURI = convertToURI( defaultURI );
 	}
 	
 	/**
-	 * Give a default URL to be used for all request methods that don't 
-	 * explicitly take a URL parameter, and a default content-type to be used
+	 * Give a default URI to be used for all request methods that don't 
+	 * explicitly take a URI parameter, and a default content-type to be used
 	 * for request encoding and response parsing.
-	 * @param defaultURL either a {@link URL}, {@link URI} or String
+	 * @param defaultURI either a {@link URL}, {@link URI} or object whose
+	 * 	<code>toString()</code> produces a valid URI string.  See 
+	 * 	{@link URIBuilder#convertToURI(Object)}.
 	 * @param defaultContentType content-type string.  See {@link ContentType}
 	 *   for common types.
-	 * @throws URISyntaxException if the URL was not parse-able
+	 * @throws URISyntaxException if the uri argument does not represent a valid URI
 	 */
-	public HTTPBuilder( Object defaultURL, Object defaultContentType ) throws URISyntaxException {
+	public HTTPBuilder( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
 		this();
-		this.defaultURI = convertToURI( defaultURL );
+		this.defaultURI = convertToURI( defaultURI );
 		this.defaultContentType = defaultContentType; 
 	}
 	
@@ -224,7 +226,8 @@ public class HTTPBuilder {
 	 * @see #defaultFailureHandler(HttpResponse)
 	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return whatever was returned from the response closure.  
-	 * @throws URISyntaxException 
+	 * @throws URISyntaxException if a uri argument is given which does not 
+	 * 		represent a valid URI
 	 * @throws IOException 
 	 * @throws ClientProtocolException 
 	 */
@@ -247,7 +250,8 @@ public class HTTPBuilder {
 	 * @return any value returned by the response closure.
 	 * @throws ClientProtocolException
 	 * @throws IOException
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException if a uri argument is given which does not 
+	 * 		represent a valid URI
 	 */
 	public Object get( Map<String,?> args, Closure responseClosure ) 
 			throws ClientProtocolException, IOException, URISyntaxException {
@@ -279,10 +283,8 @@ public class HTTPBuilder {
 	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return whatever was returned from the response closure.  
 	 * @throws IOException 
-	 * @throws URISyntaxException 
-	 * @throws ClientProtocolException 
-	 * @throws URISyntaxException 
-	 * @throws IOException 
+	 * @throws URISyntaxException if a uri argument is given which does not 
+	 * 		represent a valid URI
 	 * @throws ClientProtocolException 
 	 */
 	public Object post( Map<String,?> args ) 
@@ -300,7 +302,7 @@ public class HTTPBuilder {
 	 * failure handler} throws an {@link HttpResponseException}.</p>  
 	 * 
 	 * <p>The request body (specified by a <code>body</code> named parameter) 
-	 * will be converted to a url-encoded form string unless a different 
+	 * will be converted to a uri-encoded form string unless a different 
 	 * <code>requestContentType</code> named parameter is passed to this method.
 	 *  (See {@link EncoderRegistry#encodeForm(Map)}.) </p>
 	 * 
@@ -309,7 +311,8 @@ public class HTTPBuilder {
 	 * @return any value returned by the response closure.
 	 * @throws ClientProtocolException
 	 * @throws IOException
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException if a uri argument is given which does not 
+	 * 		represent a valid URI
 	 */
 	public Object post( Map<String,?> args, Closure responseClosure ) 
 			throws URISyntaxException, ClientProtocolException, IOException {
@@ -331,7 +334,7 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Make an HTTP request to the default URL and content-type.
+	 * Make an HTTP request to the default URI and content-type.
 	 * @see #request(Object, Method, Object, Closure)
 	 * @param method {@link Method HTTP method}
 	 * @param contentType either a {@link ContentType} or valid content-type string.
@@ -345,7 +348,7 @@ public class HTTPBuilder {
 	}
 
 	/**
-	 * Make an HTTP request using the default URL, with the given method, 
+	 * Make an HTTP request using the default URI, with the given method, 
 	 * content-type, and configuration.
 	 * @see #request(Object, Method, Object, Closure)
 	 * @param method {@link Method HTTP method}
@@ -364,11 +367,13 @@ public class HTTPBuilder {
 	 * Make a request for the given HTTP method and content-type, with 
 	 * additional options configured in the <code>configClosure</code>.  See
 	 * {@link RequestConfigDelegate} for options.
-	 * @param uri either a URI, URL, or String
+	 * @param uri either a {@link URL}, {@link URI} or object whose
+	 * 	<code>toString()</code> produces a valid URI string.  See 
+	 * 	{@link URIBuilder#convertToURI(Object)}.
 	 * @param method {@link Method HTTP method}
 	 * @param contentType either a {@link ContentType} or valid content-type string.
 	 * @param configClosure closure from which to configure options like 
-	 *   {@link RequestConfigDelegate#getURL() url.path}, 
+	 *   {@link RequestConfigDelegate#getURI() uri.path}, 
 	 *   {@link URIBuilder#setQuery(Map) request parameters}, 
 	 *   {@link RequestConfigDelegate#setHeaders(Map) headers},
 	 *   {@link RequestConfigDelegate#setBody(Object) request body} and
@@ -377,7 +382,7 @@ public class HTTPBuilder {
 	 * @return whatever value was returned by the executed response handler.
 	 * @throws ClientProtocolException
 	 * @throws IOException
-	 * @throws URISyntaxException if a URI string or URL was invalid.
+	 * @throws URISyntaxException if the uri argument does not represent a valid URI
 	 */
 	public Object request( Object uri, Method method, Object contentType, Closure configClosure ) 
 			throws ClientProtocolException, IOException, URISyntaxException {
@@ -421,7 +426,7 @@ public class HTTPBuilder {
 			acceptContentTypes = ((ContentType)contentType).getAcceptHeader();
 		
 		reqMethod.setHeader( "Accept", acceptContentTypes );
-		reqMethod.setURI( delegate.getURL().toURI() );
+		reqMethod.setURI( delegate.getUri().toURI() );
 
 		// set any request headers from the delegate
 		Map<String,String> headers = delegate.getHeaders(); 
@@ -617,28 +622,26 @@ public class HTTPBuilder {
 	}
 	
 	/**
-	 * Set the default URL used for requests that do not explicitly take a 
-	 * <code>url</code> param.  
-	 * @param url a URL, URI, or String
-	 * @throws URISyntaxException
+	 * Set the default URI used for requests that do not explicitly take a 
+	 * <code>uri</code> param.  
+	 * @param uri either a {@link URL}, {@link URI} or object whose
+	 * 	<code>toString()</code> produces a valid URI string.  See 
+	 * 	{@link URIBuilder#convertToURI(Object)}.
+	 * @throws URISyntaxException if the uri argument does not represent a valid URI
 	 */
-	public void setURL( Object url ) throws URISyntaxException {
-		this.defaultURI = convertToURI( url );
+	public void setUri( Object uri ) throws URISyntaxException {
+		this.defaultURI = convertToURI( uri );
 	}
 	
 	/**
-	 * Get the default URL used for requests that do not explicitly take a 
-	 * <code>url</code> param.
-	 * @return url a {@link URL} instance.  Note that the return type is Object
-	 * simply so that it matches with its JavaBean {@link #setURL(Object)} 
+	 * Get the default URI used for requests that do not explicitly take a 
+	 * <code>URI</code> param.
+	 * @return URI a {@link URI} instance.  Note that the return type is Object
+	 * simply so that it matches with its JavaBean {@link #setUri(Object)} 
 	 * counterpart.
 	 */
-	public Object getURL() {
-		try {
-			return defaultURI.toURL();
-		} catch ( MalformedURLException e ) {
-			throw new RuntimeException( e );
-		}
+	public Object getUri() {
+		return defaultURI;
 	}
 
 	/**
@@ -760,7 +763,7 @@ public class HTTPBuilder {
 		protected Object contentType;
 		protected String requestContentType;
 		protected Map<String,Closure> responseHandlers = new HashMap<String,Closure>();
-		protected URIBuilder url;
+		protected URIBuilder uri;
 		protected Map<String,String> headers = new HashMap<String,String>();
 		
 		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
@@ -770,21 +773,23 @@ public class HTTPBuilder {
 			this.headers.putAll( defaultRequestHeaders );
 			this.contentType = contentType;
 			this.responseHandlers.putAll( defaultResponseHandlers );
-			this.url = new URIBuilder(request.getURI());
+			URI uri = request.getURI();
+			if ( uri == null ) uri = defaultURI;
+			this.uri = new URIBuilder(uri);
 		}
 		
 		/** 
-		 * Use this object to manipulate parts of the request URL, like 
+		 * Use this object to manipulate parts of the request URI, like 
 		 * query params and request path.  Example:
 		 * <pre>
 		 * builder.request(GET,XML) {
-		 *   url.path = '../other/request.jsp'
-		 *   url.params = [p1:1, p2:2]
+		 *   uri.path = '../other/request.jsp'
+		 *   uri.params = [p1:1, p2:2]
 		 *   ...
 		 * }</pre>
-		 * @return {@link URIBuilder} to manipulate the request URL 
+		 * @return {@link URIBuilder} to manipulate the request URI
 		 */
-		public URIBuilder getURL() { return this.url; }
+		public URIBuilder getUri() { return this.uri; }
 
 		protected HttpRequestBase getRequest() { return this.request; }
 		
@@ -835,9 +840,11 @@ public class HTTPBuilder {
 		/**
 		 * Valid arguments:
 		 * <dl>
-		 *   <dt>url</dt><dd>Either a URI, URL, or String. 
-		 *   	If not supplied, the HTTPBuilder's default URL is used.</dd>
-		 *   <dt>path</dt><dd>Request path that is merged with the URL</dd>
+		 *   <dt>uri</dt><dd>Either a URI, URL, or object whose 
+		 *   	<code>toString()</code> method produces a valid URI string. 
+		 *   	If this parameter is not supplied, the HTTPBuilder's default 
+		 *   	URI is used.</dd>
+		 *   <dt>path</dt><dd>Request path that is merged with the URI</dd>
 		 *   <dt>params</dt><dd>Map of request parameters</dd>
 		 *   <dt>headers</dt><dd>Map of HTTP headers</dd>
 		 *   <dt>contentType</dt><dd>Request content type and Accept header.  
@@ -847,22 +854,21 @@ public class HTTPBuilder {
 		 *   <dt>body</dt><dd>Request body that will be encoded based on the given contentType</dd>
 		 * </dl>
 		 * @param args named parameters to set properties on this delegate.
-		 * @throws MalformedURLException
-		 * @throws URISyntaxException
+		 * @throws URISyntaxException if the uri argument does not represent a valid URI
 		 */
 		@SuppressWarnings("unchecked")
-		protected void setPropertiesFromMap( Map<String,?> args ) throws MalformedURLException, URISyntaxException {
-			Object uri = args.get( "url" );
+		protected void setPropertiesFromMap( Map<String,?> args ) throws URISyntaxException {
+			Object uri = args.get( "uri" );
 			if ( uri == null ) uri = defaultURI;
-			url = new URIBuilder( convertToURI( uri ) );
+			uri = new URIBuilder( convertToURI( uri ) );
 			
 			Map params = (Map)args.get( "params" );
-			if ( params != null ) this.url.setQuery( params );
+			if ( params != null ) this.uri.setQuery( params );
 			Map headers = (Map)args.get( "headers" );
 			if ( headers != null ) this.getHeaders().putAll( headers );
 			
 			Object path = args.get( "path" );
-			if ( path != null ) this.url.setPath( path.toString() );
+			if ( path != null ) this.uri.setPath( path.toString() );
 			
 			Object contentType = args.get( "contentType" );
 			if ( contentType != null ) this.setContentType( contentType );

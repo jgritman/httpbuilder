@@ -23,7 +23,7 @@ package groovyx.net.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -54,9 +54,9 @@ public class AuthConfig {
 	 * @param pass
 	 */
 	public void basic( String user, String pass ) {
-		URL url = (URL)builder.getURL();
-		if ( url == null ) throw new IllegalStateException( "a default URL must be set" );
-		this.basic( url.getHost(), url.getPort(), user, pass );
+		URI uri = (URI)builder.getUri();
+		if ( uri == null ) throw new IllegalStateException( "a default URI must be set" );
+		this.basic( uri.getHost(), uri.getPort(), user, pass );
 	}
 	
 	/**
@@ -72,14 +72,17 @@ public class AuthConfig {
 			new UsernamePasswordCredentials( user, pass )
 		);
 	}
-	
+
 	/**
-	 * Sets a certificate to be used for SSL authentication.  
-	 * @param certURL URL to a JKS keystore where the certificate is stored
-	 * @param password password to decrypt the keystore
+	 * Sets a certificate to be used for SSL authentication.
+	 * 
+	 * @param certURL
+	 *            URL to a JKS keystore where the certificate is stored
+	 * @param password
+	 *            password to decrypt the keystore
 	 */
 	public void certificate( String certURL, String password ) 
-			throws GeneralSecurityException, MalformedURLException, IOException {
+			throws GeneralSecurityException, IOException {
 		
 		KeyStore keyStore = KeyStore.getInstance( KeyStore.getDefaultType() );
         InputStream jksStream = new URL(certURL).openStream();

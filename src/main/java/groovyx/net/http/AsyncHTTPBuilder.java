@@ -30,7 +30,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.conn.params.ConnPerRouteBean;
@@ -77,8 +76,10 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 		if ( poolSize == null ) poolSize = DEFAULT_POOL_SIZE;
 		this.initThreadPools( (Integer)poolSize );
 		
-		Object defaultURL = args.get("url");
-		if ( defaultURL != null ) super.setURL(defaultURL);
+		if ( args.get( "url" ) != null ) throw new IllegalArgumentException(
+			"The 'url' parameter is deprecated; use 'uri' instead" );
+		Object defaultURI = args.get("uri");
+		if ( defaultURI != null ) super.setUri(defaultURI);
 
 		Object defaultContentType = args.get("contentType");
 		if ( defaultContentType != null ) 

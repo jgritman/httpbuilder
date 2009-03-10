@@ -6,9 +6,8 @@ import org.junit.Test
 import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStream
 class HTTPBuilderTest {
 	
-	def pom = new XmlSlurper().parse( "${System.getProperty('basedir')}/pom.xml" )
-	def twitter = [user: pom.properties.twitter_user.toString(),
-	               passwd: pom.properties.twitter_passwd.toString() ]
+	def twitter = [user: System.getProperty('twitter.user'),
+	               passwd: System.getProperty('twitter.passwd') ]
 	
 	/**
 	 * This method will parse the content based on the response content-type
@@ -29,8 +28,8 @@ class HTTPBuilderTest {
 	@Test public void testDefaultSuccessHandler() {
 		def http = new HTTPBuilder('http://www.google.com')
 		def html = http.request( GET ) {
-			url.path = '/search'
-			url.query = [q:'Groovy']
+			uri.path = '/search'
+			uri.query = [q:'Groovy']
 		}
 		assert html instanceof GPathResult
 		assert html.HEAD.size() == 1
@@ -84,8 +83,8 @@ class HTTPBuilderTest {
 	 */
 	@Test public void testReader() {
 		def http = new HTTPBuilder('http://w3c.org')
-		http.get( url:'http://validator.w3.org/about.html', 
-				  contentType: TEXT ) { resp, reader ->
+		http.get( uri:'http://validator.w3.org/about.html', 
+				  contentType: TEXT, headers: [Accept:'*/*'] ) { resp, reader ->
 			println "response status: ${resp.statusLine}"
 			
 			assert reader instanceof Reader
@@ -119,7 +118,7 @@ class HTTPBuilderTest {
 		def msg = "HTTPBuilder unit test was run on ${new Date()}"
 		
 		def postID = http.request( POST, XML ) { req ->
-			url.path = 'update.xml'
+			uri.path = 'update.xml'
 			send URLENC, [status:msg,source:'httpbuilder']
 			
 			//req.params.setBooleanParameter 'http.protocol.expect-continue', false
@@ -137,7 +136,7 @@ class HTTPBuilderTest {
 		
 		// delete the test message.
 		http.request( DELETE, JSON ) { req ->
-			url.path = "destroy/${postID}.json"
+			uri.path = "destroy/${postID}.json"
 			
 			response.success = { resp, json ->
 				assert json.id != null
@@ -153,7 +152,7 @@ class HTTPBuilderTest {
 		http.auth.basic twitter.user, twitter.passwd
 		
 		http.request( HEAD, XML ) {
-			url.path = 'friends_timeline.xml' 
+			uri.path = 'friends_timeline.xml' 
 			
 //			response.'401' = { }
 			
@@ -163,7 +162,7 @@ class HTTPBuilderTest {
 		}
 		
 //		http.request( HEAD, XML ) { 
-//			url.path = 'friends_timeline.xml' 
+//			uri.path = 'friends_timeline.xml' 
 //			response.success = { resp ->
 //				assert resp.statusLine.statusCode == 200
 //			}
@@ -183,7 +182,7 @@ class HTTPBuilderTest {
 		}
 
 //		 optional default URL for all actions:
-		http.URL = 'http://www.google.com' 
+		http.uri = 'http://www.google.com' 
 
 		http.request(GET,TEXT) { req ->
 			response.success = { resp, stream ->
@@ -200,7 +199,7 @@ class HTTPBuilderTest {
 	 */
 	@Test public void test404() {
 		new HTTPBuilder().request('http://www.google.com',GET,TEXT) {
-			url.path = '/asdfg/asasdfs' // should produce 404
+			uri.path = '/asdfg/asasdfs' // should produce 404
 			response.'404' = {
 				println 'got expected 404!'
 			}
@@ -220,8 +219,8 @@ class HTTPBuilderTest {
 //		builder.parser.'text/javascript' = builder.parsers."$JSON"
 		
 		builder.request('http://ajax.googleapis.com',GET,JSON) {
-			url.path = '/ajax/services/search/web'
-			url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+			uri.path = '/ajax/services/search/web'
+			uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
 			//UA header required to get Google to GZIP response:
 			headers.'User-Agent' = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.4) Gecko/2008111319 Ubuntu/8.10 (intrepid) Firefox/3.0.4"
 			response.success = { resp, json ->
@@ -244,7 +243,7 @@ class HTTPBuilderTest {
 		http.handler.'404' = { println 'Auth successful' }
 		
 		http.request( GET, HTML ) {
-			url.path = '/auth-digest/'
+			uri.path = '/auth-digest/'
 			response.failure = { "expected failure" }
 			response.success = {
 				throw new AssertionError("request should have failed.")
@@ -254,11 +253,11 @@ class HTTPBuilderTest {
 		http.auth.basic( 'user2', 'user2' )
 
 		http.request( GET, HTML ) {
-			url.path = '/auth-digest/'
+			uri.path = '/auth-digest/'
 		}
 		
 		http.request( GET, HTML ) {
-			url.path = '/auth-basic/'
+			uri.path = '/auth-basic/'
 		}
 	}
 }
