@@ -633,6 +633,31 @@ public class HTTPBuilder {
 	 * import static ContentType.*
 	 * builder.contentType = XML
 	 * </pre> 
+	 * Setting the default content-type does three things:
+	 * <ol>
+	 *   <li>It tells the builder to encode any {@link RequestConfigDelegate#setBody(Object) 
+	 *   request body} as this content-type.  Calling {@link 
+	 *   RequestConfigDelegate#setRequestContentType(String)} can override this 
+	 *   on a per-request basis.</li>
+	 *   <li>Tells the builder to parse any response as this content-type, 
+	 *   regardless of any <code>content-type</code> header that is sent in the 
+	 *   response.</li>
+	 *   <li>Sets the <code>Accept</code> header to this content-type for all 
+	 *   requests (see {@link ContentType#getAcceptHeader()}).  Note 
+	 *   that any <code>Accept</code> header explicitly set either in 
+	 *   {@link #setHeaders(Map)} or {@link RequestConfigDelegate#setHeaders(Map)}
+	 *   will override this value.</li>
+	 * </ol> 
+	 * <p>Additionally, if the content-type is set to {@link ContentType#ANY}, 
+	 * HTTPBuilder <i>will</i> rely on the <code>content-type</code> response 
+	 * header to determine how to parse the response data.  This allows the user 
+	 * to rely on response headers if they are accurate, or ignore them and 
+	 * forcibly use a certain response parser if so desired.</p>
+	 * 
+	 * <p>This value is a default and may always be overridden on a per-request 
+	 * basis by using the {@link #request(Method, Object, Closure) 
+	 * builder.request( Method, ContentType, Closure )} method or passing a 
+	 * <code>contentType</code> named parameter.
 	 * @see EncoderRegistry
 	 * @see ParserRegistry
 	 * @param ct either a {@link ContentType} or string value (i.e. <code>"text/xml"</code>.)
@@ -859,7 +884,9 @@ public class HTTPBuilder {
 		 * Set the content-type used for any data in the request body, as well
 		 * as the <code>Accept</code> content-type that will be used for parsing
 		 * the response. The value should be either a {@link ContentType} value 
-		 * or a String, i.e. <code>"text/plain"</code>
+		 * or a String, i.e. <code>"text/plain"</code>.  This will default to
+		 * {@link HTTPBuilder#getContentType()}, but can always be overridden
+		 * within the request config closure.
 		 * @param ct the value that will be used for the <code>Content-Type</code>
 		 * and <code>Accept</code> request headers.
 		 */
