@@ -7,14 +7,15 @@ import static groovyx.net.http.ContentType.*
 
 def http = new HTTPBuilder('http://twitter.com/statuses/')
 
-http.auth.basic pom.properties.twitter_user, pom.properties.twitter_passwd
+http.auth.basic pom.properties.'twitter.user', 
+				pom.properties.'twitter.passwd'
 
 def msg = "HTTPBuilder v${pom.version} has been released!"
 
 println "Tweeting release for v${pom.version}..."
 
 http.request( POST, XML ) { req ->
-	url.path = 'update.xml'
+	uri.path = 'update.xml'
 	send URLENC, [status:msg, source:'httpbuilder']
 	
 	// twitter doesn't like the Expect: 100 header...
