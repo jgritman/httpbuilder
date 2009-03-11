@@ -45,8 +45,18 @@ import org.apache.http.client.methods.HttpPut;
  *   evaluation of the response.</li>
  *   <li>No streaming responses.  Responses are expected to either not carry data 
  * (in the case of HEAD or DELETE) or be parse-able into some sort of object.  
- *   That object is accessable via {@link ResponseProxy#getData()}.</li>
+ *   That object is accessible via {@link ResponseProxy#getData()}.</li>
  * </ul>  
+ * 
+ * <p>By default, all request method methods will return a {@link ResponseProxy}
+ * instance, which provides convenient access to response headers and the parsed
+ * response body.  The response body is parsed based on content-type, identical
+ * to how HTTPBuilder's {@link HTTPBuilder#defaultSuccessHandler(HttpResponse, 
+ * Object) default response handler} functions.</p>
+ * 
+ * <p>Failed requests (i.e. responses which return a status code &gt; 399) will
+ * by default throw a {@link RESTResponseException}.  This exception may be used 
+ * to retrieve additional information regarding the response as well.</p>
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  * @since 0.5
