@@ -30,7 +30,7 @@ import org.apache.http.client.HttpResponseException;
  * <code>catch( RESTResponseException ex ) {  }</code> block. 
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
- * @since v0.5.0
+ * @since 0.5
  */
 public class RESTResponseException extends HttpResponseException {
 	
@@ -39,7 +39,7 @@ public class RESTResponseException extends HttpResponseException {
 	ResponseProxy response;
 	
 	public RESTResponseException( ResponseProxy resp ) {
-		super( ((HttpResponse)resp.getAdaptee()).getStatusLine().getStatusCode(), 
+		super( resp.getStatus(), 
 				((HttpResponse)resp.getAdaptee()).getStatusLine().getReasonPhrase() );
 		this.response = resp;
 	}

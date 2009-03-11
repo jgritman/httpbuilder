@@ -34,6 +34,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -338,14 +339,13 @@ public class HTTPBuilder {
 	 * content-type.
 	 * @see #request(Object, Method, Object, Closure)
 	 * @param method {@link Method HTTP method}
-	 * @param contentType either a {@link ContentType} or valid content-type string.
 	 * @param configClosure request configuration options
 	 * @return whatever value was returned by the executed response handler.
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-	public Object request( Method m, Closure configClosure ) throws ClientProtocolException, IOException {
-		return this.doRequest( this.defaultURI, m, this.defaultContentType, configClosure );
+	public Object request( Method method, Closure configClosure ) throws ClientProtocolException, IOException {
+		return this.doRequest( this.defaultURI, method, this.defaultContentType, configClosure );
 	}
 
 	/**
@@ -359,9 +359,9 @@ public class HTTPBuilder {
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-	public Object request( Method m, Object contentType, Closure configClosure ) 
+	public Object request( Method method, Object contentType, Closure configClosure ) 
 			throws ClientProtocolException, IOException {
-		return this.doRequest( this.defaultURI, m, contentType, configClosure );
+		return this.doRequest( this.defaultURI, method, contentType, configClosure );
 	}
 
 	/**
@@ -853,14 +853,14 @@ public class HTTPBuilder {
 		 * }</pre>
 		 * 
 		 * <p>This method signature returns <code>Object</code> so that the 
-		 * complementary {@link #setURI(Object)} method can accept various 
+		 * complementary {@link #setUri(Object)} method can accept various 
 		 * types. </p>
 		 * @return {@link URIBuilder} to manipulate the request URI
 		 */
 		public URIBuilder getUri() { return this.uri; }
 
 		/**
-		 * Directly access the Apache Http-Client instance that will 
+		 * Directly access the Apache HttpClient instance that will 
 		 * be used to execute this request.
 		 * @see HttpRequestBase
 		 */
@@ -885,8 +885,9 @@ public class HTTPBuilder {
 		 * as the <code>Accept</code> content-type that will be used for parsing
 		 * the response. The value should be either a {@link ContentType} value 
 		 * or a String, i.e. <code>"text/plain"</code>.  This will default to
-		 * {@link HTTPBuilder#getContentType()}, but can always be overridden
-		 * within the request config closure.
+		 * {@link HTTPBuilder#getContentType()} for requests that do not 
+		 * explicitly pass a <code>contentType</code> parameter (such as 
+		 * {@link HTTPBuilder#request(Method, Object, Closure)}).
 		 * @param ct the value that will be used for the <code>Content-Type</code>
 		 * and <code>Accept</code> request headers.
 		 */

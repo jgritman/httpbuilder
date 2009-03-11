@@ -37,8 +37,8 @@ import org.apache.http.entity.HttpEntityWrapper;
 public class GZIPEncoding extends ContentEncoding {
 
 	/**
-	 * Returns the {@link Type#GZIP} encoding string which is added to the 
-	 * <code>Accept</code> header by the base class.
+	 * Returns the {@link ContentEncoding.Type#GZIP} encoding string which is 
+	 * added to the <code>Accept-Encoding</code> header by the base class.
 	 */
 	@Override
 	public String getContentEncoding() {

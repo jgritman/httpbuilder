@@ -35,7 +35,7 @@ import org.apache.http.StatusLine;
  * (see {@link HTTPBuilder#parseResponse(HttpResponse, Object)}).
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
- * @since v0.5.0
+ * @since 0.5
  */
 public class ResponseProxy extends Proxy {
 	

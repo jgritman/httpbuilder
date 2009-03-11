@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -40,16 +39,17 @@ import org.apache.http.client.methods.HttpPut;
  * REST-ful face on top of HTTPBuilder.  The differences between this class
  * and HTTPBuilder are such:
  * 
- * # Access to response headers.  All "request" methods on this class by default
- * return an instance of {@link ResponseProxy}, which allows for simple 
- * evaluation of the response.
-
- * # No streaming responses.  Responses are expected to either not carry data 
+ * <ul>
+ *   <li>Access to response headers.  All "request" methods on this class by 
+ *   default return an instance of {@link ResponseProxy}, which allows for simple
+ *   evaluation of the response.</li>
+ *   <li>No streaming responses.  Responses are expected to either not carry data 
  * (in the case of HEAD or DELETE) or be parse-able into some sort of object.  
- * that object is accessable via {@link ResponseProxy#getData()}.  
+ *   That object is accessable via {@link ResponseProxy#getData()}.</li>
+ * </ul>  
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
- * @since v0.5.0
+ * @since 0.5
  */
 public class RESTClient extends HTTPBuilder {
 	
@@ -58,10 +58,20 @@ public class RESTClient extends HTTPBuilder {
 		super();
 	}
 	
+	/**
+	 * See {@link HTTPBuilder#HTTPBuilder(Object)}
+	 * @param defaultURI
+	 * @throws URISyntaxException
+	 */
 	public RESTClient( Object defaultURI ) throws URISyntaxException {
 		super( defaultURI );
 	}
 	
+	/**
+	 * See {@link HTTPBuilder#HTTPBuilder(Object, Object)}
+	 * @param defaultURI
+	 * @throws URISyntaxException
+	 */
 	public RESTClient( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
 		super( defaultURI, defaultContentType );
 	}
@@ -81,8 +91,9 @@ public class RESTClient extends HTTPBuilder {
 	 * @see #getHandler()
 	 * @see #defaultSuccessHandler(HttpResponse, Object)
 	 * @see #defaultFailureHandler(HttpResponse)
-	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return whatever was returned from the response closure.  
+	 * @param args see {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+	 * @return a {@link ResponseProxy}, if the default response handler is not 
+	 *   overridden.
 	 * @throws URISyntaxException 
 	 * @throws IOException 
 	 * @throws ClientProtocolException 
@@ -99,16 +110,17 @@ public class RESTClient extends HTTPBuilder {
 	 * <p>A 'failed' response (i.e. any 
 	 * HTTP status code > 399) will be handled by the registered 'failure' 
 	 * handler.  The {@link #defaultFailureHandler(HttpResponse) default 
-	 * failure handler} throws an {@link HttpResponseException}.</p>  
+	 * failure handler} throws a {@link RESTResponseException}.</p>  
 	 * 
 	 * <p>The request body (specified by a <code>body</code> named parameter) 
-	 * will be converted to a URL-encoded form string unless a different 
-	 * <code>requestContentType</code> named parameter is passed to this method.
-	 *  (See {@link EncoderRegistry#encodeForm(Map)}.) </p>
+	 * will be encoded based on the <code>requestContentType</code> named 
+	 * parameter, or if none is given, the default 
+	 * {@link HTTPBuilder#setContentType(Object) content-type} for this instance.
+	 * </p>
 	 * 
-	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @param responseClosure code to handle a successful HTTP response
-	 * @return any value returned by the response closure.
+	 * @param args see {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+	 * @return a {@link ResponseProxy}, if the default response handler is not 
+	 *   overridden.
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 * @throws URISyntaxException
@@ -145,11 +157,14 @@ public class RESTClient extends HTTPBuilder {
 	}
 	
 	/**
-	 * If the user wants an exception thrown for non-successful HTTP response 
-	 * codes.
-	 * @param resp
-	 * @param data
-	 * @throws RESTResponseException
+	 * Throws an exception for non-successful HTTP response codes.  The 
+	 * exception instance will have a reference to the response object, in 
+	 * order to inspect status code and headers within the <code>catch</code> 
+	 * block.
+	 * @param resp response object
+	 * @param data parsed response data
+	 * @throws RESTResponseException exception which can access the response 
+	 *   object.
 	 */
 	protected void defaultFailureHandler( HttpResponse resp, Object data ) throws RESTResponseException {
 		throw new RESTResponseException( new ResponseProxy( resp, data ) );

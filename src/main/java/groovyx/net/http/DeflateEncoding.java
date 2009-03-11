@@ -36,6 +36,10 @@ import org.apache.http.entity.HttpEntityWrapper;
  */
 public class DeflateEncoding extends ContentEncoding {
 	
+	/**
+	 * Returns the {@link ContentEncoding.Type#DEFLATE} encoding string which is 
+	 * added to the <code>Accept-Encoding</code> header by the base class.
+	 */
 	@Override
 	public String getContentEncoding() {
 		return DEFLATE.toString();
