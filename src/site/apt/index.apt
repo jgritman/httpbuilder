@@ -6,6 +6,15 @@
 
 News
 
+* 11 Mar 2009
+
+  The latest 0.5 version now includes a new RESTClient class for even easier 
+  REST-style operations without a user-defined closure!  See 
+  {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/script/twitter_restbuilder.groovy?r=root:}
+  the Twitter example}}, and the updated {{{apidocs/groovyx/net/http/RESTClient.html}JavaDoc}}.
+
+* 04 Mar 2009
+
   Now you can follow us on {{{http://twitter.com/httpbuilder}Twitter!}}  
   HTTPBuilder now 'tweets' its releases as an automated part of the build 
   process.  This is a neat proof-of-concept that could easily be added to any 

@@ -7,6 +7,31 @@
 
 Change Log
 
+   See the {{{jira-report.html}JIRA Report}} for a comprehensive change list.
+   
+* v0.5.0 - 
+
+  * RESTBuilder for more REST-ful request API.
+
+  * Improved header access API
+  
+  * Changed "url" property names to "uri" (breaking change!)  HTTPBuilder's 
+    "uri" property returns a URIBuilder as well, to make default URL manipulation easier.
+  
+  * Renamed SendDelegate to RequestConfigDelegate (possibly breaking change)
+  
+  * Fixed bug when assigning default URI via named argument
+  
+  * Changed request configuration closure resolution strategy to DELEGATE_FIRST
+
+* v0.4.1 - 04 Mar 2009
+
+  * Fixed double-encoding of URI parameters
+  
+  * Added proxy support
+  
+  * Updated to HttpClient 4.0-beta2
+
 * v0.4.0 - 14 Jan 2009
 
   * Updated default success handler to buffer and return parsed data outside of 
@@ -14,7 +39,7 @@ Change Log
 
 * v0.3.1 - 5 Jan 2009
   
-  * Corrected {{{ContentType.BINARY}}} value
+  * Corrected <<<ContentType.BINARY>>> value
 
 * v0.3.0 - 24 Dec 2008
   

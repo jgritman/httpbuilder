@@ -7,14 +7,15 @@
 Project Archive and JAR
   
   The latest JAR can be obtained from the Codehaus Maven repository.  The 
-  repository also contains project assemblies, which include the source code,
-  generated JavaDoc, and dependency JARs.  
+  repository also contains project assemblies (.tar.gz), which include the 
+  source code, generated JavaDoc, and dependency JARs.  <<The latest release is 
+  version ${project-version}.>> 
   
   {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/http-builder/}
-  Download the latest snapshot here.}}
+  Browse the latest snapshot here.}}
   
   {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}
-  Download the latest stable build here.}}
+  Browse the latest stable build here.}}
   
   
 Maven Users
