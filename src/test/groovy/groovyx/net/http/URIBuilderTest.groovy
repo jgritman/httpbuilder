@@ -80,6 +80,9 @@ public class URIBuilderTest {
 		uri.addQueryParam 'd', '4'
 		assert uri.query.d == '4'
 		
+		uri.removeQueryParam 'b'
+		assert uri.query.b == null
+		
 		uri.query = [z:0,y:9,x:8]
 		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8#frag'
 				

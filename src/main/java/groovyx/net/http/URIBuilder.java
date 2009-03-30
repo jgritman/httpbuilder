@@ -160,6 +160,10 @@ public class URIBuilder implements Cloneable {
 				null, base.getFragment() );
 		}
 		else {
+			/* Passing the query string in the URI constructor will 
+			 * double-escape query parameters and goober things up.  So we have 
+			 * to create a full path+query+fragment and use URI#resolve() to 
+			 * create the new URI.  */
 			List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
 			StringBuilder sb = new StringBuilder();
 			String path = base.getPath();
