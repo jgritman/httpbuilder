@@ -42,6 +42,33 @@ class HTTPBuilderTest {
 		assert html.BODY.size() == 1
 	}
 	
+	@Test public void testSetHeaders() {
+		def http = new HTTPBuilder('http://www.google.com')
+		def val = '1'
+		def v2 = 'two'
+		def h3 = 'three'
+		def h4 = 'four'
+		http.headers = [one:"v$val", "$v2" : 2]
+		http.headers.three = 'not Three'
+		http.headers."$h3" = 'three'
+		
+		def request
+		def html = http.request( GET ) { client, req ->
+			assert headers.one == 'v1'
+			assert headers.two == '2'
+			assert headers.three == 'three'
+			headers."$h4" = "$val"
+			request = req
+		}
+		
+		assert html
+		def headers = request.allHeaders
+		assert headers.find { it.name == 'one' && it.value == 'v1' }
+		assert headers.find { it.name == 'two' && it.value == '2' }
+		assert headers.find { it.name == 'three' && it.value == 'three' }
+		assert headers.find { it.name == 'four' && it.value == '1' }
+	}
+	
 	/* This tests a potential bug -- the reader is being accessed after the 
 	 * request/response sequence has finished and response.consumeContent() 
 	 * has already been called internally.  In practice, it appears that the 

@@ -166,10 +166,11 @@ public class HTTPBuilder {
 	protected final Log log = LogFactory.getLog( getClass() );
 	
 	protected Object defaultContentType = ContentType.ANY;
-	protected final Map<String,Closure> defaultResponseHandlers = buildDefaultResponseHandlers();
+	protected final Map<Object,Closure> defaultResponseHandlers = 
+		new StringHashMap<Closure>( buildDefaultResponseHandlers() );
 	protected ContentEncodingRegistry contentEncodingHandler = new ContentEncodingRegistry();
 	
-	protected final Map<String,String> defaultRequestHeaders = new HashMap<String,String>();
+	protected final Map<Object,Object> defaultRequestHeaders = new StringHashMap<Object>();
 	
 	protected EncoderRegistry encoders = new EncoderRegistry();
 	protected ParserRegistry parsers = new ParserRegistry();
@@ -263,7 +264,7 @@ public class HTTPBuilder {
 		
 		delegate.setPropertiesFromMap( args );
 		if ( responseClosure != null ) delegate.getResponse().put( 
-				Status.SUCCESS.toString(), responseClosure );
+				Status.SUCCESS, responseClosure );
 		return this.doRequest( delegate );
 	}
 	
@@ -431,11 +432,12 @@ public class HTTPBuilder {
 		reqMethod.setURI( delegate.getUri().toURI() );
 
 		// set any request headers from the delegate
-		Map<String,String> headers = delegate.getHeaders(); 
-		for ( String key : headers.keySet() ) {
-			String val = headers.get( key );
-			if ( val == null ) reqMethod.removeHeaders( key ); 
-			else reqMethod.setHeader( key, val );
+		Map<?,?> headers = delegate.getHeaders(); 
+		for ( Object key : headers.keySet() ) {
+			Object val = headers.get( key );
+			if ( key == null ) continue;
+			if ( val == null ) reqMethod.removeHeaders( key.toString() ); 
+			else reqMethod.setHeader( key.toString(), val.toString() );
 		}
 		
 		HttpResponse resp = client.execute( reqMethod );
@@ -510,11 +512,11 @@ public class HTTPBuilder {
 	 * @see #defaultFailureHandler(HttpResponse)
 	 * @return the default response handler map.
 	 */
-	protected Map<String,Closure> buildDefaultResponseHandlers() {
-		Map<String,Closure> map = new HashMap<String, Closure>();
-		map.put( Status.SUCCESS.toString(), 
+	protected Map<Object,Closure> buildDefaultResponseHandlers() {
+		Map<Object,Closure> map = new StringHashMap<Closure>();
+		map.put( Status.SUCCESS, 
 				new MethodClosure(this,"defaultSuccessHandler"));
-		map.put(  Status.FAILURE.toString(),
+		map.put(  Status.FAILURE,
 				new MethodClosure(this,"defaultFailureHandler"));
 		
 		return map;
@@ -590,7 +592,7 @@ public class HTTPBuilder {
 	 * @see Status 
 	 * @return
 	 */
-	public Map<String,Closure> getHandler() {
+	public Map<?,Closure> getHandler() {
 		return this.defaultResponseHandlers;
 	}
 	
@@ -721,7 +723,7 @@ public class HTTPBuilder {
 	 * values. 
 	 * @return the map of default header names and values.
 	 */
-	public Map<String,String> getHeaders() {
+	public Map<?,?> getHeaders() {
 		return this.defaultRequestHeaders;
 	}
 
@@ -823,8 +825,8 @@ public class HTTPBuilder {
 		protected Map<String,String> headers = new HashMap<String,String>();
 		
 		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
-				Map<String,String> defaultRequestHeaders,
-				Map<String,Closure> defaultResponseHandlers ) {
+				Map<?,?> defaultRequestHeaders,
+				Map<?,Closure> defaultResponseHandlers ) {
 			this.request = request;
 			this.headers.putAll( defaultRequestHeaders );
 			this.contentType = contentType;
@@ -974,11 +976,7 @@ public class HTTPBuilder {
 		 * first.
 		 */
 		public void setHeaders( Map<?,?> newHeaders ) {
-			for( Object key : newHeaders.keySet() ) {
-				Object val = newHeaders.get( key );
-				if ( val == null ) this.headers.remove( key );
-				else this.headers.put( key.toString(), val.toString() );
-			}
+			this.headers.putAll( newHeaders );
 		}
 		
 		/**
@@ -993,7 +991,7 @@ public class HTTPBuilder {
 		 * <p>Example: <code>headers.'Accept-Language' = 'en, en-gb;q=0.8'</code></p>
 		 * @return a map of HTTP headers that will be sent in the request.
 		 */
-		public Map<String,String> getHeaders() {
+		public Map<?,?> getHeaders() {
 			return this.headers;
 		}
 		
@@ -1075,6 +1073,6 @@ public class HTTPBuilder {
 		 * }</pre>
 		 * @return
 		 */
-		public Map<String,Closure> getResponse() { return this.responseHandlers; }
+		public Map<Object,Closure> getResponse() { return this.responseHandlers; }
 	}
 }
