@@ -53,7 +53,7 @@ class HTTPBuilderTest {
 		http.headers."$h3" = 'three'
 		
 		def request
-		def html = http.request( GET ) { client, req ->
+		def html = http.request( GET ) { req ->
 			assert headers.one == 'v1'
 			assert headers.two == '2'
 			assert headers.three == 'three'

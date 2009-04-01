@@ -410,7 +410,7 @@ public class HTTPBuilder {
 				this.defaultResponseHandlers );		
 		configClosure.setDelegate( delegate );
 		configClosure.setResolveStrategy( Closure.DELEGATE_FIRST );
-		configClosure.call( client );		
+		configClosure.call( reqMethod );
 
 		return this.doRequest( delegate );
 	}
@@ -820,9 +820,9 @@ public class HTTPBuilder {
 		protected HttpRequestBase request;
 		protected Object contentType;
 		protected String requestContentType;
-		protected Map<String,Closure> responseHandlers = new HashMap<String,Closure>();
+		protected Map<Object,Closure> responseHandlers = new StringHashMap<Closure>();
 		protected URIBuilder uri;
-		protected Map<String,String> headers = new HashMap<String,String>();
+		protected Map<Object,Object> headers = new StringHashMap<Object>();
 		
 		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
 				Map<?,?> defaultRequestHeaders,
