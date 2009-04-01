@@ -37,11 +37,13 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.groovy.JsonGroovyBuilder;
 
@@ -211,6 +213,10 @@ public class EncoderRegistry {
 		if ( model instanceof Map ) {
 			json = new JSONObject();
 			((JSONObject)json).putAll( (Map)model );
+		}
+		else if ( model instanceof Collection ) {
+			json = new JSONArray();
+			((JSONArray)json).addAll( (Collection)model );
 		}
 		else if ( model instanceof Closure ) {
 			Closure closure = (Closure)model;
