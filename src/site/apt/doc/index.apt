@@ -1,0 +1,131 @@
+                                    ------
+                                    Documentation
+                                    ------
+                                    ------
+                                    ------
+
+Introduction
+  
+  HTTPBuilder is optimized for three tasks:
+  1.  Streaming response handling,
+  2.  Content-type based parsing, and 
+  3.  Response-code based logic
+  
+  To this end, HTTPBuilder exposes convenience methods for common request types,
+  (i.e. GET and POST) and a more complex request method that allows fine-grained
+  configuration of each request and response.
+  
+------------------------
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.TEXT
+
+// initialze a new builder and give a default URL
+def http = new HTTPBuilder( 'http://www.google.com/search' )
+
+http.request(GET,TEXT) { req ->
+  url.path = '/mail/help/tasks/' // overrides any path in the default URL
+  headers.'User-Agent' = 'Mozilla/5.0'
+  
+  response.success = { resp, reader ->
+    println 'my response handler!'
+    assert resp.statusLine.statusCode == 200
+    println resp.statusLine
+    System.out << reader // print response stream
+  }
+  
+  // called only for a 401 (access denied) status code:
+  response.'404' = { resp ->  
+    println 'Not found'
+  }
+}
+------------------------
+  
+  If you are familiar with the HTTP protocol, most of the above should be 
+  self-explanatory.  The 
+  <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.html#request(groovyx.net.http.Method,%20java.lang.Object,%20groovy.lang.Closure)}request()}}>>>
+   method accepts three parameters: a <method>, 
+  <content-type>, and a <request configuration closure>.  Within the 
+  configuration closure, we can fine-tune the parameters for this request, 
+  including manipulating portions of the URL, and adding request headers.  
+  The <<<req>>> parameter passed to the closure is an 
+  {{{http://hc.apache.org/httpcomponents-core/httpcore/apidocs/org/apache/http/message/BasicHttpRequest.html}HttpRequest}}
+  instance, which can be used to configure additional aspects of the request 
+  for which HTTPBuilder does not provide a wrapper. 
+  
+  The remaining 'response' definitions in the above example configure how the 
+  response is handled based on the HTTP status code returned by the server.  In
+  general, a "success" and "failure" response handler may be defined, or a 
+  response handler may be defined for a specific response code.  
+  
+  In the simplest case, no 'failure' handler needs to be defined; the default 
+  failure handler will throw an exception, which is triggered for any response
+  code > 399.  You can also customize default response handlers that will be 
+  in effect for all requests made by the <<<HTTPBuilder>>> instance:
+	
+------------------------
+http.handler.'401' = { resp ->
+  println "Access denied"
+}
+
+// Used for all other failure codes not handled by a code-specific handler:
+http.handler.failure = { resp ->
+  println "Unexpected failure: ${resp.statusLine}"
+}
+------------------------
+
+  
+The Magic: Built-in Content-Type Parsing
+
+	HTTPBuilder is also able to intelligently handle different response 
+	content-types.  In this example, the response data is automatically parsed 
+	into a <<<JSON>>> object, which is then passed to the 'success' response 
+	handler.
+
+------------------------
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.JSON
+
+def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
+http.request( GET, JSON ) {
+  url.path = '/ajax/services/search/web'
+  url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  
+  response.success = { resp, json ->
+    assert json.size() == 3
+    println "Query response: "
+    json.responseData.results.each {
+      println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
+    }
+  }
+}
+------------------------
+
+
+*Parser Resolution
+
+  By default, new HTTPBuilder instances use <<<ContentType.ANY>>> as the initial 
+  content-type.  This means every request has an <<<Accept: */*>>> header, and 
+  it is up to the server to decide what appropriate content-type to return.  
+  HTTPBuilder then chooses the from its <<<ParserRegistry>>> based on the 
+  response <<<content-type>>> header value.
+  
+  <If> a <<<contentType>>> is set (either in 
+  <<<HTTPBuilder.setContentType(...)>>> or as a <<<request>>> method parameter),
+  HTTPBuilder will attempt to parse the response using that content-type, 
+  regardless of what the server actually responds with.   The first example on
+  this page actually uses that strategy to parse an HTML document as plain text
+  (i.e. by creating a <<<Reader>>>) rather than detecting an HTML content-type
+  and using the default HTML parsing method.
+
+
+
+Logging and Debugging
+
+  Probably the quickest way to debug is to turn on logging for HTTPBuilder and 
+  HttpClient.  An example 
+  {{{https://svn.codehaus.org/gmod/httpbuilder/trunk/src/test/resources/log4j.xml}
+  log4j configuration}} can be used to output headers and request/response 
+  content, as well as additional information on what HTTPBuilder is doing with 
+  the request and response.

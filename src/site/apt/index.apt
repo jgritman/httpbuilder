@@ -6,6 +6,12 @@
 
 News
 
+* 30 Mar 2009
+  
+  Documentation is in the process of being overhauled to provide more 
+  comprehensive API examples.  I've published a version that is still in 
+  progress, but certainly better than the single document that I had previously.   
+
 * 11 Mar 2009
 
   The latest 0.5 version now includes a new RESTClient class for even easier 

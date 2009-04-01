@@ -1,0 +1,48 @@
+                                    ------
+                                    REST
+                                    ------
+                                    ------
+                                    ------
+
+
+
+AsyncHTTPBuilder
+
+  AsyncHTTPBuilder is very similar to HTTPBuilder, except that all requests are 
+  delegated to a thread pool and executed asynchronously.  Requests return a 
+  {{{http://java.sun.com/j2se/1.5.0/docs/api/index.html?java/util/concurrent/Future.html}java.util.concurrent.Future}}
+   instance, which can be used to access the response data once it has completed.  
+  
+------------------------------  
+import groovyx.net.http.AsyncHTTPBuilder
+import static groovyx.net.http.ContentType.HTML
+
+def http = new AsyncHTTPBuilder( 
+                poolSize : 4,
+                uri : 'http://hc.apache.org',
+                contentType : HTML )
+        
+def result = http.get(path:'/') { resp, html ->
+    println ' got async response!'
+    return html
+}
+
+assert result instanceof java.util.concurrent.Future
+
+while ( ! result.done ) {
+    println 'waiting...'
+    Thread.sleep(2000)
+}
+
+/* The Future instance contains whatever is returned from the response 
+   closure above; in this case the parsed HTML data: */
+def html = result.get()
+assert html instanceof groovy.util.slurpersupport.GPathResult
+------------------------------  
+  
+  In practice, it is very similar to the Ajax.Request class in Prototype.js.  
+  
+  This class also demonstrates the ease of which HTTPBuilder can be extended.  
+  the <<<doRequest()>>> method was simply overridden in order to execute requests 
+  from a <<<ThreadPoolExecutor>>>.  You can see the full source code 
+  {{{../xref/groovyx/net/http/AsyncHTTPBuilder.html}here}}.  

@@ -1,4 +1,9 @@
-<project name="HTTP Builder">
+<project name="HTTP Builder"
+ xmlns="http://maven.apache.org/DECORATION/1.0.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 
+ 	http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+ 	
 	<bannerLeft>
 		<name>HTTPBuilder</name>
 		<src>images/logo.png</src>
@@ -9,16 +14,28 @@
 		<src>http://media.xircles.codehaus.org/_projects/groovy/_logos/medium.png</src>
 		<href>http://groovy.codehaus.org/</href>
 	</bannerRight>
+	<version position="left" />
+	<publishDate position="right"/>
+
 	<body>
 		<menu name="Overview">
 			<item name="Home" href="index.html" />
 			<item name="Download" href="download.html" />
-			<item name="Examples" href="examples.html" />
-			<item name="Changelog" href="changes.html" />
-			<item name="To Do" href="todo.html" />
+			<item name="Documentation" href="doc/index.html" collapse="true">
+				<item name="GET Examples" href="doc/get.html" />
+				<item name="POST Examples" href="doc/post.html" />
+				<item name="JSON" href="doc/json.html" />
+				<item name="XML" href="doc/xml.html" />
+				<item name="RESTClient" href="doc/rest.html" />
+				<item name="AsyncHTTPBuilder" href="doc/async.html" />
+				<item name="Content Types" href="doc/contentTypes.html" />
+				<item name="URIBuilder" href="doc/uribuilder.html" />
+			</item>
 			<item name="JavaDoc" href="apidocs/index.html" />
+			<item name="Changelog" href="changes.html" />
+			<item name="About" href="about.html" />
 		</menu>
-		<menu name="Reference">
+		<menu name="Additional Reference">
 			<item name="Groovy" href="http://groovy.codehaus.org/Documentation" />
 			<item name="HttpClient" href="http://hc.apache.org/httpcomponents-client/" />
 			<item name="HttpCore" href="http://hc.apache.org/httpcomponents-core/" />
@@ -28,4 +45,11 @@
 
 		<menu ref="reports" />
 	</body>
+	
+	<!-- 
+	<poweredBy>
+    <logo name="Maven" href="http://maven.apache.org/"
+          img="http://maven.apache.org/images/logos/maven-feather.png"/>
+  </poweredBy>
+  -->
 </project>

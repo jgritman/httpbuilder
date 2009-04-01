@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 http://maven.apache.org/xsd/xdoc-2.0.xsd">
+
+  <properties>
+    <title>About the project</title>
+    <author email="tomstrummer@gmail.com">Tom Nichols</author>
+  </properties>
+
+  <body>
+    <section name="About This Project">
+
+     <p>HTTPBuilder was written by Tom Nichols (
+	  <a href='http://www.linkedin.com/in/thomnichols'>LinkedIn profile</a>).
+	  The code  is available under the open-source 
+	  <a href='http://www.apache.org/licenses/LICENSE-2.0'>ASF 2.0 license</a>.  
+	  This allows unrestricted use of the code; modification and distribution in 
+	  both commercial and non-commercial products.</p>
+	  
+	  <p>HTTPBuilder is built on top of a number of other excellent open source 
+	  products, including <a href='http://groovy.codehaus.org/'>Groovy</a>, 
+	  <a href='http://hc.apache.org/httpcomponents-client/'>Apache HttpClient</a>, 
+	  and <a href='http://json-lib.sourceforge.net/'>Json-Lib</a>.</p> 
+	
+	  <p>If you feel HTTPBuilder has been particularly helpful to you, or would like 
+	  special support, please consider a donation.  For general support questions, 
+	  you can use the <a href='http://xircles.codehaus.org/projects/groovy/lists'>
+	  groovy-user mailing list</a>.  For more specific questions you can 
+	  <a href='mailto:tomstrummer+httpbuilder@gmail.com'>contact me directly</a> as 
+	  well.</p> 
+	
+	  <p>Thanks and enjoy!</p>
+	  
+	  <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+			<input type="hidden" name="cmd" value="_s-xclick" />
+			<input type="hidden" name="hosted_button_id" value="3985827" />
+			<input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" 
+					name="submit" alt="PayPal - The safer, easier way to pay online!" />
+			<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" 
+					width="1" height="1" />
+		</form>
+  	</section>
+  </body>
+</document>

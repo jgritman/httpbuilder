@@ -1,0 +1,91 @@
+                          ------
+                          Response Handlers
+                          ------
+                          ------
+                          ------
+
+
+  A 'Response Handler' is the closure that is executed to parse the HTTP 
+  response that is returned from the server.  Multiple handlers are usually 
+  defined, and correct handler is chosen based on the HTTP status 
+  code in the response.
+  
+  
+Success vs Failure
+
+  Generally, status codes may be grouped into two categories - 'success' (any 
+  status less than 400) or 'failure' (400 or greater).  Within the request 
+  configuration closure, handlers may be defined through the <<<response>>>
+  property, which returns a map of response closures.  This map may then be used 
+  to add response handlers for this request:
+  
+-------------------------------
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.TEXT
+
+new HTTPBuilder('http://www.google.com/').request(GET) { req ->
+  
+  response.success = { resp ->
+    println 'request was successful'
+    assert resp.statusLine.statusCode < 400
+  }
+  
+  response.failure = { resp ->
+    println 'request failed'
+    assert resp.statusLine.statusCode >= 400
+  }
+}
+-------------------------------
+
+  These status handlers may be combined with more specific handlers that only
+  handle a specific response code:
+  
+-------------------------------
+-------------------------------
+  
+  In all cases, a handler will first be retrieved by the exact status code, and 
+  if none is found, it will fall back to a generic 'success' or 'failure' 
+  handler.
+  
+A Note on 'Intermediate' Status Codes
+  Note that in cases where a response sends a redirect status code, this is 
+  handled by Apache HttpClient, which by default will simply follow the redirect
+  by re-sending the request to the new URL.  
+  
+  Similarly, a 401 status code will be handled transparently by HttpClient if 
+  authorization has been configured.  But in most cases the user is not 
+  interested in these 'intermediate' responses, so they are handled internally
+  by the framework.  
+  
+Default Handlers
+
+  The default handlers are good for cases where the user is not interested in 
+  dealing with streaming responses.  In this case, the response data is simply 
+  parsed (or buffered in the case of a binary response) and returned from the
+  request method:
+  
+-------------------------------
+-------------------------------
+
+	The default failure handler will throw an exception.
+
+  This behavior can also be customized by setting your own default handlers on
+  the HTTPBuilder instance like so:
+  
+-------------------------------
+  def http = new HTTPBuilder()
+  
+  http.handler.success = { "Success!" }
+
+	http.handler.failure = { resp ->
+		"Unexpected failure: ${resp.statusLine}"
+	}
+	
+	// we can set code-specific default handlers as well:  
+  http.handler.'404 = { 'Not Found' }
+	
+  def result = http.get( uri:'http://www.google.com/asdfg' )
+  assert result == 'Not Found'
+-------------------------------
+  
