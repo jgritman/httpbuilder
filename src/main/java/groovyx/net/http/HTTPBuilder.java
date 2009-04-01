@@ -669,6 +669,13 @@ public class HTTPBuilder {
 	}
 	
 	/**
+	 * @return default content type used for request and response.
+	 */
+	public Object getContentType() {
+		return this.defaultContentType;
+	}
+	
+	/**
 	 * Set acceptable request and response content-encodings. 
 	 * @see ContentEncodingRegistry
 	 * @param encodings each Object should be either a 
@@ -817,12 +824,12 @@ public class HTTPBuilder {
 	 * 
 	 */
 	protected class RequestConfigDelegate {
-		protected HttpRequestBase request;
-		protected Object contentType;
-		protected String requestContentType;
-		protected Map<Object,Closure> responseHandlers = new StringHashMap<Closure>();
-		protected URIBuilder uri;
-		protected Map<Object,Object> headers = new StringHashMap<Object>();
+		private HttpRequestBase request;
+		private Object contentType;
+		private String requestContentType;
+		private Map<Object,Closure> responseHandlers = new StringHashMap<Closure>();
+		private URIBuilder uri;
+		private Map<Object,Object> headers = new StringHashMap<Object>();
 		
 		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
 				Map<?,?> defaultRequestHeaders,
