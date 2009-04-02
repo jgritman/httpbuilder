@@ -58,19 +58,28 @@ import org.codehaus.groovy.runtime.MethodClosure;
 
 
 /**
- * <p>This factory (or registry) handles request body "encoding." This is not
- * to be confused with HTTP content-encoding header.  When a 
+ * <p>This class handles creation of the request body (i.e. for a 
+ * PUT or POST operation) based on content-type.   When a 
  * {@link RequestConfigDelegate#setBody(Object) body} is set from the builder, it is 
- * processed based on the request content-type.  For instance, if the body
- * is set to a map and the request content-type is JSON, the map will be 
- * transformed to a JSON Object.  </p>
+ * processed based on the {@link RequestConfigDelegate#getRequestContentType() 
+ * request content-type}.  For instance, the {@link #encodeForm(Map)} method 
+ * will be invoked if the request content-type is form-urlencoded, which will 
+ * cause the following:<code>body=[a:1, b:'two']</code> to be encoded as 
+ * the equivalent <code>a=1&b=two</code> in the request body.</p>
  * 
  * <p>Most default encoders can handle a closure as a request body.  In this 
  * case, the closure is executed and a suitable 'builder' passed to the 
  * closure that is  used for constructing the content.  In the case of 
  * binary encoding this would be an OutputStream; for TEXT encoding it would
  * be a PrintWriter, and for XML it would be an already-bound 
- * {@link StreamingMarkupBuilder}. </p>
+ * {@link StreamingMarkupBuilder}. See each <code>encode...</code> method 
+ * for details for each particular content-type.</p>
+ * 
+ * <p>Contrary to its name, this class does not have anything to do with the 
+ * <code>content-encoding</code> HTTP header.  </p>
+ * 
+ * @see RequestConfigDelegate#setBody(Object)
+ * @see RequestConfigDelegate#send(Object, Object)
  */
 public class EncoderRegistry {
 	
@@ -186,15 +195,16 @@ public class EncoderRegistry {
 	}
 	
 	/**
-	 * Executes the given closure and passes a bound {@link StreamingMarkupBuilder}.
-	 * @param xmlBuilder
+	 * Accepts a closure which is interpreted as an XML structure that would be 
+	 * passed to {@link StreamingMarkupBuilder#bind(groovy.lang.Closure)}.
+	 * @param xmlBuilder builder closure that defines the XML structure
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
 	public HttpEntity encodeXML( Closure xmlBuilder ) throws UnsupportedEncodingException {
 		StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
 		String markup = smb.bind( xmlBuilder ).toString();
-		return createEntity( ContentType.XML, markup);
+		return createEntity( ContentType.XML, markup );
 	}
 	
 	/**
@@ -229,7 +239,7 @@ public class EncoderRegistry {
 	}
 	
 	/**
-	 * Helper method used by encoder methods to creates an {@link HttpEntity} 
+	 * Helper method used by encoder methods to create an {@link HttpEntity} 
 	 * instance that encapsulates the request data.  This may be used by any 
 	 * non-streaming encoder that needs to send textual data.  It also sets the 
 	 * {@link #setCharset(String) charset} portion of the content-type header. 
@@ -250,10 +260,11 @@ public class EncoderRegistry {
 	protected Map<String,Closure> registeredEncoders = buildDefaultEncoderMap();
 
 	/** 
-	 * Used to set an additional encoder for the given content type.  The 
-	 * Closure must return an {@link HttpEntity}.  It will also usually 
-	 * accept a single argument, which will be the value given in  
-	 * {@link RequestConfigDelegate#setBody(Object)}.
+	 * Register a new encoder for the given content type.  If any encoder 
+	 * previously existed for that content type it will be replaced.  The 
+	 * closure must return an {@link HttpEntity}.  It will also usually 
+	 * accept a single argument, which will be whatever is set in the request
+	 * configuration closure via {@link RequestConfigDelegate#setBody(Object)}.
 	 * @param contentType
 	 * @param closure
 	 */
