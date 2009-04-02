@@ -54,7 +54,7 @@ public class AuthConfig {
 	 * @param pass
 	 */
 	public void basic( String user, String pass ) {
-		URI uri = (URI)builder.getUri();
+		URI uri = ((URIBuilder)builder.getUri()).toURI();
 		if ( uri == null ) throw new IllegalStateException( "a default URI must be set" );
 		this.basic( uri.getHost(), uri.getPort(), user, pass );
 	}
@@ -72,7 +72,7 @@ public class AuthConfig {
 			new UsernamePasswordCredentials( user, pass )
 		);
 	}
-
+	
 	/**
 	 * Sets a certificate to be used for SSL authentication.  See 
 	 * {@link Class#getResource(String)} for how to get a URL from a resource 

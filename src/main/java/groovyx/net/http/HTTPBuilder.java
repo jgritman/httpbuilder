@@ -35,7 +35,6 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -160,7 +159,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
 public class HTTPBuilder {
 	
 	protected AbstractHttpClient client;
-	protected URI defaultURI = null;
+	protected URIBuilder defaultURI = null;
 	protected AuthConfig auth = new AuthConfig( this );
 	
 	protected final Log log = LogFactory.getLog( getClass() );
@@ -192,7 +191,7 @@ public class HTTPBuilder {
 	 */
 	public HTTPBuilder( Object defaultURI ) throws URISyntaxException {
 		this();
-		this.defaultURI = convertToURI( defaultURI );
+		this.defaultURI = new URIBuilder( convertToURI( defaultURI ) );
 	}
 	
 	/**
@@ -208,7 +207,7 @@ public class HTTPBuilder {
 	 */
 	public HTTPBuilder( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
 		this();
-		this.defaultURI = convertToURI( defaultURI );
+		this.defaultURI = new URIBuilder( convertToURI( defaultURI ) );
 		this.defaultContentType = defaultContentType; 
 	}
 	
@@ -322,7 +321,7 @@ public class HTTPBuilder {
 				this.defaultContentType, 
 				this.defaultRequestHeaders,
 				this.defaultResponseHandlers );
-		
+	
 		/* by default assume the request body will be URLEncoded, but allow
 		   the 'requestContentType' named argument to override this if it is 
 		   given */ 
@@ -346,7 +345,8 @@ public class HTTPBuilder {
 	 * @throws IOException
 	 */
 	public Object request( Method method, Closure configClosure ) throws ClientProtocolException, IOException {
-		return this.doRequest( this.defaultURI, method, this.defaultContentType, configClosure );
+		return this.doRequest( this.defaultURI.toURI(), method, 
+				this.defaultContentType, configClosure );
 	}
 
 	/**
@@ -362,7 +362,8 @@ public class HTTPBuilder {
 	 */
 	public Object request( Method method, Object contentType, Closure configClosure ) 
 			throws ClientProtocolException, IOException {
-		return this.doRequest( this.defaultURI, method, contentType, configClosure );
+		return this.doRequest( this.defaultURI.toURI(), method, 
+				contentType, configClosure );
 	}
 
 	/**
@@ -411,7 +412,7 @@ public class HTTPBuilder {
 		configClosure.setDelegate( delegate );
 		configClosure.setResolveStrategy( Closure.DELEGATE_FIRST );
 		configClosure.call( reqMethod );
-
+		
 		return this.doRequest( delegate );
 	}
 	
@@ -503,7 +504,7 @@ public class HTTPBuilder {
 		}
 		return parsedData;
 	}
-
+	
 	/**
 	 * Creates default response handlers for {@link Status#SUCCESS success} and
 	 * {@link Status#FAILURE failure} status codes.  This is used to populate 
@@ -695,13 +696,13 @@ public class HTTPBuilder {
 	 * @throws URISyntaxException if the uri argument does not represent a valid URI
 	 */
 	public void setUri( Object uri ) throws URISyntaxException {
-		this.defaultURI = convertToURI( uri );
+		this.defaultURI = new URIBuilder( convertToURI( uri ) );
 	}
 	
 	/**
 	 * Get the default URI used for requests that do not explicitly take a 
 	 * <code>uri</code> param.
-	 * @return URI a {@link URI} instance.  Note that the return type is Object
+	 * @return a {@link URIBuilder} instance.  Note that the return type is Object
 	 * simply so that it matches with its JavaBean {@link #setUri(Object)} 
 	 * counterpart.
 	 */
@@ -839,7 +840,7 @@ public class HTTPBuilder {
 			this.contentType = contentType;
 			this.responseHandlers.putAll( defaultResponseHandlers );
 			URI uri = request.getURI();
-			if ( uri == null ) uri = defaultURI;
+			if ( uri == null ) uri = defaultURI.toURI();
 			this.uri = new URIBuilder(uri);
 		}
 		
@@ -864,10 +865,35 @@ public class HTTPBuilder {
 		 * <p>This method signature returns <code>Object</code> so that the 
 		 * complementary {@link #setUri(Object)} method can accept various 
 		 * types. </p>
-		 * @return {@link URIBuilder} to manipulate the request URI
+		 * @return {@link URIBuilder} to manipulate the request URI 
 		 */
 		public URIBuilder getUri() { return this.uri; }
 
+		/**
+		 * <p>Set the entire URI to be used for this request.  Acceptable 
+		 * parameter types are:
+		 * <ul>
+		 *   <li><code>URL</code></li>
+		 *   <li><code>URI</code></li>
+		 *   <li><code>URIBuilder</code></li>
+		 * </ul>
+		 * Any other parameter type will be assumed that its 
+		 * <code>toString()</code> method produces a valid URI.</p>
+		 * 
+		 * <p>Note that if you want to change just a portion of the request URI,
+		 * (e.g. the host, port, path, etc.) you can call {@link #getUri()} 
+		 * which will return a {@link URIBuilder} which can manipulate portions
+		 * of the request URI.</p>
+		 * 
+		 * @see URIBuilder#convertToURI(Object)
+		 * @throws URISyntaxException if an argument is given that is not a valid URI
+		 * @param uri the URI to use for this request. 
+		 */
+		public void setUri( Object uri ) throws URISyntaxException {
+			if ( uri instanceof URIBuilder ) this.uri = (URIBuilder)uri;
+			this.uri = new URIBuilder( convertToURI( uri ) );
+		}
+		
 		/**
 		 * Directly access the Apache HttpClient instance that will 
 		 * be used to execute this request.
@@ -915,12 +941,15 @@ public class HTTPBuilder {
 		}
 		
 		/**
-		 * Assign a different content-type for the request than is expected for 
+		 * <p>Assign a different content-type for the request than is expected for 
 		 * the response.  This is useful if i.e. you want to post URL-encoded
 		 * form data but expect the response to be XML or HTML.  The 
 		 * {@link #getContentType()} will always control the <code>Accept</code>
 		 * header, and will be used for the request content <i>unless</i> this 
-		 * value is also explicitly set.
+		 * value is also explicitly set.</p>
+		 * <p>Note that this method is used internally; calls within a request
+		 * configuration closure should call {@link #send(Object, Object)}
+		 * to set the request body and content-type at the same time.</p>
 		 * @param ct either a {@link ContentType} value or a valid content-type
 		 * String.
 		 */
@@ -954,6 +983,8 @@ public class HTTPBuilder {
 					"The 'url' parameter is deprecated; use 'uri' instead" );
 			Object uri = args.get( "uri" );
 			if ( uri == null ) uri = defaultURI;
+			if ( uri == null ) throw new IllegalStateException( 
+					"Default URI is null, and no 'uri' parameter was given" );
 			this.uri = new URIBuilder( convertToURI( uri ) );
 			
 			Map params = (Map)args.get( "params" );
@@ -1024,9 +1055,14 @@ public class HTTPBuilder {
 		 *   }
 		 * }
 		 * </pre>
+		 * The <code>send</code> call is equivalent to the following:
+		 * <pre>
+		 *   requestContentType = 'text/javascript'
+		 *   body = { a : ['one','two','three'] }
+		 * </pre>
 		 * 
-		 * @param contentType either a {@link ContentType} or content-type 
-		 * 	string like <code>"text/xml"</code>
+		 * @param contentType either a {@link ContentType} or equivalent 
+		 *   content-type string like <code>"text/xml"</code>
 		 * @param requestBody
 		 */
 		public void send( Object contentType, Object requestBody ) {
@@ -1039,7 +1075,7 @@ public class HTTPBuilder {
 		 * the associated {@link EncoderRegistry request encoder}.  That is, 
 		 * the value of <code>body</code> will be interpreted by the encoder
 		 * associated with the current {@link #getRequestContentType() request 
-		 * content-type}.  See {@link HTTPBuilder#getEncoder()}.
+		 * content-type}.  
 		 * @see #send(Object, Object)
 		 * @param body data or closure interpreted as the request body
 		 */
@@ -1050,7 +1086,7 @@ public class HTTPBuilder {
 			Closure encoder = encoders.get( this.getRequestContentType() );
 			HttpEntity entity = (HttpEntity)encoder.call( body );
 			
-			((HttpEntityEnclosingRequest)request).setEntity( entity );
+			((HttpEntityEnclosingRequest)this.request).setEntity( entity );
 		}
 		
 		/**
