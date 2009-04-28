@@ -67,6 +67,7 @@ import org.xml.sax.SAXException;
  * entity.</p>
  * 
  * @see ContentType
+ * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  */
 public class ParserRegistry {
 	
@@ -209,14 +210,17 @@ public class ParserRegistry {
 	 *   or the default parser if no parser is registered for the given 
 	 *   content-type.  It should NOT return a null value.
 	 */
-	Closure get( String contentType ) { 
-		Closure parser = registeredParsers.get(contentType);
-		if ( parser == null ) {
-			log.warn( "Cannot find parser for content-type: " + contentType 
+	Closure get( Object contentType ) {
+		String ct = contentType.toString();
+		int idx = ct.indexOf( ';' ); 
+		if ( idx > 0 ) ct = ct.substring( 0, idx );
+		
+		Closure parser = registeredParsers.get(ct);
+		if ( parser != null ) return parser;
+			
+		log.warn( "Cannot find parser for content-type: " + ct 
 					+ " -- using default parser.");
-			parser = defaultParser;
-		}
-		return parser;
+		return defaultParser;
 	}
 	
 	/**
