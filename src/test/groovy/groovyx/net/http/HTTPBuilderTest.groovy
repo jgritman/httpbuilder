@@ -14,7 +14,8 @@ class HTTPBuilderTest {
 	 */
 	@Test public void testGET() {
 		def http = new HTTPBuilder('http://www.google.com')
-		http.get( path:'/search', query:[q:'Groovy'] ) { resp, html ->
+		http.get( path:'/search', query:[q:'Groovy'], 
+				headers:['User-Agent':"Firefox"] ) { resp, html ->
 			println "response status: ${resp.statusLine}"
 			
 			assert html
@@ -28,6 +29,7 @@ class HTTPBuilderTest {
 	@Test public void testDefaultSuccessHandler() {
 		def http = new HTTPBuilder('http://www.google.com')
 		def html = http.request( GET ) {
+			headers = ['User-Agent':"Firefox"] 
 			uri.path = '/search'
 			uri.query = [q:'Groovy']
 		}
@@ -78,7 +80,7 @@ class HTTPBuilderTest {
 	 * TEXT or BINARY.
 	 */
 	@Test public void testReaderWithDefaultResponseHandler() {
-		def http = new HTTPBuilder('http://www.google.com')
+		def http = new HTTPBuilder('http://validator.w3.org/about.html')
 		
 		def reader = http.get( contentType:TEXT )
 		
@@ -86,8 +88,8 @@ class HTTPBuilderTest {
 		def out = new ByteArrayOutputStream()
 		out << reader
 		assert out.toString().length() > 0
-		assert out.toString().endsWith( '</html>' )
-		//println out.toString()
+//		println out.toString()
+		assert out.toString().trim().endsWith( '</html>' )
 	}
 	
 	@Test public void testDefaultFailureHandler() {
