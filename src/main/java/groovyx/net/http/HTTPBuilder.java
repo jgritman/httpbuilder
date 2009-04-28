@@ -449,10 +449,11 @@ public class HTTPBuilder {
 		Object[] closureArgs = null;
 		switch ( responseClosure.getMaximumNumberOfParameters() ) {
 		case 1 :
-			closureArgs = new Object[] { resp };
+			closureArgs = new Object[] { new HttpResponseDecorator( resp, null ) };
 			break;
 		case 2 : // parse the response entity if the response handler expects it:
-			closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
+			closureArgs = new Object[] { new HttpResponseDecorator( resp, null ), 
+					parseResponse( resp, contentType ) };
 			break;
 		default:
 			throw new IllegalArgumentException( 
@@ -481,7 +482,7 @@ public class HTTPBuilder {
 	 *  response does not contain any content (e.g. in response to a HEAD request).
 	 */
 	protected Object parseResponse( HttpResponse resp, Object contentType ) {
-		// For HEAD or DELETE requests, there should be no response entity.
+		// For HEAD or OPTIONS requests, there should be no response entity.
 		if ( resp.getEntity() == null ) {
 			log.debug( "Response contains no entity.  Parsed data is null." );
 			return null;

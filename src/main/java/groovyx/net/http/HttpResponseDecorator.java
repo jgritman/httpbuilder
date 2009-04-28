@@ -24,10 +24,16 @@ package groovyx.net.http;
 import groovy.util.Proxy;
 
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
+import org.apache.http.params.HttpParams;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * This class is a wrapper for {@link HttpResponse}, which allows for 
@@ -35,19 +41,22 @@ import org.apache.http.StatusLine;
  * (see {@link HTTPBuilder#parseResponse(HttpResponse, Object)}).
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
- * @since 0.5
+ * @since 0.5.0
  */
-public class ResponseProxy extends Proxy {
+public class HttpResponseDecorator implements HttpResponse {
 	
 	HeadersProxy headers = null;
 	HttpResponse responseBase;
 	Object responseData;
 	
-	public ResponseProxy( HttpResponse base, Object parsedResponse ) {
-		super.setAdaptee( base );
+	public HttpResponseDecorator( HttpResponse base, Object parsedResponse ) {
 		this.responseBase = base;
 		this.responseData = parsedResponse;
 	}
+	
+	/*public Object propertyMissing( String name ) {
+		return InvokerHelper.getProperty( responseBase, name );
+	}*/
 	
 	/** 
 	 * Return a {@link HeadersProxy}, which provides a more Groovy API for 
@@ -93,7 +102,6 @@ public class ResponseProxy extends Proxy {
 	 */
 	public Object getData() { return this.responseData; }
 	
-	// TODO quick access to location header for REST?
 	
 	/**
 	 * 
@@ -130,8 +138,145 @@ public class ResponseProxy extends Proxy {
 		 *   println "${it.name} : ${it.value}"
 		 * }</pre>
 		 */
+		@SuppressWarnings("unchecked")
 		@Override public Iterator<Header> iterator() {
 			return responseBase.headerIterator();
 		}
+	}
+
+
+	@Override
+	public HttpEntity getEntity() {
+		return responseBase.getEntity();
+	}
+
+	@Override
+	public Locale getLocale() {
+		return responseBase.getLocale();
+	}
+
+	@Override
+	public StatusLine getStatusLine() {
+		return responseBase.getStatusLine();
+	}
+
+	@Override
+	public void setEntity( HttpEntity arg0 ) {
+		responseBase.setEntity( arg0 );
+	}
+
+	@Override
+	public void setLocale( Locale arg0 ) {
+		responseBase.setLocale( arg0 );
+	}
+
+	@Override
+	public void setReasonPhrase( String arg0 ) throws IllegalStateException {
+		responseBase.setReasonPhrase( arg0 );
+	}
+
+	@Override
+	public void setStatusCode( int arg0 ) throws IllegalStateException {
+		responseBase.setStatusCode( arg0 );
+	}
+
+	@Override
+	public void setStatusLine( StatusLine arg0 ) {
+		responseBase.setStatusLine( arg0 );
+	}
+
+	@Override
+	public void setStatusLine( ProtocolVersion arg0, int arg1 ) {
+		responseBase.setStatusLine( arg0, arg1 );
+	}
+
+	@Override
+	public void setStatusLine( ProtocolVersion arg0, int arg1, String arg2 ) {
+		responseBase.setStatusLine( arg0, arg1, arg2 );
+	}
+
+	@Override
+	public void addHeader( Header arg0 ) {
+		responseBase.addHeader( arg0 );
+	}
+
+	@Override
+	public void addHeader( String arg0, String arg1 ) {
+		responseBase.addHeader( arg0, arg1 );
+	}
+
+	@Override
+	public boolean containsHeader( String arg0 ) {
+		return responseBase.containsHeader( arg0 );
+	}
+
+	@Override
+	public Header[] getAllHeaders() {
+		return responseBase.getAllHeaders();
+	}
+
+	@Override
+	public Header getFirstHeader( String arg0 ) {
+		return responseBase.getFirstHeader( arg0 );
+	}
+
+	@Override
+	public Header[] getHeaders( String arg0 ) {
+		return responseBase.getHeaders( arg0 );
+	}
+
+	@Override
+	public Header getLastHeader( String arg0 ) {
+		return responseBase.getLastHeader( arg0 );
+	}
+
+	@Override
+	public HttpParams getParams() {
+		return responseBase.getParams();
+	}
+
+	@Override
+	public ProtocolVersion getProtocolVersion() {
+		return responseBase.getProtocolVersion();
+	}
+
+	@Override
+	public HeaderIterator headerIterator() {
+		return responseBase.headerIterator();
+	}
+
+	@Override
+	public HeaderIterator headerIterator( String arg0 ) {
+		return responseBase.headerIterator( arg0 );
+	}
+
+	@Override
+	public void removeHeader( Header arg0 ) {
+		responseBase.removeHeader( arg0 );
+	}
+
+	@Override
+	public void removeHeaders( String arg0 ) {
+		responseBase.removeHeaders( arg0 );
+	}
+
+	@Override
+	public void setHeader( Header arg0 ) {
+		responseBase.setHeader( arg0 );
+	}
+
+	@Override
+	public void setHeader( String arg0, String arg1 ) {
+		responseBase.setHeader( arg0, arg1 );
+	}
+
+	@Override
+	public void setHeaders( Header[] arg0 ) {
+		responseBase.setHeaders( arg0 );
+	}
+
+	@Override
+	public void setParams( HttpParams arg0 ) {
+		responseBase.setParams( arg0 );
 	}
 }

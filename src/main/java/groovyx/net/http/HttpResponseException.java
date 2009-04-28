@@ -21,30 +21,28 @@
  */
 package groovyx.net.http;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpResponseException;
 
 /**
  * Wraps an error response in an exception for flow control purposes.  That is,
  * you can still inspect response headers, but in a 
- * <code>catch( RESTResponseException ex ) {  }</code> block. 
+ * <code>catch( HttpResponseException ex ) {  }</code> block. 
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  * @since 0.5
  */
-public class RESTResponseException extends HttpResponseException {
+public class HttpResponseException extends org.apache.http.client.HttpResponseException {
 	
 	private static final long serialVersionUID = -34809347677236L;
 
-	ResponseProxy response;
+	HttpResponseDecorator response;
 	
-	public RESTResponseException( ResponseProxy resp ) {
-		super( resp.getStatus(), 
-				((HttpResponse)resp.getAdaptee()).getStatusLine().getReasonPhrase() );
+	public HttpResponseException( HttpResponseDecorator resp ) {
+		super( resp.getStatusLine().getStatusCode(), 
+				resp.getStatusLine().getReasonPhrase() );
 		this.response = resp;
 	}
 	
-	public ResponseProxy getResponse() {
+	public HttpResponseDecorator getResponse() {
 		return response;
 	}
 }

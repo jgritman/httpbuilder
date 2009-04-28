@@ -41,21 +41,21 @@ import org.apache.http.client.methods.HttpPut;
  * 
  * <ul>
  *   <li>Access to response headers.  All "request" methods on this class by 
- *   default return an instance of {@link ResponseProxy}, which allows for simple
+ *   default return an instance of {@link HttpResponseDecorator}, which allows for simple
  *   evaluation of the response.</li>
  *   <li>No streaming responses.  Responses are expected to either not carry data 
  * (in the case of HEAD or DELETE) or be parse-able into some sort of object.  
- *   That object is accessible via {@link ResponseProxy#getData()}.</li>
+ *   That object is accessible via {@link HttpResponseDecorator#getData()}.</li>
  * </ul>  
  * 
- * <p>By default, all request method methods will return a {@link ResponseProxy}
+ * <p>By default, all request method methods will return a {@link HttpResponseDecorator}
  * instance, which provides convenient access to response headers and the parsed
  * response body.  The response body is parsed based on content-type, identical
  * to how HTTPBuilder's {@link HTTPBuilder#defaultSuccessHandler(HttpResponse, 
  * Object) default response handler} functions.</p>
  * 
  * <p>Failed requests (i.e. responses which return a status code &gt; 399) will
- * by default throw a {@link RESTResponseException}.  This exception may be used 
+ * by default throw a {@link HttpResponseException}.  This exception may be used 
  * to retrieve additional information regarding the response as well.</p>
  * 
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
@@ -102,7 +102,7 @@ public class RESTClient extends HTTPBuilder {
 	 * @see #defaultSuccessHandler(HttpResponse, Object)
 	 * @see #defaultFailureHandler(HttpResponse)
 	 * @param args see {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link ResponseProxy}, if the default response handler is not 
+	 * @return a {@link HttpResponseDecorator}, if the default response handler is not 
 	 *   overridden.
 	 * @throws URISyntaxException 
 	 * @throws IOException 
@@ -120,7 +120,7 @@ public class RESTClient extends HTTPBuilder {
 	 * <p>A 'failed' response (i.e. any 
 	 * HTTP status code > 399) will be handled by the registered 'failure' 
 	 * handler.  The {@link #defaultFailureHandler(HttpResponse) default 
-	 * failure handler} throws a {@link RESTResponseException}.</p>  
+	 * failure handler} throws a {@link HttpResponseException}.</p>  
 	 * 
 	 * <p>The request body (specified by a <code>body</code> named parameter) 
 	 * will be encoded based on the <code>requestContentType</code> named 
@@ -129,7 +129,7 @@ public class RESTClient extends HTTPBuilder {
 	 * </p>
 	 * 
 	 * @param args see {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link ResponseProxy}, if the default response handler is not 
+	 * @return a {@link HttpResponseDecorator}, if the default response handler is not 
 	 *   overridden.
 	 * @throws ClientProtocolException
 	 * @throws IOException
@@ -161,9 +161,9 @@ public class RESTClient extends HTTPBuilder {
 	}
 	
 	@Override
-	protected ResponseProxy defaultSuccessHandler( HttpResponse resp, Object data )
+	protected HttpResponseDecorator defaultSuccessHandler( HttpResponse resp, Object data )
 			throws IOException {
-		return new ResponseProxy( resp, data );
+		return new HttpResponseDecorator( resp, data );
 	}
 	
 	/**
@@ -173,10 +173,10 @@ public class RESTClient extends HTTPBuilder {
 	 * block.
 	 * @param resp response object
 	 * @param data parsed response data
-	 * @throws RESTResponseException exception which can access the response 
+	 * @throws HttpResponseException exception which can access the response 
 	 *   object.
 	 */
-	protected void defaultFailureHandler( HttpResponse resp, Object data ) throws RESTResponseException {
-		throw new RESTResponseException( new ResponseProxy( resp, data ) );
+	protected void defaultFailureHandler( HttpResponse resp, Object data ) throws HttpResponseException {
+		throw new HttpResponseException( new HttpResponseDecorator( resp, data ) );
 	}	
 }
