@@ -3,16 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>http-builder</artifactId>
-	<groupId>org.codehaus.groovy</groupId>
+	<groupId>org.codehaus.groovy.modules.http-builder</groupId>
 	<version>0.5.0-SNAPSHOT</version>
 	<name>HTTP client builder DSL for Groovy</name>
 	<url>http://groovy.codehaus.org/modules/http-builder/</url>
 	<inceptionYear>2008</inceptionYear>
 	
 	<description>
-		This project provides a simple builder-style HTTP client
-		API, including common authentication mechanisms, and easy handling of
-		common content-types such as JSON and XML. It is built on top of
+		A builder-style HTTP client API, including authentication, and extensible 
+		handling of common content-types such as JSON and XML. It is built on top of
 		Apache's HttpClient.
 	</description>
 	
@@ -21,6 +20,7 @@
 		<project-version>${project.version}</project-version>
 		<twitter.user>httpbuilder</twitter.user>
 		<!-- twitter.passwd> stored in settings.xml for security </twitter.passwd -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
 	<dependencies>
@@ -297,12 +297,12 @@
 		<repository>
 			<id>Groovy-Contrib</id>
 			<name>Codehaus Groovy Repo</name>
-			<url>dav:https://dav.codehaus.org/repository/groovy</url>
+			<url>dav:https://dav.codehaus.org/repository/gmod</url>
 		</repository>
 		<snapshotRepository>
 			<id>Groovy-Contrib</id>
 			<name>Codehaus Groovy Snapshots Repo</name>
-			<url>dav:https://dav.codehaus.org/snapshots.repository/groovy</url>
+			<url>dav:https://dav.codehaus.org/snapshots.repository/gmod</url>
 		</snapshotRepository>
 		<site>
 			<id>Groovy-Contrib</id>
