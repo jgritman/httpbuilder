@@ -153,7 +153,7 @@ public class URIBuilder implements Cloneable {
 	 * @return this URIBuilder instance, for method chaining.
 	 * @throws URISyntaxException
 	 */
-	public URIBuilder setQuery( Map<String,?> params ) throws URISyntaxException {
+	public URIBuilder setQuery( Map<?,?> params ) throws URISyntaxException {
 		if ( params == null || params.size() < 1 ) {
 			this.base = new URI( base.getScheme(), base.getUserInfo(), 
 				base.getHost(), base.getPort(), base.getPath(),
@@ -169,9 +169,9 @@ public class URIBuilder implements Cloneable {
 			String path = base.getPath();
 			if ( path != null ) sb.append( path );
 			sb.append( '?' );
-			for ( String key : params.keySet() ) {
+			for ( Object key : params.keySet() ) {
 				Object val = params.get(key);
-				pairs.add( new BasicNameValuePair( key, 
+				pairs.add( new BasicNameValuePair( key.toString(), 
 						( val != null ) ? val.toString() : "" ) );
 			}
 			sb.append( URLEncodedUtils.format( pairs, ENC ) ); 
@@ -302,7 +302,7 @@ public class URIBuilder implements Cloneable {
 	 * @throws MalformedURLException if <code>type</code> is URL and this 
 	 * URIBuilder instance does not represent a valid URL. 
 	 */
-	public Object asType( Class type ) throws MalformedURLException {
+	public Object asType( Class<?> type ) throws MalformedURLException {
 		if ( type == URI.class ) return this.toURI();
 		if ( type == URL.class ) return this.toURL();
 		if ( type == String.class ) return this.toString();
@@ -313,7 +313,7 @@ public class URIBuilder implements Cloneable {
 	 * Create a copy of this URIBuilder instance.
 	 */
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	protected URIBuilder clone() {
 		return new URIBuilder( this.base );
 	}
 	

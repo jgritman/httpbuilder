@@ -80,6 +80,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * 
  * @see RequestConfigDelegate#setBody(Object)
  * @see RequestConfigDelegate#send(Object, Object)
+ * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  */
 public class EncoderRegistry {
 	
@@ -208,10 +209,14 @@ public class EncoderRegistry {
 	}
 	
 	/**
-	 * Accepts a Map or a JavaBean object which is converted to JSON.  If
-	 * a Closure is passed, it will be executed with a 
-	 * {@link JsonGroovyBuilder} as the closure's delegate.  The closure 
-	 * must return the result of the outermost builder method call. 
+	 * <p>Accepts a Collection or a JavaBean object which is converted to JSON.  
+	 * A Map or POJO/POGO will be converted to a {@link JSONObject}, and any 
+	 * other collection type will be converted to a {@link JSONArray}.</p> 
+	 * 
+	 * <p>If a Closure is passed as the model, it will be executed as if it were 
+	 * a JSON object definition passed to a {@link JsonGroovyBuilder}.  The closure 
+	 * must return the result of the outermost builder method call.</p>
+	 *  
 	 * @param model data to be converted to JSON, as specified above.
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
