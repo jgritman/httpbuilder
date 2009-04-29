@@ -14,21 +14,21 @@ Simple POST
 import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.ContentType.URLENC
 
-def http = new HTTPBuilder('http://twitter.com/statuses/')
+def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 def postBody = [status:'update!',source:'httpbuilder'] // will be url-encoded
 
-http.post( path: 'update.xml', body: postBody 
+http.post( path: 'update.xml', body: postBody, 
            requestContentType: URLENC ) { resp ->
 
-	println "Tweet response status: ${resp.statusLine}"
-	assert resp.statusLine.statusCode == 200
+  println "Tweet response status: ${resp.statusLine}"
+  assert resp.statusLine.statusCode == 200
 }
 ----------------------
 
- <<(Note that the above example excludes some authentication details needed by 
- the Twitter API; see the unit test for a working example.)>>
+ <(Note that the above example excludes some authentication details needed by 
+ the Twitter API; see the unit test for a working example.)>
  
- Similar to the <<<get(...)>>> convenience method, <<<post(..)>>> accepts the 
+ Similar to the <<<get(...)>>> convenience method, <<<post(...)>>> accepts the 
  options as named parameters, and takes a closure that is called as the 
  'success' response handler.  There is also a <<<post>>> variant that does not
  require a response handler closure; in this case, the builder instance's 
@@ -51,16 +51,21 @@ http.request( POST ) {
   requestContentType = ContentType.URLENC 
 
   response.success = { resp ->
-		println "Tweet response status: ${resp.statusLine}"
-		assert resp.statusLine.statusCode == 200
-	}
+    println "Tweet response status: ${resp.statusLine}"
+    assert resp.statusLine.statusCode == 200
+  }
 }
 ----------------------
 
+  In the above example, <<<uri>>>, <<<body>>>, <<<requestContentType>>> and
+  <<<response>>> are properties of the 
+  {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}closure delegate}}
+  so they are already defined.
+
   For cases where the request content-type is necessarily different than the 
-  response, the {{{.../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#send(java.lang.Object,%20java.lang.Object)}request 
-  configuration delegate}} has a <<<send()>>> method to 
-  set the request content-type and data at the same time:
+  response, the request configuration delegate has a 
+  <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#send(java.lang.Object,%20java.lang.Object)}send()}}>>> 
+  method which can be used set the request content-type and data at the same time:
   
 ----------------------
 import groovyx.net.http.HTTPBuilder

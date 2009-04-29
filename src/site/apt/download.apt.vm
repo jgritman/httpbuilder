@@ -11,10 +11,10 @@ Project Archive and JAR
   source code, generated JavaDoc, and dependency JARs.  <<The latest release is 
   version ${project-version}.>> 
   
-  {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/http-builder/}
+  {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
   Browse the latest snapshot here.}}
   
-  {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}
+  {{{http://repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
   Browse the latest stable build here.}}
   
   
@@ -24,7 +24,7 @@ Maven Users
   
 ---------------------------------------
   <dependency>
-    <groupId>org.codehaus.groovy</groupId>
+    <groupId>org.codehaus.groovy.modules.http-builder</groupId>
     <artifactId>http-builder</artifactId>
     <version>${project-version}</version>
   </dependency>

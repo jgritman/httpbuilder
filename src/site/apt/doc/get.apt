@@ -50,9 +50,9 @@ http.get( path : '/search',
 }
 ------------------------
 
- In this version, the <<<get()}>>> method also accepts a closure, which is 
- interpreted as the 'success' response handler.  A failure response (i.e. status 
- code of 400 or greater) is still handled by the builder's 
+ In this version, the <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.html#get(java.util.Map,%20groovy.lang.Closure)}get()}}>>> 
+ method also accepts a closure, which is interpreted as the 'success' response 
+ handler.  A failure response (i.e. status code of 400 or greater) is still handled by the builder's 
  {{{../apidocs/groovyx/net/http/HTTPBuilder.html#defaultFailureHandler(org.apache.http.HttpResponse)}
  default failure handler}}.
  
@@ -60,3 +60,36 @@ http.get( path : '/search',
  <<<ContentType.TEXT>>> - which is a built-in type, handled by the default   
  <<<{{{../apidocs/groovyx/net/http/ParserRegistry.html#parseText(org.apache.http.HttpResponse)}
  ParserRegistry}}>>> to automatically create a <<<Reader>>> from the response data.
+ 
+ 
+<<<GET>>> using the <<<request()>>> method
+ 
+ HTTPBuilder supports a generic <<<request>>> method that can be used to configure
+ the request in a fine-grained manner.
+   
+------------------------
+def http = new HTTPBuilder()
+ 
+http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
+  uri.path = '/ajax/services/search/web'
+  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  headers.'User-Agent' = "Mozilla/5.0 Firefox/3.0.4"
+
+  response.success = { resp, stream ->
+    assert resp.statusLine.statusCode == 200
+    println "Got response: ${resp.statusLine}"
+    System.out << stream // print response stream
+  }
+    
+  response.'404' = {
+    println 'Not found'
+  }
+}
+------------------------
+
+ In the above example, a 'request configuration closure' is defined as the final 
+ argument to the request method.  This closure allows fine-grained configuration 
+ of the request and response handling behavior.  Within the closure, there are a
+ number of properties available via the {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}closure's delegate}}.  <<<req>>> is an instance of 
+ <<<{{{http://hc.apache.org/httpcomponents-core/httpcore/apidocs/index.html?org/apache/http/HttpRequest.html}HttpRequest}}>>>
+ to directly access the Apache HttpClient API.  

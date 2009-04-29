@@ -108,8 +108,8 @@ http.request( GET, JSON ) {
   By default, new HTTPBuilder instances use <<<ContentType.ANY>>> as the initial 
   content-type.  This means every request has an <<<Accept: */*>>> header, and 
   it is up to the server to decide what appropriate content-type to return.  
-  HTTPBuilder then chooses the from its <<<ParserRegistry>>> based on the 
-  response <<<content-type>>> header value.
+  HTTPBuilder then chooses the appropriate parser from its <<<ParserRegistry>>> 
+  based on the response <<<Content-Type>>> header value.
   
   <If> a <<<contentType>>> is set (either in 
   <<<HTTPBuilder.setContentType(...)>>> or as a <<<request>>> method parameter),
@@ -124,7 +124,7 @@ http.request( GET, JSON ) {
 Logging and Debugging
 
   Probably the quickest way to debug is to turn on logging for HTTPBuilder and 
-  HttpClient.  An example 
+  Apache HttpClient.  An example 
   {{{https://svn.codehaus.org/gmod/httpbuilder/trunk/src/test/resources/log4j.xml}
   log4j configuration}} can be used to output headers and request/response 
   content, as well as additional information on what HTTPBuilder is doing with 

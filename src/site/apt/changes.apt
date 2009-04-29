@@ -11,9 +11,13 @@ Change Log
    
 * v0.5.0 - 
 
-  * RESTBuilder for more REST-ful request API.
+  * RESTClient for more REST-ful request API.
+  
+  * HttpURLClient for a similar API that is compatible with Google App Engine.
 
   * Improved header access API
+  
+  * Moved project to GMOD Maven repo.  New groupId is <<<org.codehaus.groovy.modules.http-builder>>>
   
   * Changed "url" property names to "uri" (breaking change!)  HTTPBuilder's 
     "uri" property returns a URIBuilder as well, to make default URL manipulation easier.

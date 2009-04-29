@@ -57,7 +57,7 @@ assert resp.contentType == JSON.toString()
 assert ( resp.data instanceof net.sf.json.JSON )
 assert resp.data.status.size() > 0
 -------------------------------------------
-  The <<<resp>>> field in the above example is an instance of <<<ResponseProxy>>>.  
+  The <<<resp>>> field in the above example is an instance of <<<HttpResponseDecorator>>>.  
   Calling <<<ResponseProxy.getData()>>> returns the parsed response content.
 
 
@@ -78,17 +78,17 @@ def postID = resp.data.id
 -------------------------------------------
 
   Note that the above example is posting the request data as 
-  <<application/x-www-form-urlencoded>>.  (The twitter API doesn't allow XML or 
-  JSON POST requests.  For this reason, a <<requestContentType>> parameter must 
-  be specified.  
+  <<<application/x-www-form-urlencoded>>>.  (The twitter API doesn't support XML or 
+  JSON POST requests.  For this reason, a <<<requestContentType>>> parameter must 
+  be specified in order to identify the content-type of the request data.  
   
-  Also note that we're requesting <<update.xml>>, not <<update.json>>.  Since
+  Also note that we're requesting <<<update.xml>>>, not <<<update.json>>>.  Since
   we never set a default content-type on the RESTClient instance or pass a 
   <<<contentType>>> argument in this request, RESTClient will put <<<Accept: */*>>>
   in the request header, and parse the response based on whatever is given in 
-  the response content-type.  So because Twitter correctly identifies its 
+  the response content-type header.  So because Twitter correctly identifies its 
   response as <<<application/xml>>>, it will automatically be parsed by the 
-  default {{{}XML parser}}.
+  default {{{../apidocs/groovyx/net/http/ParserRegistry.html#parseXML(org.apache.http.HttpResponse)}XML parser}}.
 
 
 ** Now <<<DELETE>>> that post

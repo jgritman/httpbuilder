@@ -6,6 +6,22 @@
 
 News
 
+* 27 Apr 2009
+
+  <<Note to Maven users:>>  The project's group ID has changed to conform with 
+  the standard for Groovy projects hosted on Codehaus.  The new group ID is 
+  <<org.codehaus.groovy.modules.http-builder>>. 
+
+  The 0.5 release is still pending, but I have an exciting new feature - 
+  HttpURLClient.  This may seem redundant, since its features are almost 
+  identical to HTTPBuilder and RESTClient.  The kicker though is that this class
+  works with Google App Engine!  
+  
+  GAE's Java sandbox doesn't allow socket usage, which totally kills Apache 
+  HttpClient (and hence, HB).  This class uses HttpURLConnection for all I/O, 
+  enabling most of the conveniences of HTTPBuilder within GAE.  Try it out 
+  in the latest HTTPBuilder snapshot.
+  
 * 30 Mar 2009
   
   Documentation is in the process of being overhauled to provide more 

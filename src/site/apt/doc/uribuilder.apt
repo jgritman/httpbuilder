@@ -8,11 +8,11 @@
   extremely useful for URI and URL construction and manipulation.  It is used 
   within HTTPBuilder, but it is also useful even from plain Java code.
   
-  If you've ever attempted to change a URL relative, to its current path, 
+  If you've ever attempted to change a URL relative to its current path, 
   you've probably noticed that using URI.resolvePath(..) strips off everything 
   after the last '/' of the URI, including any 'document,' query string and 
-  fragment.  URIBuilder allows you to manipulate aspects of the URL while
-  maintaining the other pieces:
+  fragment.  URIBuilder aims to make URI manipulation a <lot> easier and 
+  allows you to manipulate aspects of the URL while maintaining the other pieces:
    
    
 -----------------------------
@@ -81,7 +81,7 @@ assert uri.toString() == 'http://localhost?q=a%3Ab&z=war+%26+peace'
 URIBuilder uri = new URIBuilder( "http://www.google.com/one/two?a=1#frag" );
 
 uri.setScheme( "https" ).setHost( "localhost" ).setPath( "../three" );
-assert uri.toString() == "https://localhost/three?a=1#frag"
+assert uri.toString().equals( "https://localhost/three?a=1#frag" );
 -----------------------------
   
   URIBuilder also has methods for coercion to a URI or URL instance.  Since 
