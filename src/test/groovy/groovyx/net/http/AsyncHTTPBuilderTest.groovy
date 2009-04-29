@@ -57,7 +57,7 @@ public class AsyncHTTPBuilderTest {
 		
 		println done.size()
 		
-		def timeout = 20000
+		def timeout = 30000
 		def time = 0
 		while ( true ) {
 			if ( done.every{ it.done ? it.get() : 0 } ) break;
