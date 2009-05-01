@@ -70,6 +70,16 @@ public class URIBuilderTest {
 		assert uri.toString() == 'http://localhost/p4/p5?a=1&b=2&c=3#frag'
 	}
 	
+	@Test public void testPathEscaping() {
+		def uri = new URIBuilder( 'http://localhost/' )
+		uri.path = "/p1 p2"
+		assert uri.toString() == 'http://localhost/p1%20p2'
+		
+		uri = new URIBuilder( 'http://localhost/p1?one=1#frag' )
+		uri.path = "/p1 p2 p3"
+		assert uri.toString() == 'http://localhost/p1%20p2%20p3?one=1#frag'
+	}
+	
 	@Test public void testParams() {
 		def uri = new URIBuilder( 'http://localhost/p1/p2?a=1&b=2&c=3#frag' )
 		assert uri.query.size() == 3

@@ -140,10 +140,11 @@ public class URIBuilder implements Cloneable {
 	 *   cannot be converted to a valid URI
 	 */
 	public URIBuilder setPath( String path ) throws URISyntaxException {
-		path = base.resolve( path ).getPath();
-		this.base = new URI( base.getScheme(), base.getUserInfo(), 
-				base.getHost(), base.getPort(), path,
-				base.getQuery(), base.getFragment() );
+		this.base = base.resolve( new URI(null,null, path, base.getQuery(), base.getFragment()) );
+//		path = base.resolve( path ).getPath();
+//		this.base = new URI( base.getScheme(), base.getUserInfo(), 
+//				base.getHost(), base.getPort(), path,
+//				base.getQuery(), base.getFragment() );
 		return this;
 	}
 	
