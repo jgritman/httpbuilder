@@ -75,6 +75,7 @@ public class HttpURLClient {
 	private Object contentType = ContentType.ANY;
 	private Object requestContentType = null;
 	private URIBuilder defaultURL = null;
+	private boolean followRedirects = true; 
 	
 	protected Log log =  LogFactory.getLog( getClass() );
 	
@@ -110,7 +111,14 @@ public class HttpURLClient {
 	public HttpResponseDecorator request( Map<String,?> args ) 
 			throws URISyntaxException, MalformedURLException, IOException {
 		
+		// copy so we don't modify the original collection when removing items:
+		args = new HashMap<String,Object>(args);
+		
 		Object arg = args.remove( "url" );
+		if ( arg == null && this.defaultURL == null )
+			throw new IllegalStateException( "Either the 'defaultURL' property" +
+					" must be set or a 'url' parameter must be passed to the " +
+					"request method." );
 		URIBuilder url = arg != null ? new URIBuilder( arg.toString() ) : defaultURL.clone();
 
 		arg = null;
@@ -125,6 +133,7 @@ public class HttpURLClient {
 		}
 		
 		HttpURLConnection conn = (HttpURLConnection)url.toURL().openConnection();
+		conn.setInstanceFollowRedirects( this.followRedirects );
 		
 		arg = null;
 		arg = args.remove( "timeout" );
@@ -160,7 +169,7 @@ public class HttpURLClient {
 						vals.get(0).toString(), vals.get(1).toString() ) );
 			} catch ( Exception ex ) {
 				throw new IllegalArgumentException( 
-						"Auth argument must be a list in the form [user,auth]" );
+						"Auth argument must be a list in the form [user,pass]" );
 			}
 		}
 					
@@ -194,7 +203,11 @@ public class HttpURLClient {
 			log.warn( "request() : Unkown named parameter '" + k + "'" );
 		
 		log.debug( conn.getRequestMethod() + " " + url );
-		
+		// this causes IllegalStateException (Already connected) under certain circumstances
+/*		if ( log.isTraceEnabled() )  
+			for( String key : conn.getRequestProperties().keySet() )
+				log.trace( " >> " + key + " : " + conn.getRequestProperty(key) );
+*/		
 		HttpResponse response = new HttpURLResponseAdapter(conn);
 		if ( ContentType.ANY.equals( contentType ) ) contentType = conn.getContentType();
 
@@ -207,7 +220,7 @@ public class HttpURLClient {
 		if ( log.isTraceEnabled() ) {
 			System.out.println("Debug headers:");
 			for ( Header h : decoratedResponse.getHeaders() )
-				log.trace( "<< " + h.getName() + " : " + h.getValue() );
+				log.trace( " << " + h.getName() + " : " + h.getValue() );
 		}
 				
 		if ( conn.getResponseCode() > 399 ) 
@@ -223,14 +236,27 @@ public class HttpURLClient {
 	
 	/**
 	 * Set basic user and password authorization to be used for every request.
-	 * @param user
+	 * Pass <code>null</code> to un-set authorization for this instance.
+	 * @param user 
 	 * @param pass
 	 * @throws UnsupportedEncodingException
 	 */
 	public void setBasicAuth( Object user, Object pass ) throws UnsupportedEncodingException {
-		this.defaultHeaders.put( "Authorization", 
+		if ( user == null ) this.defaultHeaders.remove( "Authorization" );
+		else this.defaultHeaders.put( "Authorization", 
 				getBasicAuthHeader( user.toString(), pass.toString() ) );
 	}
+	
+	/**
+	 * Control whether this instance should automatically follow redirect 
+	 * responses.
+	 * @param follow
+	 */
+	public void setFollowRedirects( boolean follow ) {
+		this.followRedirects = follow;
+	}
+	
+	public boolean isFollowRedirects() { return this.followRedirects; }
 	
 	/**
 	 * The default URL for this request.  This is a {@link URIBuilder} which can 
@@ -249,7 +275,11 @@ public class HttpURLClient {
 		this.defaultURL = new URIBuilder( URIBuilder.convertToURI( url ) );
 	}
 	
-	class HttpURLResponseAdapter implements HttpResponse {
+	/**
+	 * This class makes a HttpURLConnection look like an HttpResponse for use
+	 * by {@link ParserRegistry} and {@link HttpResponseDecorator}.
+	 */
+	private final class HttpURLResponseAdapter implements HttpResponse {
 
 		HttpURLConnection conn;
 		Header[] headers;
@@ -385,6 +415,8 @@ public class HttpURLClient {
 			return new BasicHeaderIterator( this.getHeaders( key ), key );
 		}
 
+		/* Setters are part of the interface, but aren't applicable for this 
+		 * adapter */
 		@Override public void setEntity( HttpEntity entity ) {}
 		@Override public void setLocale( Locale l ) {}
 		@Override public void setReasonPhrase( String phrase ) {}
