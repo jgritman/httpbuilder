@@ -7,13 +7,15 @@
 Introduction
   
   HTTPBuilder is optimized for three tasks:
-  1.  Streaming response handling,
-  2.  Content-type based parsing, and 
-  3.  Response-code based logic
+  [[1]]  Streaming response handling,
+  [[2]]  Content-type based parsing, and 
+  [[3]]  Logic based on the response status code
   
   To this end, HTTPBuilder exposes convenience methods for common request types,
-  (i.e. GET and POST) and a more complex request method that allows fine-grained
+  (i.e. GET and POST) and a more complex <<<request>>> method that allows fine-grained
   configuration of each request and response.
+  
+  The following example shows use of most of the <<<request>>> method's features. 
   
 ------------------------
 import groovyx.net.http.HTTPBuilder
@@ -28,9 +30,9 @@ http.request(GET,TEXT) { req ->
   headers.'User-Agent' = 'Mozilla/5.0'
   
   response.success = { resp, reader ->
-    println 'my response handler!'
     assert resp.statusLine.statusCode == 200
-    println resp.statusLine
+    println "My response handler got response: ${resp.statusLine}"
+    println "Response length: ${resp.headers.'Content-Length'}" 
     System.out << reader // print response stream
   }
   
@@ -47,7 +49,12 @@ http.request(GET,TEXT) { req ->
    method accepts three parameters: a <method>, 
   <content-type>, and a <request configuration closure>.  Within the 
   configuration closure, we can fine-tune the parameters for this request, 
-  including manipulating portions of the URL, and adding request headers.  
+  including manipulating portions of the URL, and adding request headers.  A 
+  full list of properties that can be manipulated during request configuration
+  can be found in the 
+  {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}RequestConfigDelegate}} 
+  class. 
+  
   The <<<req>>> parameter passed to the closure is an 
   {{{http://hc.apache.org/httpcomponents-core/httpcore/apidocs/org/apache/http/message/BasicHttpRequest.html}HttpRequest}}
   instance, which can be used to configure additional aspects of the request 
