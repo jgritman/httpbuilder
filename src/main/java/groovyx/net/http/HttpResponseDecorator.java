@@ -21,8 +21,6 @@
  */
 package groovyx.net.http;
 
-import groovy.util.Proxy;
-
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -33,19 +31,19 @@ import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.params.HttpParams;
-import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * This class is a wrapper for {@link HttpResponse}, which allows for 
  * simplified header access, as well as carrying the auto-parsed response data.
  * (see {@link HTTPBuilder#parseResponse(HttpResponse, Object)}).
  * 
+ * @see HeadersDecorator
  * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
  * @since 0.5.0
  */
 public class HttpResponseDecorator implements HttpResponse {
 	
-	HeadersProxy headers = null;
+	HeadersDecorator headers = null;
 	HttpResponse responseBase;
 	Object responseData;
 	
@@ -54,17 +52,13 @@ public class HttpResponseDecorator implements HttpResponse {
 		this.responseData = parsedResponse;
 	}
 	
-	/*public Object propertyMissing( String name ) {
-		return InvokerHelper.getProperty( responseBase, name );
-	}*/
-	
 	/** 
-	 * Return a {@link HeadersProxy}, which provides a more Groovy API for 
+	 * Return a {@link HeadersDecorator}, which provides a more Groovy API for 
 	 * accessing response headers.
 	 * @return the headers for this response
 	 */
-	public HeadersProxy getHeaders() {
-		if ( headers == null ) headers = new HeadersProxy();
+	public HeadersDecorator getHeaders() {
+		if ( headers == null ) headers = new HeadersDecorator();
 		return headers;
 	}
 	
@@ -104,12 +98,25 @@ public class HttpResponseDecorator implements HttpResponse {
 	
 	
 	/**
-	 * 
+	 * This class is returned by {@link HttpResponseDecorator#getHeaders()}.
+	 * It provides three "Groovy" ways to access headers: 
+	 * <dl>
+	 *   <dt>Bracket notation</dt><dd><code>resp.headers['Content-Type']</code> 
+	 *   	returns the {@link Header} instance</dd>
+	 *   <dt>Property notation</dt><dd><code>resp.headers.'Content-Type'</code>
+	 *   	returns the {@link Header#getValue() header value}</dd>
+	 *   <dt>Iterator methods</dt><dd>Iterates over each Header:
+	 * <pre>resp.headers.each {
+	 *   println "${it.name} : ${it.value}"
+	 * }</pre></dd>
+	 * </dl>
+	 * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+	 * @since 0.5.0
 	 */
-	public class HeadersProxy extends Proxy implements Iterable<Header> {
+	public final class HeadersDecorator implements Iterable<Header> {
 		
 		/**
-		 * Access the named header, using bracket form.  For example,
+		 * Access the named header value, using bracket form.  For example,
 		 * <code>response.headers['Content-Encoding']</code>
 		 * @see HttpResponse#getFirstHeader(String)
 		 * @param name header name, e.g. <code>Content-Type<code>
@@ -121,14 +128,16 @@ public class HttpResponseDecorator implements HttpResponse {
 		}
 		
 		/**
-		 * Allow property-style access to header values. 
-		 * @see #getAt(String)
+		 * Allow property-style access to header values.  This is the same as
+		 * {@link #getAt(String)}, except it simply returns the header's String 
+		 * value, instead of the Header object.
+		 * 
 		 * @param name header name, e.g. <code>Content-Type<code>
 		 * @return the {@link Header}, or <code>null</code> if it does not exist
 		 *  in this response 
 		 */
-		protected Object propertyMissing( String name ) {
-			return getAt( name );
+		protected String propertyMissing( String name ) {
+			return getAt( name ).getValue();
 		}		
 		
 		/**
