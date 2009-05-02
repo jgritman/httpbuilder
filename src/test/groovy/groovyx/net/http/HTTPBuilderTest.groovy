@@ -17,6 +17,7 @@ class HTTPBuilderTest {
 		http.get( path:'/search', query:[q:'Groovy'], 
 				headers:['User-Agent':"Firefox"] ) { resp, html ->
 			println "response status: ${resp.statusLine}"
+			println "Content Type: ${resp.headers.'Content-Type'}"
 			
 			assert html
 			assert html.HEAD.size() == 1
@@ -102,6 +103,8 @@ class HTTPBuilderTest {
 		}
 		catch( HttpResponseException ex ) {
 			assert ex.statusCode == 404
+			assert ex.response.status == 404
+			assert ex.response.headers
 		}
 		
 	}	
@@ -115,6 +118,12 @@ class HTTPBuilderTest {
 		http.get( uri:'http://validator.w3.org/about.html', 
 				  contentType: TEXT, headers: [Accept:'*/*'] ) { resp, reader ->
 			println "response status: ${resp.statusLine}"
+			println 'Headers:'
+			resp.headers.each { 
+				println "  ${it.name} : ${it.value}"
+				assert it.name && it.value
+			}
+			println '------------------'
 			
 			assert reader instanceof Reader
 			
@@ -155,6 +164,7 @@ class HTTPBuilderTest {
 			 response.success = { resp, xml ->
 				println "Tweet response status: ${resp.statusLine}"
 				assert resp.statusLine.statusCode == 200
+				println "Content Length: ${resp.headers['Content-Length'].value}"
 				assert xml instanceof GPathResult 
 				
 				assert xml.text == msg
@@ -187,6 +197,8 @@ class HTTPBuilderTest {
 			
 			response.success = { resp ->
 				assert resp.getFirstHeader('Status').value == "200 OK"
+				assert resp.headers.Status == "200 OK"
+				assert resp.headers['Content-Encoding'].value == "gzip"
 			}
 		}
 		

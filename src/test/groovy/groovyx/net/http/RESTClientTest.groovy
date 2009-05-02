@@ -21,6 +21,14 @@ public class RESTClientTest {
 		twitter.contentType = ContentType.JSON
 	}
 	
+	@Test public void testConstructors() {
+		twitter = new RESTClient()
+		assert twitter.contentType == ContentType.ANY
+		
+		twitter = new RESTClient( 'http://www.google.com', ContentType.XML )
+		assert twitter.contentType == ContentType.XML
+	}
+	
 	@Test public void testHead() {
 		try { // expect an exception from a 404 response:
 			twitter.head path : 'public_timeline'
@@ -44,6 +52,8 @@ public class RESTClientTest {
 		
 		resp = twitter.get( path : 'friends_timeline.json' )
 		assert resp.status == 200
+		assert resp.headers.Server == "hi"
+		assert resp.headers.Server == resp.headers['Server'].value
 		assert resp.contentType == JSON.toString()
 		assert ( resp.data instanceof net.sf.json.JSON )
 		assert resp.data.status.size() > 0
@@ -67,6 +77,7 @@ public class RESTClientTest {
 				requestContentType : URLENC )
 
 		assert resp.status == 200
+		assert resp.headers.Status
 		assert resp.data instanceof GPathResult // parsed using XmlSlurper 
 		assert resp.data.text == msg
 		assert resp.data.user.screen_name == userID
@@ -76,7 +87,16 @@ public class RESTClientTest {
 	}
 	
 	@Test public void testPut() {
-		
+		try {
+			twitter.put( path : 'update.xml', 
+					contentType : XML, 
+					body : [ status:'test', source:'httpbuilder' ],
+					requestContentType : URLENC )
+					
+		} catch ( HttpResponseException ex ) {
+			assert ex.response.headers
+			assert ex.response.headers.Status =~ '400' //'405'
+		}		
 	}
 	
 	@Test public void testDelete() {

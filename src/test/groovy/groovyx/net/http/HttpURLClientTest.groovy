@@ -14,7 +14,7 @@ class HttpURLClientTest {
 	 */
 	@Test public void testGET() {
 		def http = new HttpURLClient(url:'http://www.google.com')
-		def resp = http.request( path:'/search', query:[q:'HTTPBuilders'],
+		def resp = http.request( path:'/search', query:[q:'HTTPBuilder'],
 				headers:['User-Agent':'Firefox'] )
 		
 		println "response status: ${resp.statusLine}"
@@ -27,6 +27,24 @@ class HttpURLClientTest {
 		assert html.BODY.size() == 1
 	}
 	
+	@Test public void testRedirect() {
+		def http = new HttpURLClient(followRedirects:false)
+		
+		def params = [ url:'http://www.google.com/search', 
+						query:[q:'HTTPBuilder', btnI:"I'm Feeling Lucky"],
+						headers:['User-Agent':'Firefox'] ]
+		def resp = http.request( params )
+		
+		assert resp.statusLine.statusCode == 302
+		assert ! http.followRedirects
+		
+		http.followRedirects = true
+		resp = http.request( params )
+		assert resp.statusLine.statusCode == 200
+		assert resp.success
+		assert resp.data
+	}
+	
 	@Test public void testSetHeaders() {
 		def http = new HttpURLClient(url:'http://www.google.com')
 		def val = '1'
@@ -37,19 +55,18 @@ class HttpURLClientTest {
 		http.headers.three = 'not Three'
 		http.headers."$h3" = 'three'
 		
-		def request
-		def resp = http.request( headers:[one:'v1',two:'2',three:'three',"$h4":"$val"] )
+//		def resp = http.request( headers:[one:'v1',two:'2',three:'three',"$h4":"$val"] )
+		// private member access to verify the request headers...
+/*		def headers = resp.@responseBase.@conn.requestProperties 
 		
-		assert resp
-/*		def headers = request.allHeaders
-		assert headers.find { it.name == 'one' && it.value == 'v1' }
-		assert headers.find { it.name == 'two' && it.value == '2' }
-		assert headers.find { it.name == 'three' && it.value == 'three' }
-		assert headers.find { it.name == 'four' && it.value == '1' }
+		assert headers.find { it.key == 'one' && it.value[0] == 'v1' }
+		assert headers.find { it.key == 'two' && it.value[0] == '2' }
+		assert headers.find { it.key == 'three' && it.value[0] == 'three' }
+		assert headers.find { it.key == 'four' && it.value[0] == '1' }
 */	}
 
 	
-	@Test public void testDefaultFailureHandler() {
+	@Test public void testFailure() {
 		def http = new HttpURLClient(url:'http://www.google.com')
 
 		try {
@@ -57,8 +74,10 @@ class HttpURLClientTest {
 		}
 		catch( HttpResponseException ex ) {
 			assert ex.statusCode == 404
+			assert ! ex.response.success
+			assert ex.response.headers.every { it.name && it.value }
 		}
-		
+		assert http.url.toString() == 'http://www.google.com'
 	}	
 	
 	/**
@@ -76,7 +95,7 @@ class HttpURLClientTest {
 			
 		// we'll validate the reader by passing it to an XmlSlurper manually.
 		def parsedData = new XmlSlurper().parse(resp.data)
-		assert parsedData.children().size() > 0
+		assert parsedData.children().size() > 0		
 	}
 	
 	/* REST testing with Twitter!
@@ -91,7 +110,7 @@ class HttpURLClientTest {
 		def msg = "HTTPBuilder unit test was run on ${new Date()}"
 		
 		def resp = http.request( method:POST, contentType:XML,
-				path:'update.xml',
+				path:'update.xml', timeout: 30000,
 				requestContentType:URLENC, 
 				body:[status:msg,source:'httpbuilder'] )
 			
@@ -104,8 +123,11 @@ class HttpURLClientTest {
 		assert xml.user.screen_name == twitter.user
 		def postID = xml.id
 		
+		http.setBasicAuth null, null
+		
 		// delete the test message.
 		resp = http.request( method:DELETE, contentType:JSON,
+				auth : [twitter.user, twitter.passwd],
 			path : "destroy/${postID}.json" )
 			
 		def json = resp.data
@@ -121,7 +143,7 @@ class HttpURLClientTest {
 		
 		def resp = http.request( method:HEAD, contentType:XML, path : 'friends_timeline.xml' ) 
 			
-		assert resp.headers.Status.value == "200 OK"		
+		assert resp.headers.Status == "200 OK"		
 	}
 		
 	/* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html

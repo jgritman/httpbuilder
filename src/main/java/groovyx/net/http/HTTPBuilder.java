@@ -44,7 +44,6 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -423,6 +422,7 @@ public class HTTPBuilder {
 			throws ClientProtocolException, IOException {
 		
 		final HttpRequestBase reqMethod = delegate.getRequest();
+		log.debug( reqMethod.getMethod() + " " + reqMethod.getURI() );
 		
 		Object contentType = delegate.getContentType();
 		String acceptContentTypes = contentType.toString();
@@ -576,14 +576,13 @@ public class HTTPBuilder {
 	 * {@link HttpResponseException} when executed.  In most cases you
 	 * will want to define your own <code>response.failure = {...}</code> 
 	 * handler from the request closure, if you don't want an exception to be 
-	 * thrown for a 4xx and 5xx status response.   
+	 * thrown for 4xx and 5xx status responses.   
 
 	 * @param resp
 	 * @throws HttpResponseException
 	 */
-	protected void defaultFailureHandler( HttpResponse resp ) throws HttpResponseException {
-		throw new HttpResponseException( resp.getStatusLine().getStatusCode(), 
-				resp.getStatusLine().getReasonPhrase() );
+	protected void defaultFailureHandler( HttpResponseDecorator resp ) throws HttpResponseException {
+		throw new HttpResponseException( resp );
 	}
 	
 	/**
