@@ -9,7 +9,7 @@
   within HTTPBuilder, but it is also useful even from plain Java code.
   
   If you've ever attempted to change a URL relative to its current path, 
-  you've probably noticed that using URI.resolvePath(..) strips off everything 
+  you've probably noticed that using <<<URI.resolvePath(..)>>> strips off everything 
   after the last '/' of the URI, including any 'document,' query string and 
   fragment.  URIBuilder aims to make URI manipulation a <lot> easier and 
   allows you to manipulate aspects of the URL while maintaining the other pieces:

@@ -43,6 +43,6 @@ assert html instanceof groovy.util.slurpersupport.GPathResult
   In practice, it is very similar to the Ajax.Request class in Prototype.js.  
   
   This class also demonstrates the ease of which HTTPBuilder can be extended.  
-  the <<<doRequest()>>> method was simply overridden in order to execute requests 
+  The <<<doRequest()>>> method was simply overridden in order to execute requests 
   from a <<<ThreadPoolExecutor>>>.  You can see the full source code 
   {{{../xref/groovyx/net/http/AsyncHTTPBuilder.html}here}}.  

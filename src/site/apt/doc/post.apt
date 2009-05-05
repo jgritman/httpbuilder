@@ -35,7 +35,7 @@ http.post( path: 'update.xml', body: postBody,
  success handler is used, which by default will return the parsed response 
  data.   
  
- <Note on the Content-Type of POSTed data:>
+ <<Note on the Content-Type of POSTed data:>>
  HTTPBuilder's <<<post>>> method is special in particular because it 
  assumes the request body will be URL-encoded form data.  This is the only method
  that assumes a particular request content-type.  For all methods that send a 

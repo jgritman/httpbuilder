@@ -19,12 +19,20 @@ Change Log
   
   * Moved project to GMOD Maven repo.  New groupId is <<<org.codehaus.groovy.modules.http-builder>>>
   
-  * Changed "url" property names to "uri" (breaking change!)  HTTPBuilder's 
-    "uri" property returns a URIBuilder as well, to make default URL manipulation easier.
+  * Changed "url" property names to "uri" (breaking change!)  
+  
+  * HTTPBuilder's "uri" property returns a URIBuilder, to make default 
+    URL manipulation easier.
   
   * Renamed SendDelegate to RequestConfigDelegate (possibly breaking change)
   
   * Fixed bug when assigning default URI via named argument
+  
+  * Fixed default response handlers for AsyncHTTPBuilder
+  
+  * Fixed illegal character encoding in <<<URIBuilder.setPath()>>>
+  
+  * Fixed default response handlers in AsyncHTTPBuilder
   
   * Changed request configuration closure resolution strategy to DELEGATE_FIRST
 

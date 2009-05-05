@@ -61,7 +61,7 @@ assert resp.data.status.size() > 0
   Calling <<<ResponseProxy.getData()>>> returns the parsed response content.
 
 
-** <<<POST>>> a status update to twitter!
+** <<<POST>>> a status update to Twitter!
 
 -------------------------------------------
 def msg = "I'm using HTTPBuilder's RESTClient on ${new Date()}"
@@ -74,7 +74,7 @@ assert resp.status == 200
 assert ( resp.data instanceof GPathResult ) // parsed using XmlSlurper
 assert resp.data.text == msg
 assert resp.data.user.screen_name == userName
-def postID = resp.data.id
+def postID = resp.data.id.toInteger()
 -------------------------------------------
 
   Note that the above example is posting the request data as 
