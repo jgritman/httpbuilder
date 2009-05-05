@@ -34,6 +34,18 @@ http.post( path: 'update.xml', body: postBody,
  require a response handler closure; in this case, the builder instance's 
  success handler is used, which by default will return the parsed response 
  data.   
+ 
+ <Note on the Content-Type of POSTed data:>
+ HTTPBuilder's <<<post>>> method is special in particular because it 
+ assumes the request body will be URL-encoded form data.  This is the only method
+ that assumes a particular request content-type.  For all methods that send a 
+ request body (including <<<post>>>,) a <<<requestContentType>>> parameter may be 
+ set to explicitly define how the request data should be serialized.  In these 
+ cases, if the request content-type is not specified, it will default to the 
+ response <<<contentType>>>.  Supported request content-types are handled by the 
+ <<<{{{../apidocs/index.html?groovyx/net/http/EncoderRegistry.html}EncoderRegistry}}>>> 
+ class. 
+    
 
 
 POSTing with the <<<request(...)>>> Method 
