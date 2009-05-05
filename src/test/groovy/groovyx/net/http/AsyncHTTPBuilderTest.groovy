@@ -21,7 +21,9 @@
  */
 package groovyx.net.http
 
-import org.junit.Test
+import org.junit.Test
+import static groovyx.net.http.ContentType.*
+import static groovyx.net.http.Method.*
 
 /**
  * @author tnichols
@@ -68,5 +70,50 @@ public class AsyncHTTPBuilderTest {
 		}
 		http.shutdown()
 		println 'done.'
+	}
+
+	@Test public void testDefaultConstructor() {
+		def http = new AsyncHTTPBuilder()
+		def resp = http.get( uri:'http://ajax.googleapis.com', 
+					path : '/ajax/services/search/web',
+					params : [ v:'1.0', q: 'Calvin and Hobbes' ],
+					contentType: JSON )
+					
+		while ( ! resp.done  ) Thread.sleep( 2000 )                       
+		assert resp.get().size()
+		assert resp.get().responseData.results
+	}
+
+	@Test public void testPostAndDelete() {
+		def http = new AsyncHTTPBuilder(uri:'http://twitter.com/statuses/')
+		
+		http.auth.basic System.getProperty('twitter.user'),
+		               System.getProperty('twitter.passwd')
+
+		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+		
+		def msg = "AsyncHTTPBuilder unit test was run on ${new Date()}"
+		
+		def resp = http.post( contentType:XML, path : 'update.xml',
+			body:[status:msg,source:'httpbuilder'] )
+			
+		while ( ! resp.done  ) Thread.sleep( 2000 )                       
+		def postID = resp.get().id.toInteger()
+		assert postID
+		
+		// delete the test message.
+		resp = http.request( DELETE, JSON ) { req ->
+			uri.path = "destroy/${postID}.json"
+			
+			response.success = { resp2, json ->
+				assert json.id != null
+				assert resp2.statusLine.statusCode == 200
+				println "Test tweet ID ${json.id} was deleted."
+				return json
+			}
+		}
+		
+		while ( ! resp.done  ) Thread.sleep( 2000 )
+		assert resp.get().id == postID
 	}
 }

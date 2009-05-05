@@ -23,12 +23,17 @@ package groovyx.net.http;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import groovy.lang.Closure;
+import org.codehaus.groovy.runtime.MethodClosure;
+
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
@@ -72,18 +77,21 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 */
 	public AsyncHTTPBuilder( Map<String, ?> args ) throws URISyntaxException {
 		super();
-		Object poolSize = args.get("poolSize");
-		if ( poolSize == null ) poolSize = DEFAULT_POOL_SIZE;
-		this.initThreadPools( (Integer)poolSize );
-		
-		if ( args.get( "url" ) != null ) throw new IllegalArgumentException(
-			"The 'url' parameter is deprecated; use 'uri' instead" );
-		Object defaultURI = args.get("uri");
-		if ( defaultURI != null ) super.setUri(defaultURI);
-
-		Object defaultContentType = args.get("contentType");
-		if ( defaultContentType != null ) 
-			super.setContentType(defaultContentType);
+		int poolSize = DEFAULT_POOL_SIZE;
+		if ( args != null ) { 
+			Object poolSzArg = args.get("poolSize");
+			if ( poolSzArg != null ) poolSize = Integer.parseInt( poolSzArg.toString() );
+			
+			if ( args.get( "url" ) != null ) throw new IllegalArgumentException(
+				"The 'url' parameter is deprecated; use 'uri' instead" );
+			Object defaultURI = args.get("uri");
+			if ( defaultURI != null ) super.setUri(defaultURI);
+	
+			Object defaultContentType = args.get("contentType");
+			if ( defaultContentType != null ) 
+				super.setContentType(defaultContentType);
+		}
+		this.initThreadPools( poolSize );
 	}
 	
 	/**
@@ -151,6 +159,18 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 		 * waiting for a free connection to send the request.
 		 */
 		this.threadPool.setMaximumPoolSize(poolSize);
+	}
+	
+	@Override
+	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData )
+			throws IOException {
+		return super.defaultSuccessHandler( resp, parsedData );
+	}
+	
+	@Override
+	protected void defaultFailureHandler( HttpResponseDecorator resp )
+			throws HttpResponseException {
+		super.defaultFailureHandler( resp );
 	}
 	
 	/**

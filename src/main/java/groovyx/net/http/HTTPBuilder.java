@@ -422,7 +422,6 @@ public class HTTPBuilder {
 			throws ClientProtocolException, IOException {
 		
 		final HttpRequestBase reqMethod = delegate.getRequest();
-		log.debug( reqMethod.getMethod() + " " + reqMethod.getURI() );
 		
 		Object contentType = delegate.getContentType();
 		String acceptContentTypes = contentType.toString();
@@ -431,6 +430,7 @@ public class HTTPBuilder {
 		
 		reqMethod.setHeader( "Accept", acceptContentTypes );
 		reqMethod.setURI( delegate.getUri().toURI() );
+		log.debug( reqMethod.getMethod() + " " + reqMethod.getURI() );
 
 		// set any request headers from the delegate
 		Map<?,?> headers = delegate.getHeaders(); 
@@ -840,8 +840,7 @@ public class HTTPBuilder {
 			this.contentType = contentType;
 			this.responseHandlers.putAll( defaultResponseHandlers );
 			URI uri = request.getURI();
-			if ( uri == null ) uri = defaultURI.toURI();
-			this.uri = new URIBuilder(uri);
+			if ( uri != null ) this.uri = new URIBuilder(uri);
 		}
 		
 		public RequestConfigDelegate( Map<String,?> args, HttpRequestBase request, Closure successHandler ) 
