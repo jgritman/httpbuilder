@@ -21,6 +21,7 @@
  */
 package groovyx.net.http;
 
+import groovy.lang.Closure;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -140,9 +141,51 @@ public class RESTClient extends HTTPBuilder {
 		return super.doRequest( new RequestConfigDelegate( args, new HttpPost(), null ) );
 	}
 	
+	/**
+	 * Same as {@link #post(Map)}, except the request body may be defined as a
+	 * closure, for request encoders that support builder-style definition.
+	 * 
+	 * @param args named parameters see {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+	 * @param body the request body as a closure (for XML or JSON builder definitions)
+	 * @return a {@link HttpResponseDecorator}, if the default response handler is not 
+	 *   overridden.
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public Object post( Map<String,?> args, Closure body ) throws URISyntaxException, 
+		ClientProtocolException, IOException {
+		if ( args.get( "body" ) != null ) 
+			throw new IllegalArgumentException( "'body' parameter should not be " +
+					"specified when passing a closure" );
+		args.put( "body", body );
+		return this.post( args );
+	}
+
 	public Object put( Map<String,?> args ) throws URISyntaxException, 
 			ClientProtocolException, IOException {
 		return this.doRequest( new RequestConfigDelegate( args, new HttpPut(), null ) );
+	}
+	
+	/**
+	 * Same as {@link #post(Map)}, except the request body may be defined as a
+	 * closure, for request encoders that support builder-style definition.
+	 * 
+	 * @param args named parameters see {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+	 * @param body the request body as a closure (for XML or JSON builder definitions)
+	 * @return a {@link HttpResponseDecorator}, if the default response handler is not 
+	 *   overridden.
+	 * @throws URISyntaxException
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
+	public Object put( Map<String,?> args, Closure body ) throws URISyntaxException, 
+		ClientProtocolException, IOException {
+		if ( args.get( "body" ) != null ) 
+			throw new IllegalArgumentException( "'body' parameter should not be " +
+					"specified when passing a closure" );
+		args.put( "body", body );
+		return this.put( args );
 	}
 	
 	public Object head( Map<String,?> args ) throws URISyntaxException, 
