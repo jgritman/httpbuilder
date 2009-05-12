@@ -30,16 +30,16 @@ POSTing JSON data
   
 -----------------------
   http.request( POST, JSON ) { req ->
-      body = {
-      	first = 'Bob'
-      	last = 'Builder'
-      	address {
-      	  street = '123 Some St'
-      	  town = 'Boston'
-      	  state = 'MA'
-      	  zip = 12345
-      	} 
-      }
+      body = [
+      	first : 'Bob',
+      	last : 'Builder',
+      	address : [
+      	  street : '123 Some St',
+      	  town : 'Boston',
+      	  state : 'MA',
+      	  zip : 12345
+      	]
+      ]
      
       response.success = { resp, json ->
           // response handling here

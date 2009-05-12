@@ -4,4 +4,23 @@
                                     ------
                                     ------
 
-  TODO examples of parsing and sending XML content.
+Posting XML data
+
+  XML data is serialized using 
+  <<<{{{http://groovy.codehaus.org/gapi/index.html?groovy/xml/StreamingMarkupBuilder.html}StreamingMarkupBuilder}}>>>.  
+  You can define the <<<body>>> property as a closure like so:
+  
+--------------------------------------
+http.request( POST, XML ) {
+  
+  body = {
+    auth {
+      user 'Bob'
+      password 'pass'
+    }
+  }
+}
+--------------------------------------
+
+ The body is then transformed to an XML string by 
+ <<<{{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(groovy.lang.Closure)}EncoderRegistry.encodeXML()}}>>>
