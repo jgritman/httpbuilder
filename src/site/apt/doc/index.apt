@@ -8,19 +8,19 @@ Introduction
   
   HTTPBuilder is optimized for three tasks:
   
-  [[1]]  Streaming response handling,
+  [[]]  Streaming response handling,
   
-  [[2]]  Content-type based parsing, and
+  [[]]  Automatic response parsing based on content-type
    
-  [[3]]  Logic based on the response status code
+  [[]]  Logic based on the response status code
   
   []
   
-  To this end, HTTPBuilder exposes convenience methods for common request types,
+  To achieve this, HTTPBuilder exposes convenience methods for common request types,
   (i.e. GET and POST) and a more complex <<<request>>> method that allows fine-grained
   configuration of each request and response.
   
-  The following example shows use of most of the <<<request>>> method's features. 
+  The following example shows most of the <<<request>>> method's features. 
   
 ------------------------
 import groovyx.net.http.HTTPBuilder
@@ -31,7 +31,7 @@ import static groovyx.net.http.ContentType.TEXT
 def http = new HTTPBuilder( 'http://www.google.com/search' )
 
 http.request(GET,TEXT) { req ->
-  url.path = '/mail/help/tasks/' // overrides any path in the default URL
+  uri.path = '/mail/help/tasks/' // overrides any path in the default URL
   headers.'User-Agent' = 'Mozilla/5.0'
   
   response.success = { resp, reader ->
@@ -101,8 +101,8 @@ import static groovyx.net.http.ContentType.JSON
 
 def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
 http.request( GET, JSON ) {
-  url.path = '/ajax/services/search/web'
-  url.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  uri.path = '/ajax/services/search/web'
+  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
   
   response.success = { resp, json ->
     assert json.size() == 3
