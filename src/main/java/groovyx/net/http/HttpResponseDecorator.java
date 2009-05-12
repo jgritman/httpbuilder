@@ -96,6 +96,7 @@ public class HttpResponseDecorator implements HttpResponse {
 	 */
 	public Object getData() { return this.responseData; }
 	
+	void setData( Object responseData ) { this.responseData = responseData; }
 	
 	/**
 	 * This class is returned by {@link HttpResponseDecorator#getHeaders()}.

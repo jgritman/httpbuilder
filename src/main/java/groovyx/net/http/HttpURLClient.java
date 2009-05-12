@@ -187,7 +187,7 @@ public class HttpURLClient {
 		arg = args.remove( "body" );
 		if ( arg != null ) {
 			conn.setDoOutput( true );
-			HttpEntity body = (HttpEntity)encoderRegistry.get( 
+			HttpEntity body = (HttpEntity)encoderRegistry.getAt( 
 					requestContentType ).call( arg );
 			// TODO configurable request charset
 			
@@ -203,22 +203,18 @@ public class HttpURLClient {
 			log.warn( "request() : Unkown named parameter '" + k + "'" );
 		
 		log.debug( conn.getRequestMethod() + " " + url );
-		// this causes IllegalStateException (Already connected) under certain circumstances
-/*		if ( log.isTraceEnabled() )  
-			for( String key : conn.getRequestProperties().keySet() )
-				log.trace( " >> " + key + " : " + conn.getRequestProperty(key) );
-*/		
+		
 		HttpResponse response = new HttpURLResponseAdapter(conn);
 		if ( ContentType.ANY.equals( contentType ) ) contentType = conn.getContentType();
 
 		String method = conn.getRequestMethod();
 		Object result = method.equals( "HEAD" ) || method.equals( "OPTIONS" ) ?
-				null : parserRegistry.get( contentType ).call( response );
+				null : parserRegistry.getAt( contentType ).call( response );
 		
 		log.debug( response.getStatusLine() );
 		HttpResponseDecorator decoratedResponse = new HttpResponseDecorator( response, result );
+		
 		if ( log.isTraceEnabled() ) {
-			System.out.println("Debug headers:");
 			for ( Header h : decoratedResponse.getHeaders() )
 				log.trace( " << " + h.getName() + " : " + h.getValue() );
 		}
@@ -448,19 +444,19 @@ public class HttpURLClient {
 		}
 	}
 
-	public EncoderRegistry getEncoderRegistry() {
+	public EncoderRegistry getEncoders() {
 		return encoderRegistry;
 	}
 
-	public void setEncoderRegistry( EncoderRegistry encoderRegistry ) {
+	public void setEncoders( EncoderRegistry encoderRegistry ) {
 		this.encoderRegistry = encoderRegistry;
 	}
 
-	public ParserRegistry getParserRegistry() {
+	public ParserRegistry getParsers() {
 		return parserRegistry;
 	}
 
-	public void setParserRegistry( ParserRegistry parserRegistry ) {
+	public void setParsers( ParserRegistry parserRegistry ) {
 		this.parserRegistry = parserRegistry;
 	}
 

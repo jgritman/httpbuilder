@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,7 @@ import net.sf.json.groovy.JsonSlurper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -71,7 +73,16 @@ import org.xml.sax.SAXException;
  */
 public class ParserRegistry {
 	
-	protected Closure defaultParser = new MethodClosure( this, "parseStream" );
+	/**
+	 * The default parser used for unregistered content-types.  This is a copy 
+	 * of {@link #parseStream(HttpResponse)}, which is like a no-op that just 
+	 * returns the unaltered response stream.
+	 */
+	protected final Closure DEFAULT_PARSER = new MethodClosure( this, "parseStream" );
+
+	private Closure defaultParser = DEFAULT_PARSER;
+	private Map<String,Closure> registeredParsers = buildDefaultParserMap();
+	
 	protected final Log log = LogFactory.getLog( getClass() );
 	
 	/**
@@ -102,10 +113,12 @@ public class ParserRegistry {
 	}
 	
 	/**
-	 * Default parser used for binary data.
+	 * Default parser used for binary data.  This simply returns the underlying
+	 * response InputStream.
 	 * @see ContentType#BINARY
+	 * @see HttpEntity#getContent()
 	 * @param resp
-	 * @return an InputStream 
+	 * @return an InputStream the binary response stream
 	 * @throws IllegalStateException
 	 * @throws IOException
 	 */
@@ -186,43 +199,6 @@ public class ParserRegistry {
 		return new JsonSlurper().parseText( jsonTxt );
 	}
 	
-	protected Map<String,Closure> registeredParsers = buildDefaultParserMap();
-	
-	/**
-	 * Register a new parser for the given content-type.  The parser closure
-	 * should accept an {@link HttpResponse} argument and return a type suitable
-	 * to be passed to a {@link RequestConfigDelegate#getResponse() response handler}.
-	 * The value returned from the parser closure is always the second parameter 
-	 * of the response handler closure.  
-	 * @param contentType  <code>content-type</code> string
-	 * @param closure code that will parse the HttpResponse and return parsed 
-	 *   data to the response handler. 
-	 */
-	public void register( String contentType, Closure closure ) {
-		registeredParsers.put( contentType, closure );
-	}
-	
-	/* Retrieve a parser for the given response content-type string.  This
-	 * should usually not be called by a user.  The appropriate parser will
-	 * be resolved prior to executing the response handler. 
-	 * @param contentType
-	 * @return parser that can interpret the given response content type,
-	 *   or the default parser if no parser is registered for the given 
-	 *   content-type.  It should NOT return a null value.
-	 */
-	Closure get( Object contentType ) {
-		String ct = contentType.toString();
-		int idx = ct.indexOf( ';' ); 
-		if ( idx > 0 ) ct = ct.substring( 0, idx );
-		
-		Closure parser = registeredParsers.get(ct);
-		if ( parser != null ) return parser;
-			
-		log.warn( "Cannot find parser for content-type: " + ct 
-					+ " -- using default parser.");
-		return defaultParser;
-	}
-	
 	/**
 	 * Returns a map of default parsers.  Override this method to change 
 	 * what parsers are registered by default.  You can of course call
@@ -246,5 +222,88 @@ public class ParserRegistry {
 			parsers.put( ct, pClosure );
 		
 		return parsers;
+	}
+	
+	/**
+	 * Get the default parser used for unregistered content-types.
+	 * @return
+	 */
+	public Closure getDefaultParser() {
+		return this.defaultParser;
+	}
+	
+	/**
+	 * Set the default parser used for unregistered content-types.
+	 * @param defaultParser if 
+	 */
+	public void setDefaultParser( Closure defaultParser ) {
+		if ( defaultParser == null ) this.defaultParser = DEFAULT_PARSER;
+		this.defaultParser = defaultParser;
+	}
+
+	/** 
+	 * Retrieve a parser for the given response content-type string.  This
+	 * is called by HTTPBuildre to retrieve the correct parser for a given 
+	 * content-type.  The parser is then used to decode the response data prior
+	 * to passing it to a response handler. 
+	 * @param contentType
+	 * @return parser that can interpret the given response content type,
+	 *   or the default parser if no parser is registered for the given 
+	 *   content-type.  It should NOT return a null value.
+	 */
+	public Closure getAt( Object contentType ) {
+		String ct = contentType.toString();
+		int idx = ct.indexOf( ';' ); 
+		if ( idx > 0 ) ct = ct.substring( 0, idx );
+		
+		Closure parser = registeredParsers.get(ct);
+		if ( parser != null ) return parser;
+
+		log.warn( "Cannot find parser for content-type: " + ct 
+					+ " -- using default parser.");
+		return defaultParser;
+	}
+	
+	/**
+	 * Register a new parser for the given content-type.  The parser closure
+	 * should accept an {@link HttpResponse} argument and return a type suitable
+	 * to be passed as the 'parsed data' argument of a 
+	 * {@link RequestConfigDelegate#getResponse() response handler} closure.
+	 * @param contentType  <code>content-type</code> string
+	 * @param closure code that will parse the HttpResponse and return parsed 
+	 *   data to the response handler. 
+	 */
+	public void setAt( Object contentType, Closure value ) {
+		if ( contentType instanceof ContentType ) {
+			for ( String ct : ((ContentType)contentType).getContentTypeStrings() )
+				this.registeredParsers.put( ct, value );
+		}
+		else this.registeredParsers.put( contentType.toString(), value );
+	}
+	
+	/**
+	 * Alias for {@link #getAt(Object)} to allow property-style access.
+	 * @param key content-type string
+	 * @return
+	 */
+	public Closure propertyMissing( Object key ) {
+		return this.getAt( key );
+	}
+	
+	/**
+	 * Alias for {@link #setAt(Object, Closure)} to allow property-style access.
+	 * @param key content-type string
+	 * @param value parser closure
+	 */
+	public void propertyMissing( Object key, Closure value ) {
+		this.setAt( key, value );
+	}
+	
+	/**
+	 * Iterate over the entire parser map
+	 * @return
+	 */
+	public Iterator<Map.Entry<String,Closure>> iterator() { 
+		return this.registeredParsers.entrySet().iterator(); 
 	}
 }

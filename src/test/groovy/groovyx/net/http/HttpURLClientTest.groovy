@@ -95,6 +95,7 @@ class HttpURLClientTest {
 			
 		// we'll validate the reader by passing it to an XmlSlurper manually.
 		def parsedData = new XmlSlurper().parse(resp.data)
+		resp.data.close()
 		assert parsedData.children().size() > 0		
 	}
 	
@@ -139,13 +140,38 @@ class HttpURLClientTest {
 	@Test public void testHeadMethod() {
 		def http = new HttpURLClient(url:'http://twitter.com/statuses/')
 		
+		assert http.url.toString() == "http://twitter.com/statuses/"
+		
 		http.setBasicAuth twitter.user, twitter.passwd
 		
-		def resp = http.request( method:HEAD, contentType:XML, path : 'friends_timeline.xml' ) 
+		def resp = http.request( method:HEAD, contentType:"application/xml", 
+				path : 'friends_timeline.xml' ) 
 			
 		assert resp.headers.Status == "200 OK"		
 	}
+	
+	@Test public void testParsers() {
+		def parsers = new ParserRegistry()
+		def done = false
+		parsers.'application/xml' = { done = true }
 		
+		def http = new HttpURLClient(
+				url:'http://twitter.com/statuses/',
+				parsers : parsers )
+		
+		http.setBasicAuth twitter.user, twitter.passwd
+		def resp = http.request( path : 'friends_timeline.xml' ) 
+		assert done
+		assert resp.data
+		
+		done = false
+		parsers.defaultParser = { done = true }
+		parsers.'application/xml' = null
+		resp = http.request( path : 'friends_timeline.xml' ) 
+		assert done
+		assert resp.data
+	}
+	
 	/* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
 	 * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
 	 */

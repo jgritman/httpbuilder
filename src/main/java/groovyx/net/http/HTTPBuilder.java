@@ -442,6 +442,7 @@ public class HTTPBuilder {
 		}
 		
 		HttpResponse resp = client.execute( reqMethod );
+		resp = new HttpResponseDecorator( resp, null );
 		int status = resp.getStatusLine().getStatusCode();
 		Closure responseClosure = delegate.findResponseHandler( status );
 		log.debug( "Response code: " + status + "; found handler: " + responseClosure );
@@ -449,11 +450,10 @@ public class HTTPBuilder {
 		Object[] closureArgs = null;
 		switch ( responseClosure.getMaximumNumberOfParameters() ) {
 		case 1 :
-			closureArgs = new Object[] { new HttpResponseDecorator( resp, null ) };
+			closureArgs = new Object[] { resp };
 			break;
 		case 2 : // parse the response entity if the response handler expects it:
-			closureArgs = new Object[] { new HttpResponseDecorator( resp, null ), 
-					parseResponse( resp, contentType ) };
+			closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
 			break;
 		default:
 			throw new IllegalArgumentException( 
@@ -494,7 +494,7 @@ public class HTTPBuilder {
 			responseContentType = ParserRegistry.getContentType( resp );
 		
 		Object parsedData = null;
-		Closure parser = parsers.get( responseContentType );
+		Closure parser = parsers.getAt( responseContentType );
 		if ( parser == null ) log.warn( "No parser found for content-type: "
 				+ responseContentType );
 		else {
@@ -606,8 +606,8 @@ public class HTTPBuilder {
 	 * }</pre>  
 	 * @return
 	 */
-	public Map<String,Closure> getParser() {
-		return this.parsers.registeredParsers;
+	public ParserRegistry getParser() {
+		return this.parsers;
 	}
 	
 	/**
@@ -625,8 +625,8 @@ public class HTTPBuilder {
 	 *   
 	 * @return a map of 'encoder' closures, keyed by content-type string.
 	 */
-	public Map<String,Closure> getEncoder() {
-		return this.encoders.registeredEncoders;
+	public EncoderRegistry getEncoder() {
+		return this.encoders;
 	}
 	
 	/**
@@ -1082,7 +1082,7 @@ public class HTTPBuilder {
 			if ( ! (request instanceof HttpEntityEnclosingRequest ) )
 				throw new UnsupportedOperationException( 
 						"Cannot set a request body for a " + request.getMethod() + " method" );
-			Closure encoder = encoders.get( this.getRequestContentType() );
+			Closure encoder = encoders.getAt( this.getRequestContentType() );
 			HttpEntity entity = (HttpEntity)encoder.call( body );
 			
 			((HttpEntityEnclosingRequest)this.request).setEntity( entity );

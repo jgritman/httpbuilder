@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -49,11 +50,13 @@ import net.sf.json.groovy.JsonGroovyBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 
@@ -85,7 +88,8 @@ import org.codehaus.groovy.runtime.MethodClosure;
 public class EncoderRegistry {
 	
 	Charset charset = Charset.defaultCharset(); // 1.5
-	
+	private Map<String,Closure> registeredEncoders = buildDefaultEncoderMap();
+
 	/**
 	 * Set the charset used in the content-type header of all requests that send
 	 * textual data.  This must be a chaset supported by the Java platform
@@ -101,7 +105,7 @@ public class EncoderRegistry {
 	 * types are:
 	 * <ul>
 	 *   <li>InputStream</li>
-	 *   <li>ByteArrayOutputStream</li>
+	 *   <li>byte[] / ByteArrayOutputStream</li>
 	 *   <li>Closure</li>
 	 * </ul>
 	 * If a closure is given, it is executed with an OutputStream passed
@@ -112,24 +116,38 @@ public class EncoderRegistry {
 	 * @throws UnsupportedEncodingException
 	 */
 	public InputStreamEntity encodeStream( Object data ) throws UnsupportedEncodingException {
-		if ( data instanceof InputStream ) {
-			return new InputStreamEntity( (InputStream)data, -1 );
-		}
-		else if ( data instanceof ByteArrayInputStream ) {
+		InputStreamEntity entity = null;
+		
+		if ( data instanceof ByteArrayInputStream ) {
+			// special case for ByteArrayIS so that we can set the content length.
 			ByteArrayInputStream in = ((ByteArrayInputStream)data);
-			return new InputStreamEntity( in, in.available() );
+			entity = new InputStreamEntity( in, in.available() );
+		}
+		else if ( data instanceof InputStream ) {
+			entity = new InputStreamEntity( (InputStream)data, -1 );
+		}
+		else if ( data instanceof byte[] ) {
+			byte[] out = ((byte[])data); 
+			entity = new InputStreamEntity( new ByteArrayInputStream(
+					out), out.length );
 		}
 		else if ( data instanceof ByteArrayOutputStream ) {
 			ByteArrayOutputStream out = ((ByteArrayOutputStream)data); 
-			return new InputStreamEntity( new ByteArrayInputStream(
+			entity = new InputStreamEntity( new ByteArrayInputStream(
 					out.toByteArray()), out.size() );
 		}
 		else if ( data instanceof Closure ) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			((Closure)data).call( out ); // data is written to out
-			return new InputStreamEntity( new ByteArrayInputStream(out.toByteArray()), out.size() );
+			entity = new InputStreamEntity( new ByteArrayInputStream( 
+					out.toByteArray()), out.size() );
 		}
-		throw new IllegalArgumentException( "Don't know how to encode " + data + " as a byte stream" );
+
+		if ( entity == null ) throw new IllegalArgumentException( 
+				"Don't know how to encode " + data + " as a byte stream" );
+		
+		entity.setContentType( ContentType.BINARY.toString() );
+		return entity;
 	}
 	
 	/**
@@ -165,13 +183,10 @@ public class EncoderRegistry {
 		else if ( data instanceof Reader && ! (data instanceof BufferedReader) )
 			data = new BufferedReader( (Reader)data );
 		if ( data instanceof BufferedReader ) {
-			StringBuilder sb = new StringBuilder();
-			BufferedReader reader = (BufferedReader)data;
-			String line = null;
-			while( (line = reader.readLine()) != null )
-				sb.append( line );
+			StringWriter out = new StringWriter();
+			DefaultGroovyMethods.leftShift( out, (BufferedReader)data );
 			
-			data = sb;
+			data = out;
 		}
 		// if data is a String, we are already covered.
 		return createEntity( ContentType.TEXT, data.toString() );
@@ -214,8 +229,23 @@ public class EncoderRegistry {
 	 * other collection type will be converted to a {@link JSONArray}.</p> 
 	 * 
 	 * <p>If a Closure is passed as the model, it will be executed as if it were 
-	 * a JSON object definition passed to a {@link JsonGroovyBuilder}.  The closure 
-	 * must return the result of the outermost builder method call.</p>
+	 * a JSON object definition passed to a {@link JsonGroovyBuilder}.  In order
+	 * for the closure to be interpreted correctly, there must be a 'root' 
+	 * element immediately inside the closure.  For example:</p>
+	 * 
+	 * <pre>builder.post( JSON ) {
+	 *   body = {
+	 *     root {
+	 *       first {
+	 *         one = 1
+	 *         two = '2'
+	 *       }
+	 *       second = 'some string'
+	 *     }
+	 *   }
+	 * }</pre>
+	 * <p> will return the following JSON string:<pre>
+	 * {"root":{"first":{"one":1,"two":"2"},"second":"some string"}}</pre></p>
 	 *  
 	 * @param model data to be converted to JSON, as specified above.
 	 * @return an {@link HttpEntity} encapsulating this request data
@@ -223,8 +253,8 @@ public class EncoderRegistry {
 	 */
 	@SuppressWarnings("unchecked")
 	public HttpEntity encodeJSON( Object model ) throws UnsupportedEncodingException {
-		JSON json;
 		
+		JSON json;	
 		if ( model instanceof Map ) {
 			json = new JSONObject();
 			((JSONObject)json).putAll( (Map)model );
@@ -236,7 +266,7 @@ public class EncoderRegistry {
 		else if ( model instanceof Closure ) {
 			Closure closure = (Closure)model;
 			closure.setDelegate( new JsonGroovyBuilder() );
-			json = (JSONObject)closure.call();
+			json = (JSON)closure.call();
 		}
 		else json = JSONObject.fromObject( model ); // Assume object is a JavaBean
 		
@@ -262,30 +292,6 @@ public class EncoderRegistry {
 		return entity;
 	}
 	
-	protected Map<String,Closure> registeredEncoders = buildDefaultEncoderMap();
-
-	/** 
-	 * Register a new encoder for the given content type.  If any encoder 
-	 * previously existed for that content type it will be replaced.  The 
-	 * closure must return an {@link HttpEntity}.  It will also usually 
-	 * accept a single argument, which will be whatever is set in the request
-	 * configuration closure via {@link RequestConfigDelegate#setBody(Object)}.
-	 * @param contentType
-	 * @param closure
-	 */
-	public void register( String contentType, Closure closure ) {
-		registeredEncoders.put( contentType, closure );
-	}
-	
-	/* Get the encoder for the given content-type.  Not usually called 
-	 * by the end-user.  The HTTPBuilder will get the appropriate encoder 
-	 * automatically in order to encode the request body data.
-	 * @param contentType
-	 * @return the encoder closure, or <code>null</code> if no encoder is
-	 * registered.
-	 */
-	Closure get( String contentType ) { return registeredEncoders.get(contentType); }
-	
 	/**
 	 * Returns a map of default encoders.  Override this method to change 
 	 * what encoders are registered by default.  You can of course call
@@ -309,5 +315,65 @@ public class EncoderRegistry {
 			encoders.put( ct, encClosure );
 		
 		return encoders;
+	}
+	
+	/** 
+	 * Retrieve a encoder for the given content-type.  This
+	 * is called by HTTPBuilder to retrieve the correct encoder for a given 
+	 * content-type.  The encoder is then used to serialize the request data 
+	 * in the request body. 
+	 * @param contentType
+	 * @return encoder that can interpret the given content type,
+	 *   or null.
+	 */
+	public Closure getAt( Object contentType ) {
+		String ct = contentType.toString();
+		int idx = ct.indexOf( ';' ); 
+		if ( idx > 0 ) ct = ct.substring( 0, idx );
+		
+		return registeredEncoders.get(ct);
+	}
+	
+	/** 
+	 * Register a new encoder for the given content type.  If any encoder 
+	 * previously existed for that content type it will be replaced.  The 
+	 * closure must return an {@link HttpEntity}.  It will also usually 
+	 * accept a single argument, which will be whatever is set in the request
+	 * configuration closure via {@link RequestConfigDelegate#setBody(Object)}.
+	 * @param contentType
+	 * @param closure
+	 */
+	public void setAt( Object contentType, Closure value ) {
+		if ( contentType instanceof ContentType ) {
+			for ( String ct : ((ContentType)contentType).getContentTypeStrings() )
+				this.registeredEncoders.put( ct, value );
+		}
+		else this.registeredEncoders.put( contentType.toString(), value );
+	}
+	
+	/**
+	 * Alias for {@link #getAt(Object)} to allow property-style access.
+	 * @param key
+	 * @return
+	 */
+	public Closure propertyMissing( Object key ) {
+		return this.getAt( key );
+	}
+	
+	/**
+	 * Alias for {@link #setAt(Object, Closure)} to allow property-style access.
+	 * @param key
+	 * @param value
+	 */
+	public void propertyMissing( Object key, Closure value ) {
+		this.setAt( key, value );
+	}
+	
+	/**
+	 * Iterate over the entire parser map
+	 * @return
+	 */
+	public Iterator<Map.Entry<String,Closure>> iterator() { 
+		return this.registeredEncoders.entrySet().iterator(); 
 	}
 }
