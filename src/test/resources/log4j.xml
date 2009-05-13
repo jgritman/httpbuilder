@@ -14,8 +14,8 @@
 	</category>
 	
 	<!-- Use DEBUG to see basic request/response info;  
-	     Use TRACE to see headers for HttpURLBuilder. -->
-	<category name="groovyx.net.http.HttpURLBuilder">
+	     Use TRACE to see headers for HttpURLClient. -->
+	<category name="groovyx.net.http.HttpURLClient">
 		<priority value="TRACE" />
 	</category>
 
