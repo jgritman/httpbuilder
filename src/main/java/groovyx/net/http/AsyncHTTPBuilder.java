@@ -23,15 +23,14 @@ package groovyx.net.http;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import groovy.lang.Closure;
-import org.codehaus.groovy.runtime.MethodClosure;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
@@ -45,6 +44,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 
@@ -64,21 +64,34 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 */
 	public static final int DEFAULT_POOL_SIZE = 4;
 	
-	protected final ThreadPoolExecutor threadPool = 
-		(ThreadPoolExecutor)Executors.newCachedThreadPool();
+	protected ExecutorService threadPool;
+//		= (ThreadPoolExecutor)Executors.newCachedThreadPool();
 	
 	/**
 	 * Accepts the following named parameters:
 	 * <dl>
+	 *  <dt>threadPool</dt><dd>Custom {@link ExecutorService} instance for 
+	 *  	running submitted requests.  If this is an instance of {@link ThreadPoolExecutor},
+	 *      the poolSize will be determined by {@link ThreadPoolExecutor#getMaximumPoolSize()}.
+	 *      The default threadPool uses an unbounded queue to accept an unlimited 
+	 *      number of requests.</dd>
 	 *  <dt>poolSize</dt><dd>Max number of concurrent requests</dd>
-	 *  <dt>url</dt><dd>Default request URL</dd>
+	 *  <dt>uri</dt><dd>Default request URI</dd>
 	 *  <dt>contentType</dt><dd>Default content type for requests and responses</dd>
+	 *  <dt>timeout</dt><dd>Timeout in milliseconds to wait for a connection to 
+	 *  	be established and request to complete.</dd>
 	 * </dl>
 	 */
 	public AsyncHTTPBuilder( Map<String, ?> args ) throws URISyntaxException {
 		super();
 		int poolSize = DEFAULT_POOL_SIZE;
+		ExecutorService threadPool = null;
 		if ( args != null ) { 
+			threadPool = (ExecutorService)args.get( "threadPool" );
+
+			if ( threadPool instanceof ThreadPoolExecutor )
+				poolSize = ((ThreadPoolExecutor)threadPool).getMaximumPoolSize();
+			
 			Object poolSzArg = args.get("poolSize");
 			if ( poolSzArg != null ) poolSize = Integer.parseInt( poolSzArg.toString() );
 			
@@ -86,12 +99,15 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 				"The 'url' parameter is deprecated; use 'uri' instead" );
 			Object defaultURI = args.get("uri");
 			if ( defaultURI != null ) super.setUri(defaultURI);
-	
+				
 			Object defaultContentType = args.get("contentType");
 			if ( defaultContentType != null ) 
 				super.setContentType(defaultContentType);
+			
+			Object timeout = args.get( "timeout" );
+			if ( timeout != null ) setTimeout( (Integer) timeout );
 		}
-		this.initThreadPools( poolSize );
+		this.initThreadPools( poolSize, threadPool );
 	}
 	
 	/**
@@ -111,8 +127,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 					return doRequestSuper(delegate);
 				}
 				catch( Exception ex ) {
-					log.error( "Exception thrown from request delegate: " + 
-							delegate, ex );
+					log.info( "Exception thrown from response delegate: " + delegate, ex );
 					throw ex;
 				}
 			}
@@ -131,7 +146,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 * Initializes threading parameters for the HTTPClient's 
 	 * {@link ThreadSafeClientConnManager}, and this class' ThreadPoolExecutor. 
 	 */
-	protected void initThreadPools( final int poolSize ) {
+	protected void initThreadPools( final int poolSize, final ExecutorService threadPool ) {
 		if (poolSize < 1) throw new IllegalArgumentException("poolSize may not be < 1");
 		// Create and initialize HTTP parameters
 		HttpParams params = client != null ? client.getParams()
@@ -153,20 +168,28 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 				params, schemeRegistry );
 		super.client = new DefaultHttpClient( cm, params );
 
-		/* Although the thread pool is flexible, it cannot become bigger than
-		 * the max size of the connection pool-- otherwise threads will be
-		 * created in this pool for new jobs, but they will all block when
-		 * waiting for a free connection to send the request.
-		 */
-		this.threadPool.setMaximumPoolSize(poolSize);
+		this.threadPool = threadPool != null ? threadPool :
+			new ThreadPoolExecutor( 1, poolSize, 2, TimeUnit.MINUTES, 
+					new LinkedBlockingQueue<Runnable>() );
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData )
 			throws IOException {
 		return super.defaultSuccessHandler( resp, parsedData );
 	}
 	
+	/**
+	 * For 'failure' responses (e.g. a 404), the exception will be wrapped in 
+	 * a {@link ExecutionException} and held by the {@link Future} instance.  
+	 * The exception is then re-thrown when calling {@link Future#get() 
+	 * future.get()}.  You can access the original exception (e.g. an 
+	 * {@link HttpResponseException}) by calling <code>ex.getCause()</code>.  
+	 * 
+	 */
 	@Override
 	protected void defaultFailureHandler( HttpResponseDecorator resp )
 			throws HttpResponseException {
@@ -174,20 +197,42 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	}
 	
 	/**
+	 * This timeout is used for both the time to wait for an established 
+	 * connection, and the time to wait for data.
+	 * @see HttpConnectionParams#setSoTimeout(HttpParams, int)
+	 * @see HttpConnectionParams#setConnectionTimeout(HttpParams, int)
+	 * @param timeout time to wait in milliseconds.
+	 */
+	public void setTimeout( int timeout ) {		
+		HttpConnectionParams.setConnectionTimeout( super.getClient().getParams(), timeout );
+		HttpConnectionParams.setSoTimeout( super.getClient().getParams(), timeout );
+		/* this will cause a thread waiting for an available connection instance
+		 * to time-out   */
+//		ConnManagerParams.setTimeout( super.getClient().getParams(), timeout );		
+	}
+	
+	/**
+	 * Get the timeout in for establishing an HTTP connection.
+	 * @return timeout in milliseconds.
+	 */
+	public int getTimeout() {
+		return HttpConnectionParams.getConnectionTimeout( super.getClient().getParams() );
+	}
+	
+	/**
 	 * <p>Access the underlying threadpool to adjust things like job timeouts.</p>  
 	 * 
-	 * <p>Note that this is not the same thread pool used by the HttpClient's 
+	 * <p>Note that this is not the same pool used by the HttpClient's 
 	 * {@link ThreadSafeClientConnManager}.  Therefore, increasing the 
 	 * {@link ThreadPoolExecutor#setMaximumPoolSize(int) maximum pool size} will
 	 * not in turn increase the number of possible concurrent requests.  It will
 	 * simply cause more requests to be <i>attempted</i> which will then simply
-	 * block while waiting for an available connection.</p>
+	 * block while waiting for a free connection.</p>
 	 * 
-	 * <p>Since {@link ThreadSafeClientConnManager} has no public mechanism to 
-	 * adjust its pool size, the value 
-	 * @return
+	 * @return the service used to execute requests.  By default this is a 
+	 * {@link ThreadPoolExecutor}.
 	 */
-	public ThreadPoolExecutor getThreadPoolExecutor() {
+	public ExecutorService getThreadExecutor() {
 		return this.threadPool;
 	}
 	

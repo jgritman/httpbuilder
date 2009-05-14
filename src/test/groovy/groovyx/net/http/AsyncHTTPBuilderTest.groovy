@@ -24,7 +24,7 @@ package groovyx.net.http
 import org.junit.Test
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-
+import java.util.concurrent.ExecutionExceptionimport java.net.SocketTimeoutException
 /**
  * @author tnichols
  */
@@ -62,9 +62,9 @@ public class AsyncHTTPBuilderTest {
 		def timeout = 30000
 		def time = 0
 		while ( true ) {
-			if ( done.every{ it.done ? it.get() : 0 } ) break;
-			println '  waiting...'
-			Thread.sleep(2000)
+			if ( done.every{ it.done ? it.get() : 0 } ) break
+			print '.'
+			Thread.sleep 2000
 			time += 2000
 			if ( time > timeout ) assert false
 		}
@@ -79,9 +79,10 @@ public class AsyncHTTPBuilderTest {
 					params : [ v:'1.0', q: 'Calvin and Hobbes' ],
 					contentType: JSON )
 					
-		while ( ! resp.done  ) Thread.sleep( 2000 )                       
+		while ( ! resp.done  ) Thread.sleep 2000
 		assert resp.get().size()
 		assert resp.get().responseData.results
+		http.shutdown()
 	}
 
 	@Test public void testPostAndDelete() {
@@ -97,7 +98,7 @@ public class AsyncHTTPBuilderTest {
 		def resp = http.post( contentType:XML, path : 'update.xml',
 			body:[status:msg,source:'httpbuilder'] )
 			
-		while ( ! resp.done  ) Thread.sleep( 2000 )                       
+		while ( ! resp.done  ) Thread.sleep 2000 
 		def postID = resp.get().id.toInteger()
 		assert postID
 		
@@ -115,5 +116,50 @@ public class AsyncHTTPBuilderTest {
 		
 		while ( ! resp.done  ) Thread.sleep( 2000 )
 		assert resp.get().id == postID
+		http.shutdown()
+	}
+	
+	
+	@Test public void testTimeout() {
+		def http = new AsyncHTTPBuilder( uri:'http://ajax.googleapis.com', 
+				contentType: JSON, timeout:2 ) // 2ms to force timeout
+
+		assert http.timeout == 2 
+		
+		def resp = http.get( path : '/ajax/services/search/web', 
+				params : [ v:'1.0', q: 'HTTPBuilder' ] )
+
+		Thread.sleep 100
+		try {
+			resp.get()
+			assert false
+		}
+		catch ( ExecutionException ex ) {
+			assert ex.cause.getClass() == SocketTimeoutException
+		}
+	}
+	
+	@Test public void testPoolsizeAndQueueing() {
+		def http = new AsyncHTTPBuilder( poolsize : 1 ,
+				uri : 'http://ajax.googleapis.com/ajax/services/search/web' )
+		
+		def responses = []
+		/* With one thread in the pool, responses will be sequential but should 
+		 * queue up w/o being rejected. */
+		responses << http.get( params : [q:'Groovy', v:'1.0'] )
+		responses << http.get( params : [q:'Ruby', v:'1.0'] )
+		responses << http.get( params : [q:'Scala', v:'1.0'] )
+		
+		def timeout = 60000
+		def time = 0
+		while ( true ) {
+			if ( responses.every{ it.done ? it.get() : 0 } ) break
+			print '.'
+			Thread.sleep 2000
+			time += 2000
+			if ( time > timeout ) assert false
+		}
+		println()
+		http.shutdown()
 	}
 }
