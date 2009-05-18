@@ -284,47 +284,46 @@ public class HttpURLClient {
 			this.conn = conn;
 		}
 		
-		@Override public HttpEntity getEntity() {
+		public HttpEntity getEntity() {
 			return new HttpEntity() {
 
-				@Override public void consumeContent() throws IOException {
+				public void consumeContent() throws IOException {
 					conn.getInputStream().close();
 				}
 
-				@Override public InputStream getContent() 
+				public InputStream getContent() 
 						throws IOException, IllegalStateException {
 					if ( Status.find( conn.getResponseCode() ) 
 							== Status.FAILURE ) return conn.getErrorStream(); 
 					return conn.getInputStream();
 				}
 
-				@Override public Header getContentEncoding() {
+				public Header getContentEncoding() {
 					return new BasicHeader( "Content-Encoding", 
 							conn.getContentEncoding() );
 				}
 
-				@Override public long getContentLength() {
+				public long getContentLength() {
 					return conn.getContentLength();
 				}
 
-				@Override public Header getContentType() {
+				public Header getContentType() {
 					return new BasicHeader( "Content-Type", conn.getContentType() );
 				}
 
-				@Override public boolean isChunked() {
+				public boolean isChunked() {
 					String enc = conn.getHeaderField( "Transfer-Encoding" );
 					return enc != null && enc.contains( "chunked" );
 				}
 
-				@Override public boolean isRepeatable() {
+				public boolean isRepeatable() {
 					return false;
 				}
 
-				@Override public boolean isStreaming() {
+				public boolean isStreaming() {
 					return true;
 				}
 
-				@Override
 				public void writeTo( OutputStream out ) throws IOException {
 					DefaultGroovyMethods.leftShift( out, conn.getInputStream() );
 				}
@@ -332,13 +331,11 @@ public class HttpURLClient {
 			};
 		}
 
-		@Override
 		public Locale getLocale() {  //TODO test me
 			String val = conn.getHeaderField( "Locale" );
 			return val != null ? new Locale( val ) : Locale.getDefault();
 		}
 
-		@Override
 		public StatusLine getStatusLine() {
 			try {
 				return new BasicStatusLine( this.getProtocolVersion(), 
@@ -348,11 +345,11 @@ public class HttpURLClient {
 			}
 		}
 
-		@Override public boolean containsHeader( String key ) {
+		public boolean containsHeader( String key ) {
 			return conn.getHeaderField( key ) != null;
 		}
 
-		@Override public Header[] getAllHeaders() {
+		public Header[] getAllHeaders() {
 			if ( this.headers != null ) return this.headers;
 			List<Header> headers = new ArrayList<Header>();
 
@@ -367,7 +364,7 @@ public class HttpURLClient {
 			return this.headers;
 		}
 
-		@Override public Header getFirstHeader( String key ) {
+		public Header getFirstHeader( String key ) {
 			for ( Header h : getAllHeaders() )
 				if ( h.getName().equals( key ) ) return h;
 			return null;
@@ -377,7 +374,7 @@ public class HttpURLClient {
 		 * HttpURLConnection does not support multiple headers of the same 
 		 * name.
 		 */
-		@Override public Header[] getHeaders( String key ) {
+		public Header[] getHeaders( String key ) {
 			List<Header> headers = new ArrayList<Header>();
 			for ( Header h : getAllHeaders() ) 
 				if ( h.getName().equals( key ) ) headers.add( h );
@@ -387,48 +384,45 @@ public class HttpURLClient {
 		/**
 		 * @see URLConnection#getHeaderField(String)
 		 */
-		@Override public Header getLastHeader( String key ) {
+		public Header getLastHeader( String key ) {
 			String val = conn.getHeaderField( key );
 			return val != null ? new BasicHeader( key, val ) : null;
 		}
 
-		@Override public HttpParams getParams() { return null; }
+		public HttpParams getParams() { return null; }
 
-		@Override
 		public ProtocolVersion getProtocolVersion() { 
 			/* TODO this could potentially cause problems if the server is 
 			   using HTTP 1.0 */
 			return new ProtocolVersion( "HTTP", 1, 1 );
 		}
 
-		@Override
 		public HeaderIterator headerIterator() {
 			return new BasicHeaderIterator( this.getAllHeaders(), null );
 		}
 
-		@Override
 		public HeaderIterator headerIterator( String key ) {
 			return new BasicHeaderIterator( this.getHeaders( key ), key );
 		}
 
 		/* Setters are part of the interface, but aren't applicable for this 
 		 * adapter */
-		@Override public void setEntity( HttpEntity entity ) {}
-		@Override public void setLocale( Locale l ) {}
-		@Override public void setReasonPhrase( String phrase ) {}
-		@Override public void setStatusCode( int code ) {}
-		@Override public void setStatusLine( StatusLine line ) {}
-		@Override public void setStatusLine( ProtocolVersion v, int code ) {}
-		@Override public void setStatusLine( ProtocolVersion arg0, 
+		public void setEntity( HttpEntity entity ) {}
+		public void setLocale( Locale l ) {}
+		public void setReasonPhrase( String phrase ) {}
+		public void setStatusCode( int code ) {}
+		public void setStatusLine( StatusLine line ) {}
+		public void setStatusLine( ProtocolVersion v, int code ) {}
+		public void setStatusLine( ProtocolVersion arg0, 
 				int arg1, String arg2 ) {}
-		@Override public void addHeader( Header arg0 ) {}
-		@Override public void addHeader( String arg0, String arg1 ) {}
-		@Override public void removeHeader( Header arg0 ) {}
-		@Override public void removeHeaders( String arg0 ) {}
-		@Override public void setHeader( Header arg0 ) {}
-		@Override public void setHeader( String arg0, String arg1 ) {}
-		@Override public void setHeaders( Header[] arg0 ) {}
-		@Override public void setParams( HttpParams arg0 ) {}		
+		public void addHeader( Header arg0 ) {}
+		public void addHeader( String arg0, String arg1 ) {}
+		public void removeHeader( Header arg0 ) {}
+		public void removeHeaders( String arg0 ) {}
+		public void setHeader( Header arg0 ) {}
+		public void setHeader( String arg0, String arg1 ) {}
+		public void setHeaders( Header[] arg0 ) {}
+		public void setParams( HttpParams arg0 ) {}		
 	}
 
 	public Map<String,String> getHeaders() {
