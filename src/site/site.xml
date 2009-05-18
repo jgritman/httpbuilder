@@ -30,6 +30,7 @@
 				<item name="AsyncHTTPBuilder" href="doc/async.html" />
 				<item name="Content Types" href="doc/contentTypes.html" />
 				<item name="URIBuilder" href="doc/uribuilder.html" />
+				<item name="SSL" href="doc/ssl.html" />
 			</item>
 			<item name="JavaDoc" href="apidocs/index.html" />
 			<item name="Changelog" href="changes.html" />

@@ -1,0 +1,85 @@
+                                    ------
+                                    SSL
+                                    ------
+                                    ------
+                                    ------
+
+SSL Configuration
+
+  SSL should, for the most part, "just work."  There are a few situations where 
+  it is not completely intuitive.
+ 
+  
+* SSLPeerUnverifiedException
+
+  If you can't connect to an SSL website, it is likely because the certificate 
+  chain is not trusted.  This is an Apache HttpClient issue, but explained here
+  for convenience.  To correct the untrusted certificate, you need to import a 
+  certificate into an SSL truststore.
+  
+  First, export a certificate from the website using your browser.  For example, 
+  if you go to <https://dev.java.net> in Firefox, you will probably get a warning
+  in your browser.  Choose "Add Exception," "Get Certificate," "View," 
+  "Details tab." Choose a certificate in the chain and export it as a PEM file.
+  You can view the details of the exported certificate like so:
+  
+-----------------------
+$ keytool -printcert -file EquifaxSecureGlobaleBusinessCA-1.crt 
+Owner: CN=Equifax Secure Global eBusiness CA-1, O=Equifax Secure Inc., C=US
+Issuer: CN=Equifax Secure Global eBusiness CA-1, O=Equifax Secure Inc., C=US
+Serial number: 1
+Valid from: Mon Jun 21 00:00:00 EDT 1999 until: Sun Jun 21 00:00:00 EDT 2020
+Certificate fingerprints:
+         MD5:  8F:5D:77:06:27:C4:98:3C:5B:93:78:E7:D7:7D:9B:CC
+         SHA1: 7E:78:4A:10:1C:82:65:CC:2D:E1:F1:6D:47:B4:40:CA:D9:0A:19:45
+         Signature algorithm name: MD5withRSA
+         Version: 3
+....
+-----------------------
+
+  Now, import that into a Java keystore file:
+  
+-----------------------
+$ keytool -importcert -alias "equifax-ca" -file EquifaxSecureGlobaleBusinessCA-1.crt \
+> -keystore truststore.jks -storepass test1234
+Owner: CN=Equifax Secure Global eBusiness CA-1, O=Equifax Secure Inc., C=US
+Issuer: CN=Equifax Secure Global eBusiness CA-1, O=Equifax Secure Inc., C=US
+Serial number: 1
+Valid from: Mon Jun 21 00:00:00 EDT 1999 until: Sun Jun 21 00:00:00 EDT 2020
+Certificate fingerprints:
+         MD5:  8F:5D:77:06:27:C4:98:3C:5B:93:78:E7:D7:7D:9B:CC
+         SHA1: 7E:78:4A:10:1C:82:65:CC:2D:E1:F1:6D:47:B4:40:CA:D9:0A:19:45
+         Signature algorithm name: MD5withRSA
+         Version: 3
+...
+Trust this certificate? [no]:  yes
+Certificate was added to keystore
+-----------------------
+  
+  Now you want to use this truststore in your client:
+  
+-----------------------
+	import groovyx.net.http.HTTPBuilder
+	import static groovyx.net.http.Method.HEAD
+	
+	import java.security.KeyStore
+	import org.apache.http.conn.scheme.Scheme
+	import org.apache.http.conn.ssl.SSLSocketFactory
+
+	def http = new HTTPBuilder( 'https://www.dev.java.net/' )
+
+	def keyStore = KeyStore.getInstance( KeyStore.defaultType )
+	
+	getClass().getResource( "/truststore.jks" ).withInputStream {
+	   keyStore.load( it, "test1234".toCharArray() )
+	}
+
+	http.client.connectionManager.schemeRegistry.register( 
+			new Scheme("https", new SSLSocketFactory(keyStore), 443) )
+			
+	def status = http.request( HEAD ) {
+		response.success = { it.status }
+	}
+-----------------------
+
+  
