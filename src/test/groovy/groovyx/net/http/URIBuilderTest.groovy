@@ -49,6 +49,14 @@ public class URIBuilderTest {
 		u2 = uri as String
 		assert ( u2 instanceof String )
 		assert u2 == uri.toString()
+		
+		u2 = new URIBuilder( new URI(string) )
+		assert u2 == uri
+		assert u2.toString() == uri.toString()
+		
+		u2 = new URIBuilder( new URL(string) )
+		assert u2 == uri
+		assert u2.toString() == uri.toString()
 	}
 	
 	@Test public void testPath() {
@@ -65,8 +73,9 @@ public class URIBuilderTest {
 
 		uri.path = '../../p2b'
 		assert uri.toString() == 'http://localhost/p1/p2b?a=1&b=2&c=3#frag'
-				
-		uri.path = '/p4/p5'
+		
+		def p = 'p5'
+		uri.path = "/p4/$p"
 		assert uri.toString() == 'http://localhost/p4/p5?a=1&b=2&c=3#frag'
 	}
 	
@@ -90,13 +99,28 @@ public class URIBuilderTest {
 		uri.addQueryParam 'd', '4'
 		assert uri.query.d == '4'
 		
-		uri.removeQueryParam 'b'
+		assert uri.hasQueryParam( "d" )
+		
+		uri.removeQueryParam "b"
+		assert ! uri.hasQueryParam( "b" )
 		assert uri.query.b == null
+		uri.addQueryParam 'b', ''
+		
+		uri.addQueryParams( [ e : 5, f : 6, a : 7 ] )
+		assert uri.query.a == '7'
+		
+		uri.query == [a:'7',b:'',c:'3',d:'4',e:'5',f:'6']
 		
 		uri.query = [z:0,y:9,x:8]
 		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8#frag'
+
+//		uri.addQueryParam '', 'asdf'
+//		println uri // prints ...p2?=asdf... but apparently that is a valid URI...
 				
 		uri.query = null
+		assert uri.toString() == 'http://localhost/p1/p2#frag'
+		
+		uri.query = [:]
 		assert uri.toString() == 'http://localhost/p1/p2#frag'
 	}
 
@@ -104,10 +128,10 @@ public class URIBuilderTest {
 		def url = 'http://www.google.com:80/one/two?a=1#frag'		
 		def uri = new URIBuilder( url )
 		
-		uri.scheme = 'https'
+		uri.scheme = "https"
 		assert uri.toString() == 'https://www.google.com:80/one/two?a=1#frag'
 				
-		uri.host = 'localhost'
+		uri.host = "localhost"
 		assert uri.toString() == 'https://localhost:80/one/two?a=1#frag'
 		
 		uri.port = 8080
