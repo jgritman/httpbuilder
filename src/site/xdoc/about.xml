@@ -41,5 +41,12 @@
 					width="1" height="1" />
 		</form>
   	</section>
+  	
+  	<section name="Related">
+  		<p>Vaguely related projects I've worked on:</p>
+  		<ul>
+  			<li><a href='http://wiki.apache.org/hadoop/Hbase/Groovy'>HBase Groovy client</a></li>
+  		</ul>
+  	</section>
   </body>
 </document>
