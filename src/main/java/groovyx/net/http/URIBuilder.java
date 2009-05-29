@@ -54,7 +54,7 @@ import org.apache.http.message.BasicNameValuePair;
  *    query = [p1:1, p2:'two']
  * }.toString()
  * </pre>
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class URIBuilder implements Cloneable {
 	protected URI base;

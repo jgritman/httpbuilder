@@ -32,7 +32,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 /**
  * Enumeration of valid HTTP methods that may be used in a 
  * {@link HTTPBuilder#request(Method, groovy.lang.Closure) request} call.
- * @author tnichols
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum Method {
 	GET( HttpGet.class ), 

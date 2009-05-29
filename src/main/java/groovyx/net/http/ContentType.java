@@ -41,7 +41,7 @@ import org.apache.commons.collections.iterators.ArrayIterator;
  * request's <code>Accept</code> header.  By default, all equivalent content-types
  * are handled the same by the {@link EncoderRegistry} and {@link ParserRegistry}
  * as well. 
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum ContentType {
 	/** <code>&#42;/*</code> */

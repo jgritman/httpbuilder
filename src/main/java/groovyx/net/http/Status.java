@@ -23,7 +23,7 @@ package groovyx.net.http;
 
 /**
  * Mapping of HTTP response codes to a constant 'success' or 'failure' value.
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum Status {
 	/** Any status code >= 100 and < 400 */

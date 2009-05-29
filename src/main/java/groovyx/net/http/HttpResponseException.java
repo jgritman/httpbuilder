@@ -21,13 +21,12 @@
  */
 package groovyx.net.http;
 
-
 /**
  * Wraps an error response in an exception for flow control purposes.  That is,
  * you can still inspect response headers, but in a 
  * <code>catch( HttpResponseException ex ) {  }</code> block. 
  * 
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5
  */
 public class HttpResponseException extends org.apache.http.client.HttpResponseException {

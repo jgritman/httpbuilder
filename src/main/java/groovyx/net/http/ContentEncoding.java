@@ -35,7 +35,7 @@ import org.apache.http.protocol.HttpContext;
 
 /**
  * Base class for handing content-encoding.  
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public abstract class ContentEncoding {
 

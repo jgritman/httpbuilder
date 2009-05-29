@@ -38,7 +38,7 @@ import org.apache.http.params.HttpParams;
  * (see {@link HTTPBuilder#parseResponse(HttpResponse, Object)}).
  * 
  * @see HeadersDecorator
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5.0
  */
 public class HttpResponseDecorator implements HttpResponse {

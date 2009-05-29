@@ -14,7 +14,7 @@ import java.util.Map;
  * Basically, any given key will always be coerced to a String, and any retrieved 
  * key (either via {@link #keySet()} or {@link #entrySet()} will always be a
  * String. 
- * @author tnichols@enernoc.com
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 class StringHashMap<V> extends HashMap<Object,V> {
 	

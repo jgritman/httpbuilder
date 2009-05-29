@@ -37,7 +37,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
  * Encapsulates all configuration related to HTTP authentication methods.
  * @see HTTPBuilder#getAuth()
  * 
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class AuthConfig {
 	protected HTTPBuilder builder;

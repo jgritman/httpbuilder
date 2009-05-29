@@ -50,7 +50,6 @@ import net.sf.json.groovy.JsonGroovyBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.InputStreamEntity;

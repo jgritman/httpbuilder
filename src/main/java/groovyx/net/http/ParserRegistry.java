@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
  * entity.</p>
  * 
  * @see ContentType
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class ParserRegistry {
 	

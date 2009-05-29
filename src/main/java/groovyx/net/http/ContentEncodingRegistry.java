@@ -31,7 +31,7 @@ import org.apache.http.impl.client.AbstractHttpClient;
 
 /**
  * Keeps track of available content-encoding handlers.
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class ContentEncodingRegistry {
 
