@@ -441,32 +441,46 @@ public class HTTPBuilder {
 			else reqMethod.setHeader( key.toString(), val.toString() );
 		}
 		
-		HttpResponse resp = client.execute( reqMethod );
-		resp = new HttpResponseDecorator( resp, null );
-		int status = resp.getStatusLine().getStatusCode();
-		Closure responseClosure = delegate.findResponseHandler( status );
-		log.debug( "Response code: " + status + "; found handler: " + responseClosure );
-		
-		Object[] closureArgs = null;
-		switch ( responseClosure.getMaximumNumberOfParameters() ) {
-		case 1 :
-			closureArgs = new Object[] { resp };
-			break;
-		case 2 : // parse the response entity if the response handler expects it:
-			closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
-			break;
-		default:
-			throw new IllegalArgumentException( 
-					"Response closure must accept one or two parameters" );
+		HttpResponse resp = null;
+		try {
+			resp = client.execute( reqMethod );
+			resp = new HttpResponseDecorator( resp, null );
+			int status = resp.getStatusLine().getStatusCode();
+			Closure responseClosure = delegate.findResponseHandler( status );
+			log.debug( "Response code: " + status + "; found handler: " + responseClosure );
+			
+			Object[] closureArgs = null;
+			switch ( responseClosure.getMaximumNumberOfParameters() ) {
+			case 1 :
+				closureArgs = new Object[] { resp };
+				break;
+			case 2 : // parse the response entity if the response handler expects it:
+				try {
+					closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
+				}
+				catch ( Exception ex ) {
+					String respContentType = resp.getEntity().getContentType().getValue();
+					log.warn( "Error parsing '" + respContentType + "' response", ex );
+					throw new ResponseParseException( new HttpResponseDecorator( resp, null ) );	
+				}
+				break;
+			default:
+				throw new IllegalArgumentException( 
+						"Response closure must accept one or two parameters" );
+			}
+			
+			Object returnVal = responseClosure.call( closureArgs );
+			log.trace( "response handler result: " + returnVal );
+			
+			return returnVal;
 		}
-		
-		Object returnVal = responseClosure.call( closureArgs );
-		log.trace( "response handler result: " + returnVal );
-		
-		HttpEntity responseContent = resp.getEntity(); 
-		if ( responseContent != null && responseContent.isStreaming() ) 
-			responseContent.consumeContent();
-		return returnVal;
+		finally {
+			if ( resp != null ) {
+				HttpEntity responseContent = resp.getEntity(); 
+				if ( responseContent != null && responseContent.isStreaming() ) 
+					responseContent.consumeContent();
+			}
+		}
 	}
 	
 	/**
@@ -480,8 +494,10 @@ public class HTTPBuilder {
 	 *  content-type, or <code>null</code> if no parser could be found for this 
 	 *  content-type.  The parser will also return <code>null</code> if the 
 	 *  response does not contain any content (e.g. in response to a HEAD request).
+	 * @throws HttpResponseException if there is a error parsing the response
 	 */
-	protected Object parseResponse( HttpResponse resp, Object contentType ) {
+	protected Object parseResponse( HttpResponse resp, Object contentType ) 
+			throws HttpResponseException {
 		// For HEAD or OPTIONS requests, there should be no response entity.
 		if ( resp.getEntity() == null ) {
 			log.debug( "Response contains no entity.  Parsed data is null." );
@@ -495,10 +511,10 @@ public class HTTPBuilder {
 		
 		Object parsedData = null;
 		Closure parser = parsers.getAt( responseContentType );
-		if ( parser == null ) log.warn( "No parser found for content-type: "
-				+ responseContentType );
+		if ( parser == null ) log.warn( "No parser found for content-type: " 
+			+ responseContentType );
 		else {
-			log.debug( "Parsing response as content-type: " + responseContentType );
+			log.debug( "Parsing response as: " + responseContentType );
 			parsedData = parser.call( resp );
 			if ( parsedData == null ) log.warn( "Parser returned null!" );
 			else log.debug( "Parsed data to instance of: " + parsedData.getClass() );
@@ -857,7 +873,7 @@ public class HTTPBuilder {
 		 * <pre>
 		 * builder.request(GET,XML) {
 		 *   uri.path = '../other/request.jsp'
-		 *   uri.params = [p1:1, p2:2]
+		 *   uri.query = [p1:1, p2:2]
 		 *   ...
 		 * }</pre>
 		 * 
@@ -964,7 +980,7 @@ public class HTTPBuilder {
 		 *   	If this parameter is not supplied, the HTTPBuilder's default 
 		 *   	URI is used.</dd>
 		 *   <dt>path</dt><dd>Request path that is merged with the URI</dd>
-		 *   <dt>params</dt><dd>Map of request parameters</dd>
+		 *   <dt>query</dt><dd>Map of URL query parameters</dd>
 		 *   <dt>headers</dt><dd>Map of HTTP headers</dd>
 		 *   <dt>contentType</dt><dd>Request content type and Accept header.  
 		 *   	If not supplied, the HTTPBuilder's default content-type is used.</dd>
@@ -986,8 +1002,13 @@ public class HTTPBuilder {
 					"Default URI is null, and no 'uri' parameter was given" );
 			this.uri = new URIBuilder( convertToURI( uri ) );
 			
-			Map params = (Map)args.get( "params" );
-			if ( params != null ) this.uri.setQuery( params );
+			Map query = (Map)args.get( "params" );
+			if ( query != null ) { 
+				log.warn( "'params' argument is deprecated; use 'query' instead." );
+				this.uri.setQuery( query );
+			}
+			query = (Map)args.get( "query" );
+			if ( query != null ) this.uri.setQuery( query );
 			Map headers = (Map)args.get( "headers" );
 			if ( headers != null ) this.getHeaders().putAll( headers );
 			
