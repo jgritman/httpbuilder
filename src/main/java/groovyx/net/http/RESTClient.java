@@ -21,7 +21,6 @@
  */
 package groovyx.net.http;
 
-import groovy.lang.Closure;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -59,7 +58,7 @@ import org.apache.http.client.methods.HttpPut;
  * by default throw a {@link HttpResponseException}.  This exception may be used 
  * to retrieve additional information regarding the response as well.</p>
  * 
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5
  */
 public class RESTClient extends HTTPBuilder {
@@ -179,5 +178,5 @@ public class RESTClient extends HTTPBuilder {
 	 */
 	protected void defaultFailureHandler( HttpResponse resp, Object data ) throws HttpResponseException {
 		throw new HttpResponseException( new HttpResponseDecorator( resp, data ) );
-	}	
+	}
 }
