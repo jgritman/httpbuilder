@@ -14,7 +14,7 @@ Project Archive and JAR
   {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
   Browse the latest snapshot here.}}
   
-  {{{http://repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
+  {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}
   Browse the latest stable build here.}}
   
   
@@ -40,6 +40,62 @@ Maven Users
   <repository>
     <id>Codehaus.Snapshots</id>
     <url>http://snapshots.repository.codehaus.org</url>
+    <snapshots><enabled>true</enabled></snapshots>
   </repository>
 ---------------------------------------
 		
+		
+Using Grape
+
+  {{{http://groovy.codehaus.org/Grape}Grape}} is a neat dependency management 
+  feature in Groovy 1.6+ that allows you to download and add JARs to your classpath at runtime.
+  
+  You can automatically put HTTPBuilder in your classpath by using the following 
+  annotation on a method in your code:
+  
+----------------------------------------
+  @Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='${project-version}' )
+  public MyClassOrScript {}
+  
+  def http = new groovyx.net.http.HTTPBuilder('http://www.codehaus.org')
+  // ....
+----------------------------------------
+
+  If you are having problems, try calling grape from the command line like so:
+  
+----------------------------------------
+$ grape resolve org.codehaus.groovy.modules.http-builder http-builder ${project-version}
+  # will tell you where grape is looking and give detailed config information
+  
+
+$ grape install org.codehaus.groovy.modules.http-builder http-builder ${project-version}
+  # will attempt to download the JAR and transitive dependencies
+----------------------------------------
+
+  The above commands will tell you which repository URLs grape is trying to download 
+  from if it cannot find the artifact.  
+  
+  If you are trying to use a snapshot version of HTTPBuilder, you might also 
+  need to create the following file in ~/.groovy/grapeConfig.xml:
+  
+-----------------------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<ivysettings>
+  <settings defaultResolver="downloadGrapes" />
+  <resolvers>
+    <chain name="downloadGrapes">
+      <filesystem name="cachedGrapes">
+        <ivy pattern="${user.home}/.groovy/grapes/[organisation]/[module]/ivy-[revision].xml" />
+        <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]" />
+      </filesystem>
+      <ibiblio name="codehaus" root="http://repository.codehaus.org/" m2compatible="true" />
+      <ibiblio name="codehaus.snapshots" root="http://snapshots.repository.codehaus.org/" m2compatible="true" />
+      <ibiblio name="ibiblio" m2compatible="true" />
+      <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true" />
+    </chain>
+  </resolvers>
+</ivysettings>
+---------------------------------------
+
+  Note the <codehaus.snapshots> line, which tells Grape where HTTPBuilder's 
+  snapshot builds are located, since that repository is not searched by default.    

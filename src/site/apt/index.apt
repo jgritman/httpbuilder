@@ -6,6 +6,22 @@
 
 News
 
+* 29 May 2009
+  
+  The 0.5.0 release is almost feature complete; see 
+  {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA}} for a list 
+  of issues that have been gone into this version.  One of the major changes in 
+  today's snaphot release is deprecation of the 'params' named parameter.  
+  
+  For HTTPBuilder operations that take name parameters, <<<params>>> has been 
+  replaced by <<<query>>> to set URL query parameters.  This is to more clearly 
+  differentiate between URL and form POST parameters, and to avoid possible 
+  collision with future convenience methods for Apache HttpClient 'params' 
+  configuration.
+  
+  Please test out the latest snapshot; if I don't hear any bug reports in a week 
+  or two, I'll release v0.5.0.
+
 * 27 Apr 2009
 
   <<Note to Maven users:>>  The project's group ID has changed to conform with 
@@ -13,7 +29,7 @@ News
   <<org.codehaus.groovy.modules.http-builder>>. 
 
   The 0.5 release is still pending, but I have an exciting new feature - 
-  HttpURLClient.  This may seem redundant, since its features are almost 
+  <<HttpURLClient>>.  This may seem redundant, since its features are almost 
   identical to HTTPBuilder and RESTClient.  The kicker though is that this class
   works with Google App Engine!  
   
