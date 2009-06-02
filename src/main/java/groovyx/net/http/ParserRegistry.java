@@ -273,7 +273,7 @@ public class ParserRegistry {
 	 * @param closure code that will parse the HttpResponse and return parsed 
 	 *   data to the response handler. 
 	 */
-	public void setAt( Object contentType, Closure value ) {
+	public void putAt( Object contentType, Closure value ) {
 		if ( contentType instanceof ContentType ) {
 			for ( String ct : ((ContentType)contentType).getContentTypeStrings() )
 				this.registeredParsers.put( ct, value );
@@ -291,12 +291,12 @@ public class ParserRegistry {
 	}
 	
 	/**
-	 * Alias for {@link #setAt(Object, Closure)} to allow property-style access.
+	 * Alias for {@link #putAt(Object, Closure)} to allow property-style access.
 	 * @param key content-type string
 	 * @param value parser closure
 	 */
 	public void propertyMissing( Object key, Closure value ) {
-		this.setAt( key, value );
+		this.putAt( key, value );
 	}
 	
 	/**

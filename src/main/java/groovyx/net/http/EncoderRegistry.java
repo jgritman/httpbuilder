@@ -342,7 +342,7 @@ public class EncoderRegistry {
 	 * @param contentType
 	 * @param closure
 	 */
-	public void setAt( Object contentType, Closure value ) {
+	public void putAt( Object contentType, Closure value ) {
 		if ( contentType instanceof ContentType ) {
 			for ( String ct : ((ContentType)contentType).getContentTypeStrings() )
 				this.registeredEncoders.put( ct, value );
@@ -360,12 +360,12 @@ public class EncoderRegistry {
 	}
 	
 	/**
-	 * Alias for {@link #setAt(Object, Closure)} to allow property-style access.
+	 * Alias for {@link #putAt(Object, Closure)} to allow property-style access.
 	 * @param key
 	 * @param value
 	 */
 	public void propertyMissing( Object key, Closure value ) {
-		this.setAt( key, value );
+		this.putAt( key, value );
 	}
 	
 	/**

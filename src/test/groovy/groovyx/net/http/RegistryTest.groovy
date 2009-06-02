@@ -19,6 +19,9 @@ public class RegistryTest {
 		reg."application/json" = newParser
 		assert reg['application/json'].is( newParser )
 		
+		reg[ ContentType.JSON ] = newParser
+		assert reg[ "application/javascript" ].is( newParser )
+		
 		reg.defaultParser = newParser
 		assert newParser.is( reg.defaultParser )
 	}
