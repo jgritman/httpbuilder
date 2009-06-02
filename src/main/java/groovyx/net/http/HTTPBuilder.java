@@ -441,9 +441,8 @@ public class HTTPBuilder {
 			else reqMethod.setHeader( key.toString(), val.toString() );
 		}
 		
-		HttpResponse resp = null;
+		HttpResponse resp = client.execute( reqMethod );
 		try {
-			resp = client.execute( reqMethod );
 			resp = new HttpResponseDecorator( resp, null );
 			int status = resp.getStatusLine().getStatusCode();
 			Closure responseClosure = delegate.findResponseHandler( status );
@@ -475,11 +474,8 @@ public class HTTPBuilder {
 			return returnVal;
 		}
 		finally {
-			if ( resp != null ) {
-				HttpEntity responseContent = resp.getEntity(); 
-				if ( responseContent != null && responseContent.isStreaming() ) 
-					responseContent.consumeContent();
-			}
+			HttpEntity entity = resp.getEntity(); 
+			if ( entity != null ) entity.consumeContent();
 		}
 	}
 	
