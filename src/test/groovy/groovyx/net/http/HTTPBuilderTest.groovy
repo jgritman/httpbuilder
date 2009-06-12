@@ -3,7 +3,7 @@ package groovyx.net.http
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
 import org.junit.Test
-import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStream
+import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStreamimport org.apache.xml.resolver.tools.CatalogResolver
 class HTTPBuilderTest {
 	
 	def twitter = [user: System.getProperty('twitter.user'),
@@ -128,7 +128,8 @@ class HTTPBuilderTest {
 			assert reader instanceof Reader
 			
 			// we'll validate the reader by passing it to an XmlSlurper manually.
-			def parsedData = new XmlSlurper().parse(reader)
+			def parsedData = new XmlSlurper(
+					entityResolver : new CatalogResolver() ).parse(reader)
 			assert parsedData.children().size() > 0
 		}
 	}

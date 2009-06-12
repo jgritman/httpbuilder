@@ -48,10 +48,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.xml.resolver.tools.CatalogResolver;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
-import org.cyberneko.html.parsers.SAXParser;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -84,6 +86,8 @@ public class ParserRegistry {
 	private Map<String,Closure> registeredParsers = buildDefaultParserMap();
 	
 	protected final Log log = LogFactory.getLog( getClass() );
+	
+	EntityResolver catalogResolver = new CatalogResolver();
 	
 	/**
 	 * Helper method to get the charset from the response.  This should be done 
@@ -168,8 +172,9 @@ public class ParserRegistry {
 	 * @throws SAXException
 	 */
 	public GPathResult parseHTML( HttpResponse resp ) throws IOException, SAXException {
-		return new XmlSlurper( new org.cyberneko.html.parsers.SAXParser() )
-			.parse( parseText( resp ) );
+		XMLReader p = new org.cyberneko.html.parsers.SAXParser();
+		p.setEntityResolver( this.catalogResolver );
+		return new XmlSlurper( p ).parse( parseText( resp ) );
 	}
 	
 	/**
@@ -183,7 +188,9 @@ public class ParserRegistry {
 	 * @throws ParserConfigurationException
 	 */
 	public GPathResult parseXML( HttpResponse resp ) throws IOException, SAXException, ParserConfigurationException {
-		return new XmlSlurper().parse( parseText( resp ) );
+		XmlSlurper xml = new XmlSlurper();
+		xml.setEntityResolver( this.catalogResolver );
+		return xml.parse( parseText( resp ) );
 	}
 	
 	/**
