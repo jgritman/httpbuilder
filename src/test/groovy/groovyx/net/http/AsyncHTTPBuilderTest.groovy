@@ -99,7 +99,7 @@ public class AsyncHTTPBuilderTest {
 			body:[status:msg,source:'httpbuilder'] )
 			
 		while ( ! resp.done  ) Thread.sleep 2000 
-		def postID = resp.get().id.toInteger()
+		def postID = resp.get().id.text()
 		assert postID
 		
 		// delete the test message.
@@ -115,7 +115,7 @@ public class AsyncHTTPBuilderTest {
 		}
 		
 		while ( ! resp.done  ) Thread.sleep( 2000 )
-		assert resp.get().id == postID
+		assert resp.get().id.toString() == postID
 		http.shutdown()
 	}
 	

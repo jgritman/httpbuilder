@@ -170,7 +170,7 @@ class HTTPBuilderTest {
 				
 				assert xml.text == msg
 				assert xml.user.screen_name == twitter.user
-				return xml.id
+				return xml.id.text()
 			}
 		}
 		

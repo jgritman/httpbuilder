@@ -82,7 +82,7 @@ public class RESTClientTest {
 		assert resp.data.text == msg
 		assert resp.data.user.screen_name == userID
 
-		RESTClientTest.postID = resp.data.id.toInteger()
+		RESTClientTest.postID = resp.data.id.text()
 		println "Updated post; ID: ${postID}"
 	}
 	
@@ -101,10 +101,11 @@ public class RESTClientTest {
 	
 	@Test public void testDelete() {
 		// delete the test message.
+		if ( ! postID ) throw new IllegalStateException( "No post ID from testPost()" )
 		println "Deleting post ID : $postID"
 		def resp = twitter.delete( path : "destroy/${postID}.json" )
 		assert resp.status == 200
-		assert resp.data.id == postID
+		assert resp.data.id.toString() == postID
 		println "Test tweet ID ${resp.data.id} was deleted."
 	}
 	
