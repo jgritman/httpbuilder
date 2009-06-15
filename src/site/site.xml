@@ -19,7 +19,8 @@
 
 	<body>
 		<menu name="Overview">
-			<item name="Home" href="index.html" />
+			<item name="Home" href="home.html" />
+			<item name="News" href="index.html" />
 			<item name="Download" href="download.html" />
 			<item name="Documentation" href="doc/index.html" collapse="true">
 				<item name="GET Examples" href="doc/get.html" />
@@ -35,6 +36,7 @@
 			<item name="JavaDoc" href="apidocs/index.html" />
 			<item name="Changelog" href="changes.html" />
 			<item name="Twitter!" href="http://twitter.com/httpbuilder" />
+			<item name="Support" href="home.html#Support" />
 			<item name="About" href="about.html" />
 		</menu>
 		<menu name="Additional Reference">

@@ -133,7 +133,7 @@ http.request( GET, JSON ) {
 
 
 
-Logging and Debugging
+{Logging and Debugging}
 
   Probably the quickest way to debug is to turn on logging for HTTPBuilder and 
   Apache HttpClient.  An example 
@@ -141,3 +141,15 @@ Logging and Debugging
   log4j configuration}} can be used to output headers and request/response 
   content, as well as additional information on what HTTPBuilder is doing with 
   the request and response.
+  
+  To see the raw request and response output, change the Apache HttpClient
+  logging parameters to <<<DEBUG>>> like so:
+
+----------------------------
+	<category name="org.apache.http.headers">
+		<priority value="DEBUG" />
+	</category>
+	<category name="org.apache.http.wire">
+		<priority value="DEBUG" />
+	</category>
+----------------------------

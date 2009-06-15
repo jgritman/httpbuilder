@@ -28,12 +28,12 @@ new HTTPBuilder('http://www.google.com/').request(GET) { req ->
   
   response.success = { resp ->
     println 'request was successful'
-    assert resp.statusLine.statusCode < 400
+    assert resp.status < 400
   }
   
   response.failure = { resp ->
     println 'request failed'
-    assert resp.statusLine.statusCode >= 400
+    assert resp.status >= 400
   }
 }
 -------------------------------
@@ -42,6 +42,15 @@ new HTTPBuilder('http://www.google.com/').request(GET) { req ->
   handle a specific response code:
   
 -------------------------------
+http.request(...) {
+	// success handler
+	// ...
+
+	// only called for an HTTP 401 response code:
+	response.'401' = { resp ->
+		println 'access denied'
+	}
+}
 -------------------------------
   
   In all cases, a handler will first be retrieved by the exact status code, and 
@@ -49,23 +58,36 @@ new HTTPBuilder('http://www.google.com/').request(GET) { req ->
   handler.
   
 A Note on 'Intermediate' Status Codes
-  Note that in cases where a response sends a redirect status code, this is 
-  handled by Apache HttpClient, which by default will simply follow the redirect
-  by re-sending the request to the new URL.  
+
+  In cases where a response sends a redirect status code, this is 
+  handled internally by Apache HttpClient, which by default will simply follow 
+  the redirect by re-sending the request to the new URL.  You do not need to 
+  do anything special in order to follow 302 responses.  
   
   Similarly, a 401 status code will be handled transparently by HttpClient if 
-  authorization has been configured.  But in most cases the user is not 
+  authorization has been configured.  In most cases, you (the user) are not 
   interested in these 'intermediate' responses, so they are handled internally
-  by the framework.  
+  by the framework.  If you <want> to handle these responses directly, it can
+  be configured through the underlying HttpClient instance. 
   
 Default Handlers
 
   The default handlers are good for cases where the user is not interested in 
   dealing with streaming responses.  In this case, the response data is simply 
-  parsed (or buffered in the case of a binary response) and returned from the
-  request method:
+  parsed (or buffered in the case of a binary or text response) and returned 
+  from the request method:
   
 -------------------------------
+try {
+	def response = new HTTPBuilder('http://www.google.com').request(GET,TEXT) {}
+
+	assert response instanceof Reader // response data is buffered in-memory
+	println response.text()
+}
+catch ( HttpResponseException ex ) {
+	// default failure handler throws an exception:
+	println "Unexpected response error: ${ex.statusCode}"
+}
 -------------------------------
 
 	The default failure handler will throw an exception.
@@ -74,18 +96,18 @@ Default Handlers
   the HTTPBuilder instance like so:
   
 -------------------------------
-  def http = new HTTPBuilder()
-  
-  http.handler.success = { "Success!" }
+def http = new HTTPBuilder()
 
-	http.handler.failure = { resp ->
-		"Unexpected failure: ${resp.statusLine}"
-	}
-	
-	// we can set code-specific default handlers as well:  
-  http.handler.'404 = { 'Not Found' }
-	
-  def result = http.get( uri:'http://www.google.com/asdfg' )
-  assert result == 'Not Found'
+http.handler.success = { "Success!" }
+
+http.handler.failure = { resp ->
+	"Unexpected failure: ${resp.statusLine}"
+}
+
+// we can set code-specific default handlers as well:  
+http.handler.'404 = { 'Not Found' }
+
+def result = http.get( uri:'http://www.google.com/asdfg' )
+assert result == 'Not Found'
 -------------------------------
   

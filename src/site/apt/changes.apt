@@ -14,6 +14,8 @@ Change Log
   * RESTClient for more REST-ful request API.
   
   * HttpURLClient for a similar API that is compatible with Google App Engine.
+  
+  * Added resolver catalog for (X)HTML DTDs
 
   * Improved header access API
   

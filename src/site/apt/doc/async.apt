@@ -22,6 +22,7 @@ def http = new AsyncHTTPBuilder(
                 uri : 'http://hc.apache.org',
                 contentType : HTML )
         
+        
 def result = http.get(path:'/') { resp, html ->
     println ' got async response!'
     return html

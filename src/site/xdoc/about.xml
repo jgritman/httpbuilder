@@ -18,7 +18,7 @@
 	  This allows unrestricted use of the code; modification and distribution in 
 	  both commercial and non-commercial products.</p>
 	  
-	  <p>HTTPBuilder is built on top of a number of other excellent open source 
+	  <p>HTTPBuilder is built on top of a number of excellent open source 
 	  products, including <a href='http://groovy.codehaus.org/'>Groovy</a>, 
 	  <a href='http://hc.apache.org/httpcomponents-client/'>Apache HttpClient</a>, 
 	  and <a href='http://json-lib.sourceforge.net/'>Json-Lib</a>.</p> 
