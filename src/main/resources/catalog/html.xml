@@ -4,6 +4,8 @@
 
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="public">
 
+	<!-- http://xml.apache.org/commons/components/resolver/resolver-article.html -->
+
 	<!-- XHTML 1.0 -->
 	<public publicId="-//W3C//DTD XHTML 1.0 Strict//EN" 
 		uri="xhtml1-strict.dtd" />
@@ -12,7 +14,7 @@
 	<public publicId="-//W3C//DTD XHTML 1.0 Frameset//EN" 
 		uri="xhtml1-frameset.dtd" />
 	<rewriteSystem systemIdStartString="http://www.w3.org/TR/xhtml1/DTD/"
-    rewritePrefix="./"/>
+    rewritePrefix="./" />
 
 	<!-- XHTML 1.1 -->
 	<public publicId='-//W3C//DTD XHTML 1.1//EN' uri='xhtml11-flat.dtd' />
