@@ -153,7 +153,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * </pre>
  * 
  * 
- * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+ * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class HTTPBuilder {
 	

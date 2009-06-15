@@ -56,7 +56,7 @@ public class DeflateEncoding extends ContentEncoding {
 
 	/**
 	 * Entity used to interpret a Deflate-encoded response
-	 * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
 	 */
     public static class InflaterEntity extends HttpEntityWrapper {
 

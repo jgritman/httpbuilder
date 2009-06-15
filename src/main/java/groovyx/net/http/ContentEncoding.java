@@ -70,7 +70,7 @@ public abstract class ContentEncoding {
 	/**
 	 * Request interceptor that adds the correct <code>Accept</code> header
 	 * to the outgoing request.
-	 * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
 	 */
 	protected class RequestInterceptor implements HttpRequestInterceptor {
 		public void process( final HttpRequest req,
@@ -100,7 +100,7 @@ public abstract class ContentEncoding {
 	/**
 	 * Response interceptor that filters the response stream to decode the 
 	 * compressed content before it is passed on to the parser.
-	 * @author <a href='mailto:tnichols@enernoc.com'>Tom Nichols</a>
+	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
 	 */
 	protected class ResponseInterceptor implements HttpResponseInterceptor {
 		public void process( final HttpResponse response, final HttpContext context ) 
