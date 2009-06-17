@@ -10,6 +10,26 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
 
+* 16 June 2009 - 0.5.0 RC1!
+  
+  RC1 is released!  Go {{{download.html}download it}}!
+  
+  Keep in mind there are a few breaking changes from 0.4.1.  See the 
+  {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA report}} 
+  for a full list of changes.  Some breaking changes include:
+  
+  [[]] New Maven group - <<<org.codehaus.groovy.modules.http-builder>>>
+  
+  [[]] HTTPBuilder.(get|post) named arguments - <<<params>>> is now <<<query>>>
+  
+  [[]] The HTTPBuilder class' <<<URL>>> property has been renamed to <<<uri>>> 
+
+	[]
+	
+  Of course the 0.5.0 release has a ton of more <interesting> changes; read below 
+  for most of them...
+    
+
 * 13 June 2009 - Release Candidate (almost...)
 
   I was just about to release version 0.5.0-RC1 and announce it on the mailing

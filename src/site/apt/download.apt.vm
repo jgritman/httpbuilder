@@ -14,9 +14,11 @@ Project Archive and JAR
   {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
   Browse the latest snapshot here.}}
   
-  {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}
+  {{{http://repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
   Browse the latest stable build here.}}
   
+  Older releases may also be found under the 
+  {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}old group ID.}}
   
 Maven Users
 
