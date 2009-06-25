@@ -25,11 +25,12 @@
 			<item name="Documentation" href="doc/index.html" collapse="true">
 				<item name="GET Examples" href="doc/get.html" />
 				<item name="POST Examples" href="doc/post.html" />
-				<item name="JSON" href="doc/json.html" />
-				<item name="XML" href="doc/xml.html" />
+				<item name="Using JSON" href="doc/json.html" />
+				<item name="Using XML" href="doc/xml.html" />
 				<item name="RESTClient" href="doc/rest.html" />
 				<item name="AsyncHTTPBuilder" href="doc/async.html" />
 				<item name="Content Types" href="doc/contentTypes.html" />
+				<item name="Response Handlers" href="doc/handlers.html" />
 				<item name="URIBuilder" href="doc/uribuilder.html" />
 				<item name="SSL" href="doc/ssl.html" />
 			</item>
