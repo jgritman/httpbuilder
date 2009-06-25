@@ -39,6 +39,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
@@ -458,7 +459,9 @@ public class HTTPBuilder {
 					closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
 				}
 				catch ( Exception ex ) {
-					String respContentType = resp.getEntity().getContentType().getValue();
+					HttpEntity e = resp.getEntity();
+					Header h = e != null ? e.getContentType() : null;
+					String respContentType = h != null ? h.getValue() : null;
 					log.warn( "Error parsing '" + respContentType + "' response", ex );
 					throw new ResponseParseException( new HttpResponseDecorator( resp, null ) );	
 				}
