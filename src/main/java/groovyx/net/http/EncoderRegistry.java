@@ -22,6 +22,7 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+import groovy.lang.GString;
 import groovy.lang.Writable;
 import groovy.xml.StreamingMarkupBuilder;
 import groovyx.net.http.HTTPBuilder.RequestConfigDelegate;
@@ -210,22 +211,28 @@ public class EncoderRegistry {
 	}
 	
 	/**
-	 * Accepts a closure which is interpreted as an XML structure that would be 
+	 * Encode the content as XML.  The argument may be either an object whose 
+	 * <code>toString</code> produces valid markup, or a Closure which will be 
+	 * interpreted as a builder definition.  A closure argument is 
 	 * passed to {@link StreamingMarkupBuilder#bind(groovy.lang.Closure)}.
-	 * @param xmlBuilder builder closure that defines the XML structure
+	 * @param xml data that defines the XML structure
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public HttpEntity encodeXML( Closure xmlBuilder ) throws UnsupportedEncodingException {
-		StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
-		String markup = smb.bind( xmlBuilder ).toString();
-		return createEntity( ContentType.XML, markup );
+	public HttpEntity encodeXML( Object xml ) throws UnsupportedEncodingException {
+		if ( xml instanceof Closure ) {
+			StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
+			xml = smb.bind( xml );
+		}
+		return createEntity( ContentType.XML, xml.toString() );
 	}
 	
 	/**
 	 * <p>Accepts a Collection or a JavaBean object which is converted to JSON.  
 	 * A Map or POJO/POGO will be converted to a {@link JSONObject}, and any 
-	 * other collection type will be converted to a {@link JSONArray}.</p> 
+	 * other collection type will be converted to a {@link JSONArray}.  A
+	 * String or GString will be interpreted as valid JSON and passed directly
+	 * as the request body (with charset conversion if necessary.)</p> 
 	 * 
 	 * <p>If a Closure is passed as the model, it will be executed as if it were 
 	 * a JSON object definition passed to a {@link JsonGroovyBuilder}.  In order
@@ -253,7 +260,7 @@ public class EncoderRegistry {
 	@SuppressWarnings("unchecked")
 	public HttpEntity encodeJSON( Object model ) throws UnsupportedEncodingException {
 		
-		JSON json;	
+		Object json;	
 		if ( model instanceof Map ) {
 			json = new JSONObject();
 			((JSONObject)json).putAll( (Map)model );
@@ -267,6 +274,8 @@ public class EncoderRegistry {
 			closure.setDelegate( new JsonGroovyBuilder() );
 			json = (JSON)closure.call();
 		}
+		else if ( model instanceof String || model instanceof GString )
+			json = model; // assume string is valid JSON already.
 		else json = JSONObject.fromObject( model ); // Assume object is a JavaBean
 		
 		return this.createEntity( ContentType.JSON, json.toString() );

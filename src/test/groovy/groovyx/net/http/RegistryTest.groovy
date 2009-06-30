@@ -1,6 +1,7 @@
 package groovyx.net.http
 
-import org.junit.Testimport java.io.StringReaderimport java.io.ByteArrayInputStream
+import org.junit.Testimport java.io.StringReaderimport java.io.ByteArrayInputStream
+import static groovyx.net.http.ContentType.*
 /**
  * @author tnichols
  */
@@ -25,7 +26,7 @@ public class RegistryTest {
 		reg.defaultParser = newParser
 		assert newParser.is( reg.defaultParser )
 	}
-	
+
 	@Test public void testEncoderAccessors() {
 		def reg = new EncoderRegistry();
 		
@@ -52,8 +53,14 @@ public class RegistryTest {
 		}
 		
 		assert entity.contentType.value == "application/xml"
-		println entity.content.text
+//		println entity.content.text
 		assert entity.content.text == "<xml AAA='aaa'><one>one</one><two>two</two></xml>"
+		
+		entity = reg.encodeXML( '<xml AAA="aaa"><one>one</one><two>two</two></xml>' )
+		assert entity.content.text == '<xml AAA="aaa"><one>one</one><two>two</two></xml>'
+		def value = 'something'
+		entity = reg.encodeXML( "<xml AAA='aaa'><one>$value</one><two>two</two></xml>" )
+		assert entity.content.text == "<xml AAA='aaa'><one>something</one><two>two</two></xml>"
 	}
 	
 	@Test public void testCharsetAndText() {
@@ -126,7 +133,7 @@ public class RegistryTest {
 //		println entity.content.text
 		assert entity.content.text == '{"first":{"one":1,"two":"2"},"second":"some string"}'
 		
-		entity = reg.encodeJSON( ["first", "second", 3, [map:4] ] )		          		
+		entity = reg.encodeJSON( ["first", "second", 3, [map:4] ] )
   		assert entity.content.text == '["first","second",3,{"map":4}]'
   		
   		entity = reg.encodeJSON {
@@ -139,7 +146,13 @@ public class RegistryTest {
 			}
 		}
 		
-		println entity.content.text
+//		println entity.content.text
 		assert entity.content.text == '{"root":{"first":{"one":1,"two":"2"},"second":"some string"}}'
+		
+		entity = reg.encodeJSON( '["first","second",3,{"map":4}]' )
+  		assert entity.content.text == '["first","second",3,{"map":4}]'
+		def another = 'second'
+		entity = reg.encodeJSON( "['first','$another',3,{'map':4}]" )
+  		assert entity.content.text == "['first','second',3,{'map':4}]"
 	}
 }
