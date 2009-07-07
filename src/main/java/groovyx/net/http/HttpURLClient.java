@@ -77,6 +77,7 @@ public class HttpURLClient {
 	private URIBuilder defaultURL = null;
 	private boolean followRedirects = true; 
 	
+	/** Logger instance defined for use by sub-classes */
 	protected Log log =  LogFactory.getLog( getClass() );
 	
 	/**
@@ -245,13 +246,18 @@ public class HttpURLClient {
 	
 	/**
 	 * Control whether this instance should automatically follow redirect 
-	 * responses.
-	 * @param follow
+	 * responses. See {@link HttpURLConnection#setInstanceFollowRedirects(boolean)}
+	 * @param follow true if the connection should automatically follow 
+	 * redirect responses from the server.
 	 */
 	public void setFollowRedirects( boolean follow ) {
 		this.followRedirects = follow;
 	}
 	
+	/**
+	 * See {@link #setFollowRedirects(boolean)}
+	 * @return
+	 */
 	public boolean isFollowRedirects() { return this.followRedirects; }
 	
 	/**
@@ -371,8 +377,8 @@ public class HttpURLClient {
 		}
 
 		/**
-		 * HttpURLConnection does not support multiple headers of the same 
-		 * name.
+		 * Note that HttpURLConnection does not support multiple headers of 
+		 * the same name.
 		 */
 		public Header[] getHeaders( String key ) {
 			List<Header> headers = new ArrayList<Header>();
@@ -425,10 +431,20 @@ public class HttpURLClient {
 		public void setParams( HttpParams arg0 ) {}		
 	}
 
+	/**
+	 * Retrieve the default headers that will be sent in each request.  Note
+	 * that this is a 'live' map that can be directly manipulated to add or
+	 * remove the default request headers.
+	 * @return
+	 */
 	public Map<String,String> getHeaders() {
 		return defaultHeaders;
 	}
 
+	/**
+	 * Set default headers to be sent with every request.
+	 * @param headers
+	 */
 	public void setHeaders( Map<?,?> headers ) {
 		this.defaultHeaders.clear();
 		for ( Object key : headers.keySet() ) {
@@ -438,6 +454,12 @@ public class HttpURLClient {
 		}
 	}
 
+	/**
+	 * Get the encoder registry used by this instance, which can be used
+	 * to directly modify the request serialization behavior.
+	 * i.e. <code>client.encoders.'application/xml' = {....}</code>.
+	 * @return
+	 */
 	public EncoderRegistry getEncoders() {
 		return encoderRegistry;
 	}
@@ -446,6 +468,11 @@ public class HttpURLClient {
 		this.encoderRegistry = encoderRegistry;
 	}
 
+	/**
+	 * Retrieve the parser registry used by this instance, which can be used to 
+	 * directly modify the parsing behavior.
+	 * @return
+	 */
 	public ParserRegistry getParsers() {
 		return parserRegistry;
 	}
@@ -454,18 +481,43 @@ public class HttpURLClient {
 		this.parserRegistry = parserRegistry;
 	}
 
+	/**
+	 * Get the default content-type used for parsing response data.
+	 * @return a String or {@link ContentType} object.  Defaults to 
+	 * {@link ContentType#ANY}
+	 */
 	public Object getContentType() {
 		return contentType;
 	}
 
+	/**
+	 * Set the default content-type used to control response parsing and request
+	 * serialization behavior.  If <code>null</code> is passed, 
+	 * {@link ContentType#ANY} will be used.  If this value is 
+	 * {@link ContentType#ANY}, the response <code>Content-Type</code> header is
+	 * used to parse the response.
+	 * @param ct a String or {@link ContentType} value.
+	 */
 	public void setContentType( Object ct ) {
 		this.contentType = (ct == null) ? ContentType.ANY : ct;
 	}
 
+	/**
+	 * Get the default content-type used to serialize the request data.
+	 * @return
+	 */
 	public Object getRequestContentType() {
 		return requestContentType;
 	}
 
+	/**
+	 * Set the default content-type used to control request body serialization.
+	 * If null, the {@link #getContentType() contentType property} is used.  
+	 * Additionally, if the <code>contentType</code> is {@link ContentType#ANY},
+	 * a <code>requestContentType</code> <i>must</i> be specified when 
+	 * performing a POST or PUT request that sends request data. 
+	 * @param requestContentType String or {@link ContentType} value.  
+	 */
 	public void setRequestContentType( Object requestContentType ) {
 		this.requestContentType = requestContentType;
 	}
