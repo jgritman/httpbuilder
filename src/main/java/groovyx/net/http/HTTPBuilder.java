@@ -850,6 +850,8 @@ public class HTTPBuilder {
 		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
 				Map<?,?> defaultRequestHeaders,
 				Map<?,Closure> defaultResponseHandlers ) {
+			if ( request == null ) throw new IllegalArgumentException( 
+					"Internal error - HttpRequest instance cannot be null" );
 			this.request = request;
 			this.headers.putAll( defaultRequestHeaders );
 			this.contentType = contentType;
@@ -1100,7 +1102,7 @@ public class HTTPBuilder {
 		 */
 		public void setBody( Object body ) {
 			if ( ! (request instanceof HttpEntityEnclosingRequest ) )
-				throw new UnsupportedOperationException( 
+				throw new IllegalArgumentException( 
 						"Cannot set a request body for a " + request.getMethod() + " method" );
 			Closure encoder = encoders.getAt( this.getRequestContentType() );
 			HttpEntity entity = (HttpEntity)encoder.call( body );
