@@ -23,4 +23,47 @@ http.request( POST, XML ) {
 --------------------------------------
 
  The body is then transformed to an XML string by 
- <<<{{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(groovy.lang.Closure)}EncoderRegistry.encodeXML()}}>>>
+ <<<{{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(groovy.lang.Closure)}EncoderRegistry.encodeXML()}}>>>.
+ Alternatively, the XML body may be passed as a raw string as well.
+
+ 
+ 
+Reading an XML response as plain text
+
+  Another common request is <"What if I want to display the raw XML rather than
+  parse it?">
+  
+  In order to do that, you're going to send a <<<contentType>>> parameter, 
+  to force HTTPBuilder (or RESTClient) to use the <<<TEXT>>> parser.  However, 
+  since setting the <<<contentType>>> also affects the <<<Accept>>>
+  request header, we might need to override that as well.
+
+  For Example:  
+  
+--------------------------------------
+  import groovyx.net.http.*
+  import static groovyx.net.http.ContentType.*
+	
+  def twitter = new RESTClient( 'https://twitter.com/statuses/' )
+  // ... auth & setup configuration omitted here ...
+	
+  def resp = twitter.get( path : 'friends_timeline.xml', contentType : TEXT,
+                          headers : [Accept : 'application/xml'] )
+  
+  println resp.data.text       // print the XML
+--------------------------------------
+
+  Furthermore, you can use HTTPBuilder's defaults to reduce the number of 
+  parameters passed to each request method like so:
+  
+--------------------------------------
+  def twitter = new RESTClient( 'https://twitter.com/statuses/' )
+
+  // set a default response content-type
+  twitter.contentType = TEXT
+  /* set default headers which will override what's automatically sent in the
+     request by the default contentType param */  
+  twitter.headers = [ Accept : 'application/xml', ]
+
+  def resp = twitter.get( path : 'friends_timeline.xml' )
+--------------------------------------
