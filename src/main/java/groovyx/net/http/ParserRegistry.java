@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,10 +49,11 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.xml.resolver.Catalog;
+import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
@@ -87,7 +89,29 @@ public class ParserRegistry {
 	
 	protected final Log log = LogFactory.getLog( getClass() );
 	
-	EntityResolver catalogResolver = new CatalogResolver();
+	/**
+	 * This CatalogResolver is static to avoid the overhead of re-parsing
+	 * the catalog definition file every time.  Unfortunately, there's no 
+	 * way to share a single Catalog instance between resolvers.  The 
+	 * {@link Catalog} class is technically not thread-safe, but as long as you 
+	 * do not parse catalog files while using the resolver, it should be fine. 
+	 */
+	protected static CatalogResolver catalogResolver;
+	
+	static {
+		CatalogManager catalogManager = new CatalogManager();
+		catalogManager.setIgnoreMissingProperties( true );
+		catalogManager.setUseStaticCatalog( false );
+		catalogManager.setRelativeCatalogs( true );
+		try {
+			catalogResolver = new CatalogResolver( catalogManager );
+			catalogResolver.getCatalog().parseCatalog( 
+					ParserRegistry.class.getResource( "/catalog/html.xml" ) );
+		} catch ( IOException ex ) {
+			LogFactory.getLog( ParserRegistry.class )
+				.warn( "Could not resolve default XML catalog", ex );
+		}
+	}
 	
 	/**
 	 * Helper method to get the charset from the response.  This should be done 
@@ -164,7 +188,7 @@ public class ParserRegistry {
 	/**
 	 * Parse an HTML document by passing it through the NekoHTML parser.
 	 * @see ContentType#HTML
-	 * @see SAXParser
+	 * @see org.cyberneko.html.parsers.SAXParser
 	 * @see XmlSlurper#parse(Reader)
 	 * @param resp HTTP response from which to parse content
 	 * @return the {@link GPathResult} from calling {@link XmlSlurper#parse(Reader)}
@@ -173,7 +197,7 @@ public class ParserRegistry {
 	 */
 	public GPathResult parseHTML( HttpResponse resp ) throws IOException, SAXException {
 		XMLReader p = new org.cyberneko.html.parsers.SAXParser();
-		p.setEntityResolver( this.catalogResolver );
+		p.setEntityResolver( catalogResolver );
 		return new XmlSlurper( p ).parse( parseText( resp ) );
 	}
 	
@@ -189,7 +213,7 @@ public class ParserRegistry {
 	 */
 	public GPathResult parseXML( HttpResponse resp ) throws IOException, SAXException, ParserConfigurationException {
 		XmlSlurper xml = new XmlSlurper();
-		xml.setEntityResolver( this.catalogResolver );
+		xml.setEntityResolver( catalogResolver );
 		return xml.parse( parseText( resp ) );
 	}
 	
@@ -229,6 +253,14 @@ public class ParserRegistry {
 			parsers.put( ct, pClosure );
 		
 		return parsers;
+	}
+	
+	public static void addCatalog( URL catalogLocation ) throws IOException {
+		catalogResolver.getCatalog().parseCatalog( catalogLocation );
+	}
+	
+	public static CatalogResolver getCatalogResolver() {
+		return catalogResolver;
 	}
 	
 	/**

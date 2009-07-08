@@ -94,12 +94,24 @@ class HttpURLClientTest {
 		assert resp.data instanceof Reader
 			
 		// we'll validate the reader by passing it to an XmlSlurper manually.
-		def parsedData = new XmlSlurper( 
-				entityResolver : new CatalogResolver() ).parse(resp.data)
+		def resolver = ParserRegistry.catalogResolver
+		def parsedData = new XmlSlurper( entityResolver : resolver ).parse(resp.data)
 		resp.data.close()
 		assert parsedData.children().size() > 0		
 	}
 	
+	/** W3C pages will have a doctype, but will return a 503 if you do a GET 
+	 * for them with the Java User-Agent.  
+	 */
+	@Test public void testCatalog() {
+		def http = new HttpURLClient( 
+				url:'http://validator.w3.org/', 
+				contentType: XML )
+		
+		def resp = http.request( path : 'about.html' )
+		assert resp.data
+	}	
+		
 	/* REST testing with Twitter!
 	 * Tests POST with XML response, and DELETE with a JSON response.
 	 */
@@ -167,6 +179,7 @@ class HttpURLClientTest {
 		
 		done = false
 		parsers.defaultParser = { done = true }
+		// remove content-type-specific parser to force use of default parser.
 		parsers.'application/xml' = null
 		resp = http.request( path : 'friends_timeline.xml' ) 
 		assert done
