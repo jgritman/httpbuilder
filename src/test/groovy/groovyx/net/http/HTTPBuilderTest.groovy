@@ -26,7 +26,7 @@ class HTTPBuilderTest {
 			assert html.BODY.size() == 1
 		}
 	}
-	
+
 	@Test public void testDefaultSuccessHandler() {
 		def http = new HTTPBuilder('http://www.google.com')
 		def html = http.request( GET ) {
@@ -128,8 +128,9 @@ class HTTPBuilderTest {
 			assert reader instanceof Reader
 			
 			// we'll validate the reader by passing it to an XmlSlurper manually.
-			def parsedData = new XmlSlurper(
-					entityResolver : new CatalogResolver() ).parse(reader)
+			
+			def resolver = ParserRegistry.catalogResolver		
+			def parsedData = new XmlSlurper( entityResolver : resolver ).parse(reader)
 			assert parsedData.children().size() > 0
 		}
 	}
@@ -250,7 +251,7 @@ class HTTPBuilderTest {
 			}
 		}
 	}
-	
+
 	/* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
 	 * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
 	 */
@@ -301,5 +302,14 @@ class HTTPBuilderTest {
 		http.request( GET, HTML ) {
 			uri.path = '/auth-basic/'
 		}
+	}
+	
+	@Test public void testCatalog() {
+		def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
+		
+		http.parser.addCatalog getClass().getResource( '/rss-catalog.xml')
+		def xml = http.get( query : [p:'02110',u:'f'] )
+		
+		
 	}
 }
