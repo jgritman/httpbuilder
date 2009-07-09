@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>http-builder</artifactId>
 	<groupId>org.codehaus.groovy.modules.http-builder</groupId>
-	<version>0.5.0-RC1</version>
+	<version>0.5.0-SNAPSHOT</version>
 	<name>HTTP client framework for Groovy</name>
 	<url>http://groovy.codehaus.org/modules/http-builder/</url>
 	<inceptionYear>2008</inceptionYear>
@@ -73,6 +73,15 @@
 			<groupId>xml-resolver</groupId>
 			<artifactId>xml-resolver</artifactId>
 			<version>1.2</version>
+		</dependency> 
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>[2.6.2,)</version>
+			<optional>true</optional>
+			<!-- Should be 'provided' but this is broken due to 
+					 http://jira.codehaus.org/browse/MASSEMBLY-248 -->
+			<scope>runtime</scope>
 		</dependency> 
 		<!-- Not yet used for testing:
 		<dependency>
@@ -153,6 +162,10 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<systemProperties>
+						<property>
+							<name>xml.catalog.verbosity</name>
+							<value>9</value>
+						</property>
 						<property>
 							<name>xml.catalog.ignoreMissing</name>
 							<value>false</value>
@@ -275,6 +288,7 @@
 						<link>http://hc.apache.org/httpcomponents-core/httpcore/apidocs/</link>
 						<link>http://groovy.codehaus.org/api/</link>
 						<link>http://json-lib.sourceforge.net/apidocs/jdk15</link>
+						<link>http://xml.apache.org/commons/components/apidocs/resolver</link>
 					</links>
 				</configuration>
 			</plugin>
@@ -342,8 +356,7 @@
 	<issueManagement>
 		<system>JIRA</system>
 		<url>http://jira.codehaus.org/browse/GMOD</url>
-		<!--<url>http://jira.codehaus.org/browse/GMOD/component/13625</url>
-	--></issueManagement>
+	</issueManagement>
 
 	<licenses>
 		<license>
