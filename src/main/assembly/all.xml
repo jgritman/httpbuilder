@@ -12,13 +12,14 @@
     <fileSet>
       <directory>.</directory>
       <outputDirectory></outputDirectory>
-      <useDefaultExcludes>true</useDefaultExcludes>
-      <excludes>
-        <exclude>target/</exclude>
-      </excludes>
+      <includes>
+      	<include>pom.xml</include>
+      	<include>src/**</include>
+      </includes>
     </fileSet>
     <fileSet>
     	<directory>target</directory>
+    	<outputDirectory></outputDirectory>
     	<includes>
     		<include>*.jar</include>
     		<include>site/**</include>
@@ -32,7 +33,7 @@
     	<scope>runtime</scope>
     	<useProjectArtifact>false</useProjectArtifact>
     	<useProjectAttachments>false</useProjectAttachments>
-    	<outputDirectory>target/dependencies</outputDirectory>
+    	<outputDirectory>dependencies</outputDirectory>
     </dependencySet>
   </dependencySets>
   
