@@ -81,7 +81,7 @@
 			<optional>true</optional>
 			<!-- Should be 'provided' but this is broken due to 
 					 http://jira.codehaus.org/browse/MASSEMBLY-248 -->
-			<scope>runtime</scope>
+			<!-- scope>provided</scope -->
 		</dependency> 
 		<!-- Not yet used for testing:
 		<dependency>
