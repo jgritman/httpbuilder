@@ -51,7 +51,7 @@ import org.apache.http.client.methods.HttpPut;
  * <p>By default, all request method methods will return a {@link HttpResponseDecorator}
  * instance, which provides convenient access to response headers and the parsed
  * response body.  The response body is parsed based on content-type, identical
- * to how HTTPBuilder's {@link HTTPBuilder#defaultSuccessHandler(HttpResponse, 
+ * to how HTTPBuilder's {@link HTTPBuilder#defaultSuccessHandler(HttpResponseDecorator, 
  * Object) default response handler} functions.</p>
  * 
  * <p>Failed requests (i.e. responses which return a status code &gt; 399) will
@@ -93,16 +93,18 @@ public class RESTClient extends HTTPBuilder {
 	/**
 	 * <p>Convenience method to perform an HTTP GET request.  It will use the HTTPBuilder's
 	 * {@link #getHandler() registered response handlers} to handle success or 
-	 * failure status codes.  By default, the {@link #defaultSuccessHandler(HttpResponse, Object)}
+	 * failure status codes.  By default, the 
+	 * {@link #defaultSuccessHandler(HttpResponseDecorator, Object)}
 	 * <code>success</code> response handler will return a decorated response
 	 * object that can be used to read response headers and data.</p>
 	 * 
 	 * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled 
-	 * by the registered 'failure' handler.  The {@link #defaultFailureHandler(HttpResponse) 
+	 * by the registered 'failure' handler.  
+	 * The {@link #defaultFailureHandler(HttpResponseDecorator, Object) 
 	 * default failure handler} throws a {@link HttpResponseException}.</p>  
 	 * 
-	 * @see #defaultSuccessHandler(HttpResponse, Object)
-	 * @see #defaultFailureHandler(HttpResponse)
+	 * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
+	 * @see #defaultFailureHandler(HttpResponseDecorator, Object)
 	 * @param args named parameters - see 
 	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return a {@link HttpResponseDecorator}, unless the default success 
@@ -216,9 +218,10 @@ public class RESTClient extends HTTPBuilder {
 	 * the underlying {@link HttpResponse} instance.
 	 */
 	@Override
-	protected HttpResponseDecorator defaultSuccessHandler( HttpResponse resp, Object data )
-			throws IOException {
-		return new HttpResponseDecorator( resp, data );
+	protected HttpResponseDecorator defaultSuccessHandler( HttpResponseDecorator resp, Object data )
+			throws ResponseParseException {
+		resp.setData( super.defaultSuccessHandler( resp, data ) );
+		return resp;
 	}
 	
 	/**
@@ -231,7 +234,9 @@ public class RESTClient extends HTTPBuilder {
 	 * @throws HttpResponseException exception which can access the response 
 	 *   object.
 	 */
-	protected void defaultFailureHandler( HttpResponse resp, Object data ) throws HttpResponseException {
-		throw new HttpResponseException( new HttpResponseDecorator( resp, data ) );
+	protected void defaultFailureHandler( HttpResponseDecorator resp, Object data ) 
+			throws HttpResponseException {
+		resp.setData( super.defaultSuccessHandler( resp, data ) ); 
+		throw new HttpResponseException( resp );
 	}
 }

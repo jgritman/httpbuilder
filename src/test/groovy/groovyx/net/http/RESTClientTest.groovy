@@ -32,7 +32,7 @@ public class RESTClientTest {
 	@Test public void testHead() {
 		try { // expect an exception from a 404 response:
 			twitter.head path : 'public_timeline'
-			assert false, 'Expected exception'
+			assert false : 'Expected exception'
 		}
 		// test the exception class:
 		catch( ex ) { assert ex.response.status == 404 }
@@ -100,6 +100,7 @@ public class RESTClientTest {
 	}
 	
 	@Test public void testDelete() {
+		Thread.sleep 10000
 		// delete the test message.
 		if ( ! postID ) throw new IllegalStateException( "No post ID from testPost()" )
 		println "Deleting post ID : $postID"
@@ -121,5 +122,24 @@ public class RESTClientTest {
 		println "OPTIONS response : ${resp.headers.Allow}"
 		assert resp.headers.Allow
 		*/
+	}
+	
+	@Test public void testDefaultHandlers() {
+		twitter.contentType = 'text/plain'
+		twitter.headers = [Accept:'text/xml']
+		def resp = twitter.get( path : 'user_timeline/httpbuilder.xml' )
+		def text = resp.data.text
+		assert text.endsWith( "</statuses>\n" )
+		
+		try {
+			resp = twitter.get( path : 'asdf' )
+			assert false : "exception should be thrown"
+		}
+		catch ( HttpResponseException ex ) {
+			assert ex.response.status == 404
+			text = ex.response.data.text
+//			println text
+			assert text.endsWith('</hash>\n')
+		}
 	}
 }
