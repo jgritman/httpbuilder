@@ -113,6 +113,12 @@ public class URIBuilderTest {
 		
 		uri.query = [z:0,y:9,x:8]
 		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8#frag'
+				
+		uri.addQueryParams [z:1,y:2]
+		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8&z=1&y=2#frag'
+				
+		uri.addQueryParam 'y', 'blah'
+		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8&z=1&y=2&y=blah#frag'
 
 //		uri.addQueryParam '', 'asdf'
 //		println uri // prints ...p2?=asdf... but apparently that is a valid URI...

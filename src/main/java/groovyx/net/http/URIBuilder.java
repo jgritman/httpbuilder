@@ -148,6 +148,24 @@ public class URIBuilder implements Cloneable {
 		return this;
 	}
 	
+	/* TODO null/ zero-size check if this is ever made public */
+	protected URIBuilder setQueryNVP( List<NameValuePair> nvp ) throws URISyntaxException {
+		/* Passing the query string in the URI constructor will 
+		 * double-escape query parameters and goober things up.  So we have 
+		 * to create a full path+query+fragment and use URI#resolve() to 
+		 * create the new URI.  */
+		StringBuilder sb = new StringBuilder();
+		String path = base.getPath();
+		if ( path != null ) sb.append( path );
+		sb.append( '?' );
+		sb.append( URLEncodedUtils.format( nvp, ENC ) ); 
+		String frag = base.getFragment();
+		if ( frag != null ) sb.append( '#' ).append( frag );
+		this.base = base.resolve( sb.toString() );
+
+		return this;
+	}
+	
 	/**
 	 * Set the query portion of the URI
 	 * @param params a Map of parameters that will be transformed into the query string
@@ -161,39 +179,34 @@ public class URIBuilder implements Cloneable {
 				null, base.getFragment() );
 		}
 		else {
-			/* Passing the query string in the URI constructor will 
-			 * double-escape query parameters and goober things up.  So we have 
-			 * to create a full path+query+fragment and use URI#resolve() to 
-			 * create the new URI.  */
 			List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
-			StringBuilder sb = new StringBuilder();
-			String path = base.getPath();
-			if ( path != null ) sb.append( path );
-			sb.append( '?' );
 			for ( Object key : params.keySet() ) {
 				Object val = params.get(key);
 				pairs.add( new BasicNameValuePair( key.toString(), 
 						( val != null ) ? val.toString() : "" ) );
 			}
-			sb.append( URLEncodedUtils.format( pairs, ENC ) ); 
-			String frag = base.getFragment();
-			if ( frag != null ) sb.append( '#' ).append( frag );
-			this.base = base.resolve( sb.toString() );
+			this.setQueryNVP( pairs );
 		}
 		return this;
 	}
 	
 	/**
-	 * Get the query string as a map.
+	 * Get the query string as a map for convenience.  Note that if you use 
+	 * multi-valued query parameters (i.e. ?p1=1&p1=2) you should not use this
+	 * method as it will only retain the last value. 
 	 * @return a map of String name/value pairs representing the URI's query 
 	 * string.
 	 */
 	public Map<String,String> getQuery() {
 		Map<String,String> params = new HashMap<String, String>();		
-		List<NameValuePair> pairs = URLEncodedUtils.parse( this.base, ENC );
+		List<NameValuePair> pairs = this.getQueryNVP();
 		for ( NameValuePair pair : pairs ) 
 			params.put( pair.getName(), pair.getValue() );
 		return params;
+	}
+	
+	protected List<NameValuePair> getQueryNVP() {
+		return URLEncodedUtils.parse( this.base, ENC );
 	}
 	
 	/**
@@ -214,9 +227,24 @@ public class URIBuilder implements Cloneable {
 	 * @throws URISyntaxException
 	 */
 	public URIBuilder removeQueryParam( String param ) throws URISyntaxException {
-		Map<String,String> params = getQuery();
-		params.remove( param );
-		this.setQuery( params );
+		List<NameValuePair> params = getQueryNVP();
+		NameValuePair found = null;
+		for ( NameValuePair nvp : params )  // BOO linear search.  Assume the list is small.
+			if ( nvp.getName().equals( param ) ) {
+				found = nvp;
+				break;
+			}
+		
+		if ( found == null ) throw new IllegalArgumentException( "Param '" + param + "' not found" );
+		params.remove( found );
+		this.setQueryNVP( params );
+		return this;
+	}
+	
+	protected URIBuilder addQueryParam( NameValuePair nvp ) throws URISyntaxException {
+		List<NameValuePair> params = getQueryNVP();
+		params.add( nvp );
+		this.setQueryNVP( params );
 		return this;
 	}
 	
@@ -233,10 +261,17 @@ public class URIBuilder implements Cloneable {
 	 * @see #setQuery(Map) 
 	 */
 	public URIBuilder addQueryParam( String param, Object value ) throws URISyntaxException {
-		Map<String,String> params = getQuery();
-		if ( value == null ) value = ""; 
-		params.put( param, value.toString() );
-		this.setQuery( params );
+		List<NameValuePair> params = getQueryNVP();
+		params.add( new BasicNameValuePair( param, 
+				( value != null ) ? value.toString() : "" ) );
+		this.setQueryNVP( params );
+		return this;
+	}
+	
+	protected URIBuilder addQueryParams( List<NameValuePair> nvp ) throws URISyntaxException {
+		List<NameValuePair> params = getQueryNVP();
+		params.addAll( nvp );
+		this.setQueryNVP( params );
 		return this;
 	}
 	
@@ -253,9 +288,13 @@ public class URIBuilder implements Cloneable {
 	 */
 	@SuppressWarnings("unchecked")
 	public URIBuilder addQueryParams( Map<String,?> params ) throws URISyntaxException {
-		Map existing = this.getQuery();
-		existing.putAll( params );
-		this.setQuery( existing );
+		List<NameValuePair> nvp = getQueryNVP();
+		for ( String key : params.keySet() ) {
+			Object value = params.get( key );
+			nvp.add( new BasicNameValuePair( key, 
+					( value != null ) ? value.toString() : "" ) );
+		}
+		this.setQueryNVP( nvp );
 		return this;
 	}
 	
