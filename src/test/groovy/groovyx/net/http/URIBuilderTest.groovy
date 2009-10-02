@@ -106,15 +106,19 @@ public class URIBuilderTest {
 		assert uri.query.b == null
 		uri.addQueryParam 'b', ''
 		
+		println uri
+		
 		uri.addQueryParams( [ e : 5, f : 6, a : 7 ] )
-		assert uri.query.a == '7'
 		
-		uri.query == [a:'7',b:'',c:'3',d:'4',e:'5',f:'6']
-		
+		def query = uri.query
+		assert query.containsKey( 'b' )
+		assert query.size() == 6
+		assert query == [a:['1','7'], c:'3', d:'4', b:null, e:'5', f:'6']
+
 		uri.query = [z:0,y:9,x:8]
 		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8#frag'
 				
-		uri.addQueryParams [z:1,y:2]
+		uri.addQueryParams( z:1, y:2 )
 		assert uri.toString() == 'http://localhost/p1/p2?z=0&y=9&x=8&z=1&y=2#frag'
 				
 		uri.addQueryParam 'y', 'blah'
