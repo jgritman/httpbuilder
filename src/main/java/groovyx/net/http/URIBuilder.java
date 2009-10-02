@@ -167,7 +167,11 @@ public class URIBuilder implements Cloneable {
 	}
 	
 	/**
-	 * Set the query portion of the URI
+	 * Set the query portion of the URI.  For query parameters with multiple 
+	 * values, put the values in a list like so:
+	 * <pre>uri.query = [ p1:'val1', p2:['val2', 'val3'] ]
+	 * // will produce a query string of ?p1=val1&p2=val2&p2=val3</pre>
+	 * 
 	 * @param params a Map of parameters that will be transformed into the query string
 	 * @return this URIBuilder instance, for method chaining.
 	 * @throws URISyntaxException
@@ -197,8 +201,15 @@ public class URIBuilder implements Cloneable {
 	
 	/**
 	 * Get the query string as a map for convenience.  If any parameter contains
-	 * multiple values (e.g. p1=one&p1=two) both values will be inserted into 
-	 * a list for that paramter key.
+	 * multiple values (e.g. <code>p1=one&p1=two</code>) both values will be 
+	 * inserted into a list for that paramter key (<code>[p1 : ['one','two']]
+	 * </code>).  Note that this is not a "live" map.  Therefore, you cannot 
+	 * call 
+	 * <pre> uri.query.a = 'BCD'</pre>
+	 * You will not modify the query string but instead the generated map of
+	 * parameters.  Instead, you need to use {@link #removeQueryParam(String)}
+	 * first, then {@link #addQueryParam(String, Object)}, or call 
+	 * {@link #setQuery(Map)} which will set the entire query string.
 	 * @return a map of String name/value pairs representing the URI's query 
 	 * string.
 	 */
@@ -271,8 +282,11 @@ public class URIBuilder implements Cloneable {
 	}
 	
 	/**
-	 * This will append a param to the existing query string.  If the given 
-	 * param is already part of the query string, it will be replaced.
+	 * This will append a query parameter to the existing query string.  If the given 
+	 * parameter is already part of the query string, it will be appended to.  
+	 * To replace the existing value of a certain parameter, either call 
+	 * {@link #removeQueryParam(String)} first, or use {@link #getQuery()},
+	 * modify the value in the map, then call {@link #setQuery(Map)}.
 	 * @param param query parameter name 
 	 * @param value query parameter value (will be converted to a string if 
 	 *   not null.  If <code>value</code> is null, it will be set as the empty 
@@ -301,10 +315,15 @@ public class URIBuilder implements Cloneable {
 	 * Add these parameters to the URIBuilder's existing query string.
 	 * Parameters may be passed either as a single map argument, or as a list
 	 * of named arguments.  e.g. 
-	 * <pre>uriBuilder.addQueryParams( [one:1,two:2] )
-	 * uriBuilder.addQueryParams( three : 3 )
-	 * </pre>
-	 * @param params parameters to add.
+	 * <pre> uriBuilder.addQueryParams( [one:1,two:2] )
+	 * uriBuilder.addQueryParams( three : 3 ) </pre>
+	 * 
+	 * If any of the parameters already exist in the URI query, these values 
+	 * will <strong>not</strong> replace them.  Multiple values for the same 
+	 * query parameter may be added by putting them in a list. See 
+	 * {@link #setQuery(Map)}.
+	 * 
+	 * @param params parameters to add to the existing URI query (if any).
 	 * @return this URIBuilder instance, for method chaining.
 	 * @throws URISyntaxException
 	 */
