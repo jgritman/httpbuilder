@@ -195,19 +195,41 @@ public class EncoderRegistry {
 	/**
 	 * Set the request body as a url-encoded list of parameters.  This is 
 	 * typically used to simulate a HTTP form POST. 
+	 * For multi-valued parameters, enclose the values in a list, e.g. 
+	 * <pre>[ key1 : ['val1', 'val2'], key2 : 'etc.' ]</pre>
 	 * @param params
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public UrlEncodedFormEntity encodeForm( Map<String,Object> params ) 
+	public UrlEncodedFormEntity encodeForm( Map<?,?> params ) 
 			throws UnsupportedEncodingException {
 		List<NameValuePair> paramList = new ArrayList<NameValuePair>();
 
-		for ( Map.Entry<String, Object> entry : params.entrySet() ) 
-			paramList.add( new BasicNameValuePair(entry.getKey(), 
-					entry.getValue().toString()) );
+		for ( Object key : params.keySet() ) {
+			Object val = params.get( key );
+			if ( val instanceof List ) 
+				for ( Object subVal : (List)val ) 
+					paramList.add( new BasicNameValuePair( key.toString(), 
+							( subVal == null ) ? "" : subVal.toString() ) );
+
+			else paramList.add( new BasicNameValuePair( key.toString(), 
+					( val == null ) ? "" : val.toString() ) );
+		}
 			
 		return new UrlEncodedFormEntity( paramList, charset.name() );
+	}
+	
+	/**
+	 * Accepts a String as a url-encoded form post.  This method assumes the 
+	 * String is an already-encoded POST string.
+	 * @param formData a url-encoded form POST string.  See 
+	 *  <a href='http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.1'>
+	 *  The W3C spec</a> for more info.
+	 * @return an {@link HttpEntity} encapsulating this request data
+	 * @throws UnsupportedEncodingException
+	 */
+	public HttpEntity encodeForm( String formData ) throws UnsupportedEncodingException {
+		return this.createEntity( ContentType.URLENC, formData );
 	}
 	
 	/**
