@@ -32,7 +32,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
@@ -177,8 +176,8 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData )
-			throws IOException {
+	protected Object defaultSuccessHandler( HttpResponseDecorator resp, Object parsedData )
+			throws ResponseParseException {
 		return super.defaultSuccessHandler( resp, parsedData );
 	}
 	
@@ -203,7 +202,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 	 * @see HttpConnectionParams#setConnectionTimeout(HttpParams, int)
 	 * @param timeout time to wait in milliseconds.
 	 */
-	public void setTimeout( int timeout ) {		
+	public void setTimeout( int timeout ) {
 		HttpConnectionParams.setConnectionTimeout( super.getClient().getParams(), timeout );
 		HttpConnectionParams.setSoTimeout( super.getClient().getParams(), timeout );
 		/* this will cause a thread waiting for an available connection instance

@@ -165,6 +165,7 @@ public class HTTPBuilder {
 	protected final Log log = LogFactory.getLog( getClass() );
 	
 	protected Object defaultContentType = ContentType.ANY;
+	protected Object defaultRequestContentType = null;
 	protected final Map<Object,Closure> defaultResponseHandlers = 
 		new StringHashMap<Closure>( buildDefaultResponseHandlers() );
 	protected ContentEncodingRegistry contentEncodingHandler = new ContentEncodingRegistry();
@@ -218,13 +219,13 @@ public class HTTPBuilder {
 	 * handler will attempt to parse the data and simply return the parsed 
 	 * object.</p>
 	 * 
-	 * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponse, Object)
+	 * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponseDecorator, Object)
 	 * default <code>success</code> response handler}, be sure to read the 
 	 * caveat regarding streaming response data.</p>
 	 * 
 	 * @see #getHandler()
-	 * @see #defaultSuccessHandler(HttpResponse, Object)
-	 * @see #defaultFailureHandler(HttpResponse)
+	 * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
+	 * @see #defaultFailureHandler(HttpResponseDecorator)
 	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return whatever was returned from the response closure.  
 	 * @throws URISyntaxException if a uri argument is given which does not 
@@ -243,7 +244,7 @@ public class HTTPBuilder {
 	 * 
 	 * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled 
 	 * by the registered 'failure' handler.  The 
-	 * {@link #defaultFailureHandler(HttpResponse) default failure handler} 
+	 * {@link #defaultFailureHandler(HttpResponseDecorator) default failure handler} 
 	 * throws an {@link HttpResponseException}.</p>
 	 * 
 	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
@@ -274,13 +275,13 @@ public class HTTPBuilder {
 	 * handler will attempt to parse the data and simply return the parsed 
 	 * object. </p>
 	 * 
-	 * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponse, Object)
+	 * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponseDecorator, Object)
 	 * default <code>success</code> response handler}, be sure to read the 
 	 * caveat regarding streaming response data.</p>
 	 * 
 	 * @see #getHandler()
-	 * @see #defaultSuccessHandler(HttpResponse, Object)
-	 * @see #defaultFailureHandler(HttpResponse)
+	 * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
+	 * @see #defaultFailureHandler(HttpResponseDecorator)
 	 * @param args see {@link RequestConfigDelegate#setPropertiesFromMap(Map)}
 	 * @return whatever was returned from the response closure.  
 	 * @throws IOException 
@@ -299,7 +300,7 @@ public class HTTPBuilder {
 	 * 
 	 * <p>A 'failed' response (i.e. any 
 	 * HTTP status code > 399) will be handled by the registered 'failure' 
-	 * handler.  The {@link #defaultFailureHandler(HttpResponse) default 
+	 * handler.  The {@link #defaultFailureHandler(HttpResponseDecorator) default 
 	 * failure handler} throws an {@link HttpResponseException}.</p>  
 	 * 
 	 * <p>The request body (specified by a <code>body</code> named parameter) 
@@ -442,9 +443,9 @@ public class HTTPBuilder {
 			else reqMethod.setHeader( key.toString(), val.toString() );
 		}
 		
-		HttpResponse resp = client.execute( reqMethod );
+		HttpResponseDecorator resp = new HttpResponseDecorator( 
+				client.execute( reqMethod ), null);
 		try {
-			resp = new HttpResponseDecorator( resp, null );
 			int status = resp.getStatusLine().getStatusCode();
 			Closure responseClosure = delegate.findResponseHandler( status );
 			log.debug( "Response code: " + status + "; found handler: " + responseClosure );
@@ -463,7 +464,7 @@ public class HTTPBuilder {
 					Header h = e != null ? e.getContentType() : null;
 					String respContentType = h != null ? h.getValue() : null;
 					log.warn( "Error parsing '" + respContentType + "' response", ex );
-					throw new ResponseParseException( new HttpResponseDecorator( resp, null ) );	
+					throw new ResponseParseException( resp, ex );	
 				}
 				break;
 			default:
@@ -525,8 +526,8 @@ public class HTTPBuilder {
 	 * Creates default response handlers for {@link Status#SUCCESS success} and
 	 * {@link Status#FAILURE failure} status codes.  This is used to populate 
 	 * the handler map when a new HTTPBuilder instance is created. 
-	 * @see #defaultSuccessHandler(HttpResponse, Object)
-	 * @see #defaultFailureHandler(HttpResponse)
+	 * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
+	 * @see #defaultFailureHandler(HttpResponseDecorator)
 	 * @return the default response handler map.
 	 */
 	protected Map<Object,Closure> buildDefaultResponseHandlers() {
@@ -565,23 +566,31 @@ public class HTTPBuilder {
 	 * @param resp HTTP response
 	 * @param parsedData parsed data as resolved from this instance's {@link ParserRegistry}
 	 * @return the parsed data object (whatever the parser returns).
+	 * @throws ResponseParseException if there is an error buffering a streaming
+	 *   response.
 	 */
-	protected Object defaultSuccessHandler( HttpResponse resp, Object parsedData ) throws IOException {
-		//If response is streaming, buffer it in a byte array:
-		if ( parsedData instanceof InputStream ) {
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
-			parsedData = new ByteArrayInputStream( buffer.toByteArray() );
+	protected Object defaultSuccessHandler( HttpResponseDecorator resp, Object parsedData ) 
+			throws ResponseParseException {
+		try {
+			//If response is streaming, buffer it in a byte array:
+			if ( parsedData instanceof InputStream ) {
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+				DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
+				parsedData = new ByteArrayInputStream( buffer.toByteArray() );
+			}
+			else if ( parsedData instanceof Reader ) {
+				StringWriter buffer = new StringWriter();
+				DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
+				parsedData = new StringReader( buffer.toString() );
+			}
+			else if ( parsedData instanceof Closeable )
+				log.warn( "Parsed data is streaming, but will be accessible after " +
+						"the network connection is closed.  Use at your own risk!" );
+			return parsedData;
 		}
-		else if ( parsedData instanceof Reader ) {
-			StringWriter buffer = new StringWriter();
-			DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
-			parsedData = new StringReader( buffer.toString() );
+		catch ( IOException ex ) {
+			throw new ResponseParseException( resp, ex );
 		}
-		else if ( parsedData instanceof Closeable )
-			log.warn( "Parsed data is streaming, but will be accessible after " +
-					"the network connection is closed.  Use at your own risk!" );
-		return parsedData;
 	}
 	
 	/**
@@ -855,6 +864,8 @@ public class HTTPBuilder {
 			this.request = request;
 			this.headers.putAll( defaultRequestHeaders );
 			this.contentType = contentType;
+			if ( defaultRequestContentType != null ) 
+				this.requestContentType = defaultRequestContentType.toString();
 			this.responseHandlers.putAll( defaultResponseHandlers );
 			URI uri = request.getURI();
 			if ( uri != null ) this.uri = new URIBuilder(uri);

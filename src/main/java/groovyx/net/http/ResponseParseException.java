@@ -34,7 +34,16 @@ public class ResponseParseException extends HttpResponseException {
 	
 	private static final long serialVersionUID = -1398234959324603287L;
 
-	public ResponseParseException( HttpResponseDecorator response ) {
+	/* TODO this is a bit wonky because org.apache.http...HttpResponseException
+	   does not have a constructor to pass the 'cause'.  But I want this to 
+	   extend HttpResponseException so that one exception type can catch 
+	   everything thrown from HttpBuilder. */
+	private Throwable cause;
+	
+	public ResponseParseException( HttpResponseDecorator response, Throwable cause ) {
 		super( response );
+		this.cause = cause;
 	}
+	
+	@Override public Throwable getCause() { return this.cause; }
 }

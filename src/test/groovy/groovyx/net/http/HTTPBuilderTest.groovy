@@ -3,7 +3,7 @@ package groovyx.net.http
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
 import org.junit.Test
-import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStreamimport org.apache.xml.resolver.tools.CatalogResolver
+import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStreamimport org.apache.xml.resolver.tools.CatalogResolverimport java.net.ServerSocketimport org.apache.http.params.HttpConnectionParamsimport org.apache.commons.io.IOUtils
 class HTTPBuilderTest {
 	
 	def twitter = [user: System.getProperty('twitter.user'),
@@ -25,6 +25,54 @@ class HTTPBuilderTest {
 			println "Title: ${html.HEAD.TITLE.text()}"
 			assert html.BODY.size() == 1
 		}
+	}
+	
+//	@Test 
+	public void testAlternateParsing() {
+		
+		println "-----------TESTING self-server"
+		def request = ''
+		def done = false
+		Thread.start {
+			println "- Thread running"
+			def ss
+			try {
+				ss = new ServerSocket(11234)
+				while ( ! done ) {
+					ss.accept { sock ->
+						println "- connected"
+						sock.soTimeout = 10000
+						sock.withStreams { input, output ->
+							request = IOUtils.toString( input )
+							println "- got request: $request"
+							println "- Connected: ${sock.connected} Closed: ${sock.closed}"
+							output << "HTTP/1.1 200 OK\r\nContent-Type:text/plain\r\n" \
+								+ "Content-Length:5\r\nConnection: Close\r\n\r\nHello\u0000"
+							output.flush()
+							println "- sent response!"
+							output.close()
+						}
+					}
+				}
+				println "- Done normally"
+			} finally { 
+				ss?.close()
+				println "- Server closed."
+			}
+		}
+		
+		def http = new HTTPBuilder( 'http://localhost:11234', TEXT )
+		http.headers = ['Content-Type':'text/xml',Accept:'text/xml'] 
+		HttpConnectionParams.setSoTimeout( http.client.params, 10000 )
+		
+		println "= Client Sending request..."
+		def response = http.get( path:'/one/two' )
+		println "= Client got response"
+		done = true
+		
+		assert request
+		assert response		
+		// TODO validate headers
 	}
 
 	@Test public void testDefaultSuccessHandler() {
@@ -176,6 +224,7 @@ class HTTPBuilderTest {
 		}
 		
 		// delete the test message.
+		Thread.sleep 5000
 		http.request( DELETE, JSON ) { req ->
 			uri.path = "destroy/${postID}.json"
 			
@@ -184,6 +233,27 @@ class HTTPBuilderTest {
 				assert resp.statusLine.statusCode == 200
 				println "Test tweet ID ${json.id} was deleted."
 			}
+		}
+	}
+	
+	@Test public void testPlainURLEnc() {
+		def http = new HTTPBuilder('http://twitter.com/statuses/')
+		
+		http.auth.basic twitter.user, twitter.passwd
+		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+		
+		def msg = "HTTPBuilder's second unit test was run on ${new Date()}"
+			
+		def resp = http.post( contentType:XML, path:'update.xml',
+				body:"status=$msg&source=httpbuilder" )
+		
+		def postID = resp.id.text()
+		assert postID
+		
+		// delete the test message.
+		Thread.sleep 5000
+		http.request( DELETE, JSON ) {
+			uri.path = "destroy/${postID}.json"
 		}
 	}
 	

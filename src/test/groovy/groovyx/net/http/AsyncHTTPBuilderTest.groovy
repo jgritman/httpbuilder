@@ -24,7 +24,7 @@ package groovyx.net.http
 import org.junit.Test
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-import java.util.concurrent.ExecutionExceptionimport java.net.SocketTimeoutException
+import java.util.concurrent.ExecutionExceptionimport org.apache.http.conn.ConnectTimeoutException
 /**
  * @author tnichols
  */
@@ -135,7 +135,7 @@ public class AsyncHTTPBuilderTest {
 			assert false
 		}
 		catch ( ExecutionException ex ) {
-			assert ex.cause.getClass() == SocketTimeoutException
+			assert ex.cause.getClass() == ConnectTimeoutException
 		}
 	}
 	

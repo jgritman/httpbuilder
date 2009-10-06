@@ -1,7 +1,8 @@
 package groovyx.net.http
 
 import org.junit.Testimport org.junit.Before
-import junit.framework.Assertimport groovy.util.slurpersupport.GPathResult
+import junit.framework.Assertimport groovy.util.slurpersupport.GPathResult
+import org.apache.http.params.HttpConnectionParams
 import static groovyx.net.http.ContentType.*
 
 /**
@@ -19,6 +20,7 @@ public class RESTClientTest {
 		twitter.auth.basic userID, System.getProperty('twitter.passwd')
 		twitter.client.params.setBooleanParameter 'http.protocol.expect-continue', false
 		twitter.contentType = ContentType.JSON
+		HttpConnectionParams.setSoTimeout twitter.client.params, 15000
 	}
 	
 	@Test public void testConstructors() {
