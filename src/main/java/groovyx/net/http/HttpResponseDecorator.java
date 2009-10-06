@@ -138,7 +138,8 @@ public class HttpResponseDecorator implements HttpResponse {
 		 *  in this response 
 		 */
 		protected String propertyMissing( String name ) {
-			return getAt( name ).getValue();
+			Header h = this.getAt( name );
+			return h != null ? h.getValue() : null;
 		}		
 		
 		/**
