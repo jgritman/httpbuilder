@@ -63,7 +63,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * 
  * TODO request encoding support?
  *
- * @see http://code.google.com/appengine/docs/java/urlfetch/overview.html
+ * @see <a href='http://code.google.com/appengine/docs/java/urlfetch/overview.html'>GAE URLFetch</a>
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5.0
  */

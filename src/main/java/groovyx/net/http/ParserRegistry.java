@@ -309,7 +309,7 @@ public class ParserRegistry {
 	 * to be passed as the 'parsed data' argument of a 
 	 * {@link RequestConfigDelegate#getResponse() response handler} closure.
 	 * @param contentType  <code>content-type</code> string
-	 * @param closure code that will parse the HttpResponse and return parsed 
+	 * @param value code that will parse the HttpResponse and return parsed 
 	 *   data to the response handler. 
 	 */
 	public void putAt( Object contentType, Closure value ) {
