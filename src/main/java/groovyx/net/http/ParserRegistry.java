@@ -45,6 +45,8 @@ import net.sf.json.groovy.JsonSlurper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -87,7 +89,7 @@ public class ParserRegistry {
 	private Closure defaultParser = DEFAULT_PARSER;
 	private Map<String,Closure> registeredParsers = buildDefaultParserMap();
 	
-	protected final Log log = LogFactory.getLog( getClass() );
+	protected static final Log log = LogFactory.getLog( ParserRegistry.class );
 	
 	/**
 	 * This CatalogResolver is static to avoid the overhead of re-parsing
@@ -122,10 +124,21 @@ public class ParserRegistry {
 	 * @param resp
 	 */
 	public static String getCharset( HttpResponse resp ) {
-		NameValuePair charset = resp.getEntity().getContentType()
-				.getElements()[0].getParameterByName("charset"); 
-		return ( charset == null || charset.getValue().trim().equals("") ) ?
-			Charset.defaultCharset().name() : charset.getValue();
+		try {
+			NameValuePair charset = resp.getEntity().getContentType()
+				.getElements()[0].getParameterByName("charset");
+			
+			if ( charset == null || charset.getValue().trim().equals("") ) {
+				log.warn( "Could not find charset in response" );
+				return Charset.defaultCharset().name();
+			}
+				
+			return charset.getValue();
+		}
+		catch ( RuntimeException ex ) { // NPE or OOB Exceptions
+			log.warn( "Could not parse content-type header in response", ex );
+			return Charset.defaultCharset().name();
+		}
 	}
 	
 	/**
@@ -134,10 +147,15 @@ public class ParserRegistry {
 	 * @param resp
 	 */
 	public static String getContentType( HttpResponse resp ) {
-		/* TODO how do we handle a very rude server who does not return a 
-		   content-type header?  It could cause an NPE here. and in getCharset */
-		return resp.getEntity().getContentType()
-			.getElements()[0].getName();
+		if ( resp.getEntity() == null )
+			throw new IllegalArgumentException( "Response does not contain data" );
+		try {
+			return resp.getEntity().getContentType().getElements()[0].getName();
+		}
+		catch ( RuntimeException ex ) {  // NPE or OOB Exceptions
+			log.warn( "Could not parse content-type header in response", ex );
+			throw new IllegalArgumentException( "Could not parse content-type from response" );
+		}
 	}
 	
 	/**
