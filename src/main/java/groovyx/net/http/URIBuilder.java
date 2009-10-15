@@ -239,7 +239,10 @@ public class URIBuilder implements Cloneable {
 	}
 	
 	protected List<NameValuePair> getQueryNVP() {
-		return URLEncodedUtils.parse( this.base, ENC );
+		List<NameValuePair> nvps = URLEncodedUtils.parse( this.base, ENC );
+		List<NameValuePair> newList = new ArrayList<NameValuePair>();
+		if ( nvps != null ) newList.addAll( nvps );
+		return newList;
 	}
 	
 	/**

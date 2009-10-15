@@ -132,6 +132,10 @@ public class URIBuilderTest {
 		
 		uri.query = [:]
 		assert uri.toString() == 'http://localhost/p1/p2#frag'
+		
+		uri = new URIBuilder( 'http://localhost/p1/p2' )
+		uri.addQueryParam 'z','1'
+		assert uri.query.z == '1'
 	}
 
 	@Test public void testMostEverythingElse() {
