@@ -10,6 +10,24 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
 
+* 06 Oct 2009 - More Snapshots & important changes...
+
+  So no matter how hard I try, I can't seem to release 0.5.0.  More accurately, 
+  a few important issues came up that I didn't want to fix in a 0.6 branch 
+  immediately after a 0.5.0 release.  So my solution instead is to introduce some
+  late changes...  
+  
+  Probably the most important change is URIBuilder's handling of query parameters.
+  Previously, URIBuilder only allowed a single value per-parameter.  That is, 
+  it was impossible to do <<<?one=1&two=2&one=3>>> because the Map literal does
+  not allow duplicate keys.  Well, now you can pass a list of values like so:
+  <<<uri.query = [ one: ['1','3'] , two: 2 ]>>> which will add two values for 
+  <<<one>>>.  Of course, this behavior merits a change to the <<<addQueryParam>>> 
+  method as well.  As a result, <<URIBuilder.addQueryParam>>> and <<<addQueryParams>>>
+  will not replace any existing parameters with the same name; instead it will 
+  add to a multi-valued list for the given parameter.  Parameters with single 
+  values will remain as strings, not lists. 
+
 * 16 June 2009 - 0.5.0 RC1!
   
   RC1 is released!  Go {{{download.html}download it}}!

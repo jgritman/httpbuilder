@@ -36,7 +36,8 @@
 			</item>
 			<item name="JavaDoc" href="apidocs/index.html" />
 			<item name="Changelog" href="changes.html" />
-			<item name="Twitter!" href="http://twitter.com/httpbuilder" />
+			<item name="On Twitter!" href="http://twitter.com/httpbuilder" />
+			<item name="On Ohloh" href="https://www.ohloh.net/p/http-builder" />
 			<item name="Support" href="home.html#Support" />
 			<item name="About" href="about.html" />
 		</menu>
