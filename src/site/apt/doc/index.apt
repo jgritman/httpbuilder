@@ -22,31 +22,8 @@ Introduction
   
   The following example shows most of the <<<request>>> method's features. 
   
-------------------------
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.Method.GET
-import static groovyx.net.http.ContentType.TEXT
+%{code-snippet|id=doc1|brush=groovy|file=src/site/examples.txt}
 
-// initialze a new builder and give a default URL
-def http = new HTTPBuilder( 'http://www.google.com/search' )
-
-http.request(GET,TEXT) { req ->
-  uri.path = '/mail/help/tasks/' // overrides any path in the default URL
-  headers.'User-Agent' = 'Mozilla/5.0'
-  
-  response.success = { resp, reader ->
-    assert resp.statusLine.statusCode == 200
-    println "My response handler got response: ${resp.statusLine}"
-    println "Response length: ${resp.headers.'Content-Length'}" 
-    System.out << reader // print response stream
-  }
-  
-  // called only for a 401 (access denied) status code:
-  response.'404' = { resp ->  
-    println 'Not found'
-  }
-}
-------------------------
   
   If you are familiar with the HTTP protocol, most of the above should be 
   self-explanatory.  The 
@@ -75,16 +52,7 @@ http.request(GET,TEXT) { req ->
   code > 399.  You can also customize default response handlers that will be 
   in effect for all requests made by the <<<HTTPBuilder>>> instance:
 	
-------------------------
-http.handler.'401' = { resp ->
-  println "Access denied"
-}
-
-// Used for all other failure codes not handled by a code-specific handler:
-http.handler.failure = { resp ->
-  println "Unexpected failure: ${resp.statusLine}"
-}
-------------------------
+%{code-snippet|id=doc2|brush=groovy|file=src/site/examples.txt}
 
   
 The Magic: Built-in Content-Type Parsing
@@ -94,25 +62,11 @@ The Magic: Built-in Content-Type Parsing
 	into a <<<JSON>>> object, which is then passed to the 'success' response 
 	handler.
 
-------------------------
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.Method.GET
-import static groovyx.net.http.ContentType.JSON
+%{code-snippet|id=doc3|brush=groovy|file=src/site/examples.txt}
 
-def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
-http.request( GET, JSON ) {
-  uri.path = '/ajax/services/search/web'
-  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
-  
-  response.success = { resp, json ->
-    assert json.size() == 3
-    println "Query response: "
-    json.responseData.results.each {
-      println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
-    }
-  }
-}
-------------------------
+
+  You can try the above example by adding the <<<@Grab>>> macro (as demonstrated 
+  on the {{{../download.html}download page}}) with Groovy 1.6. 
 
 
 *Parser Resolution
@@ -145,11 +99,4 @@ http.request( GET, JSON ) {
   To see the raw request and response output, change the Apache HttpClient
   logging parameters to <<<DEBUG>>> like so:
 
-----------------------------
-	<category name="org.apache.http.headers">
-		<priority value="DEBUG" />
-	</category>
-	<category name="org.apache.http.wire">
-		<priority value="DEBUG" />
-	</category>
-----------------------------
+%{code-snippet|id=doc4|brush=xml|file=src/site/examples.txt}

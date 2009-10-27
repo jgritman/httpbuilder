@@ -3,18 +3,30 @@
 <head></head>
 <body>
 
-Provides a simple Groovy API for HTTP/ REST client operations.  It supports 
- multiple callbacks based on response status code, and a mechanism to parse and
- encode many common content-types such as XML, JSON, HTML, and plain text.  
- HTTPBuilder also supports easy configuration for common authentication 
- mechanisms, and common content-encodings as well. 
-
+<p>
+HTTPBuilder provides a simple Groovy API for HTTP and REST client operations.  
+ It supports multiple callbacks based on response status code, and a mechanism 
+ to automatically parse and encode many common content-types such as XML, JSON, 
+ HTML, and plain text.  HTTPBuilder also supports easy configuration for common 
+ authentication mechanisms, and common content-encodings as well. 
+</p>
 
 <h2>Package Specification</h2>
 
-The main client classes are {@link groovyx.net.http.HTTPBuilder HTTPBuilder}
- and {@link groovyx.net.http.URIBuilder URIBuilder}.  All other classes in 
- this package support HTTBuilder operations and allow for extensibility.
+<p>
+The primary class is {@link groovyx.net.http.HTTPBuilder HTTPBuilder}, which 
+  provides the most features and functionality.  
+  {@link groovyx.net.http.RESTClient RESTClient}, 
+  {@link groovyx.net.http.AsyncHTTPBuilder AsyncHTTPBuilder} and 
+  {@link groovyx.net.http.HttpURLClient HttpURLClient} are variants provided 
+  for more specialized use cases.  
+</p>
+
+<p>{@link groovyx.net.http.URIBuilder URIBuilder} is used by HTTPBuilder classes
+	for URL manipulation, but it may also be useful on its own.  The remaining 
+	classes provide supporting functions for HTTPBuilder and are probably only 
+	useful for customizing or extending HTTPBuilder functionality.</p>
+
 
 <h2>Related Documentation</h2>
 

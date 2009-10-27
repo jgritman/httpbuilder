@@ -36,24 +36,7 @@ RESTClient
 
 **  Test a URL using the <<<HEAD>>> method 
 
--------------------------------------------
-import groovyx.net.http.RESTClient
-import groovy.util.slurpersupport.GPathResult
-import static groovyx.net.http.ContentType.URLENC
-
-twitter = new RESTClient( 'https://twitter.com/statuses/' )
-twitter.auth.basic userName, passwd
-
-
-try { // expect an exception from a 404 response:
-    twitter.head path : 'public_timeline'
-    assert false, 'Expected exception'
-}
-// The exception is used for flow control but has access to the response as well:
-catch( ex ) { assert ex.response.status == 404 }
-
-assert twitter.head( path : 'public_timeline.json' ).status == 200
--------------------------------------------
+%{code-snippet|id=rest1|brush=groovy|file=src/site/examples.txt}
 
   The above example takes advantage of HTTPBuilder's default failure handler,
   which will cause an exception to be thrown for any 'failed' response.  That
@@ -63,13 +46,7 @@ assert twitter.head( path : 'public_timeline.json' ).status == 200
 
 **  <<<GET>>> our friends' timeline
 
--------------------------------------------
-def resp = twitter.get( path : 'friends_timeline.json' )
-assert resp.status == 200
-assert resp.contentType == JSON.toString()
-assert ( resp.data instanceof net.sf.json.JSON )
-assert resp.data.status.size() > 0
--------------------------------------------
+%{code-snippet|id=rest2|brush=groovy|file=src/site/examples.txt}
 
   All request parameters are defined 
   {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#setPropertiesFromMap(java.util.Map)}here}}.
@@ -83,19 +60,7 @@ assert resp.data.status.size() > 0
 
 ** <<<POST>>> a status update to Twitter!
 
--------------------------------------------
-def msg = "I'm using HTTPBuilder's RESTClient on ${new Date()}"
-
-resp = twitter.post( path : 'update.xml',
-                     body : [ status:msg, source:'httpbuilder' ],
-                     requestContentType : URLENC )
-
-assert resp.status == 200
-assert ( resp.data instanceof GPathResult ) // parsed using XmlSlurper
-assert resp.data.text == msg
-assert resp.data.user.screen_name == userName
-def postID = resp.data.id.toInteger()
--------------------------------------------
+%{code-snippet|id=rest3|brush=groovy|file=src/site/examples.txt}
 
   Note that the above example is posting the request data as 
   <<<application/x-www-form-urlencoded>>>.  (The twitter API doesn't support XML or 
@@ -113,10 +78,5 @@ def postID = resp.data.id.toInteger()
 
 ** Now <<<DELETE>>> that post
 
--------------------------------------------
-resp = twitter.delete( path : "destroy/${postID}.json" )
-assert resp.status == 200
-assert resp.data.id == postID
-println "Test tweet ID ${resp.data.id} was deleted."
--------------------------------------------
+%{code-snippet|id=rest4|brush=groovy|file=src/site/examples.txt}
 

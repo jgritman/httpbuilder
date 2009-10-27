@@ -19,45 +19,18 @@ Success vs Failure
   property, which returns a map of response closures.  This map may then be used 
   to add response handlers for this request:
   
--------------------------------
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.Method.GET
-import static groovyx.net.http.ContentType.TEXT
-
-new HTTPBuilder('http://www.google.com/').request(GET) { req ->
-  
-  response.success = { resp ->
-    println 'request was successful'
-    assert resp.status < 400
-  }
-  
-  response.failure = { resp ->
-    println 'request failed'
-    assert resp.status >= 400
-  }
-}
--------------------------------
+%{code-snippet|id=handler1|brush=groovy|file=src/site/examples.txt}
 
   These status handlers may be combined with more specific handlers that only
   handle a specific response code:
   
--------------------------------
-http.request(...) {
-	// success handler
-	// ...
-
-	// only called for an HTTP 401 response code:
-	response.'401' = { resp ->
-		println 'access denied'
-	}
-}
--------------------------------
+%{code-snippet|id=handler2|brush=groovy|file=src/site/examples.txt}
   
   In all cases, a handler will first be retrieved by the exact status code, and 
   if none is found, it will fall back to a generic 'success' or 'failure' 
   handler.
   
-A Note on 'Intermediate' Status Codes
+*A Note on 'Intermediate' Status Codes
 
   In cases where a response sends a redirect status code, this is 
   handled internally by Apache HttpClient, which by default will simply follow 
@@ -77,37 +50,12 @@ Default Handlers
   parsed (or buffered in the case of a binary or text response) and returned 
   from the request method:
   
--------------------------------
-try {
-	def response = new HTTPBuilder('http://www.google.com').request(GET,TEXT) {}
-
-	assert response instanceof Reader // response data is buffered in-memory
-	println response.text()
-}
-catch ( HttpResponseException ex ) {
-	// default failure handler throws an exception:
-	println "Unexpected response error: ${ex.statusCode}"
-}
--------------------------------
+%{code-snippet|id=handler3|brush=groovy|file=src/site/examples.txt}
 
 	The default failure handler will throw an exception.
 
   This behavior can also be customized by setting your own default handlers on
   the HTTPBuilder instance like so:
   
--------------------------------
-def http = new HTTPBuilder()
-
-http.handler.success = { "Success!" }
-
-http.handler.failure = { resp ->
-	"Unexpected failure: ${resp.statusLine}"
-}
-
-// we can set code-specific default handlers as well:  
-http.handler.'404 = { 'Not Found' }
-
-def result = http.get( uri:'http://www.google.com/asdfg' )
-assert result == 'Not Found'
--------------------------------
+%{code-snippet|id=handler4|brush=groovy|file=src/site/examples.txt}
   

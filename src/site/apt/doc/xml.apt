@@ -4,23 +4,50 @@
                                     ------
                                     ------
 
-Posting XML data
+Parsing XML data
+
+  By default, HTTPBuilder classes will automatically parse XML responses using
+  an <<<{{{http://groovy.codehaus.org/gapi/groovy/util/XmlSlurper.html}XmlSlurper}}>>>.
+  
+  You can try the following example in the Groovy console (Groovy 1.6+ is needed 
+  for the <<<@Grab>>> macro):
+  
+%{code-snippet|id=xml1|brush=groovy|file=src/site/examples.txt}
+   
+  HTTPBuilder will automatically detect the content-type (assuming the sends the 
+  correct response header) and parse the response as XML.  It is not necessary 
+  (but optional) to explicitly specify the <<<contentType: ContentType.XML>>>
+  parameter.
+  
+  <<HTML>> response data will also be parsed automatically, by using 
+  {{{http://nekohtml.sourceforge.net/}NekoHTML}} which corrects the XML stream
+  before it is passed to the <<<XmlSlurper>>>.  The resulting behavior is that 
+  you can parse HTML as if it was well-formed XML.
+ 
+
+* DTDs, Schemas and Entities
+  
+  Keep in mind that particularly when parsing HTML documents, they often refer 
+  to external DTDs.  The required behavior of all JAXP XML parsers is to 
+  retrieve and parse any referenced entities (e.g. DTD, schema, etc.) <every time>
+  the document is processed (yes, even if validation is disabled.)  This can 
+  become costly when the referenced entity document never changes.  
+  
+  To avoid the overhead of downloading and parsing externally referenced documents
+  for every request, the HTTPBuilder's built-in XML and HTML parser uses an 
+  {{{http://xml.apache.org/commons/components/resolver/resolver-article.html}XML Catalog}}
+  to store a local copy of frequently used DTD and entity definitions.  You can 
+  {{{../apidocs/groovyx/net/http/ParserRegistry.html#addCatalog(java.net.URL)}add additional entity files}} 
+  to the default parser's catalog as well. 
+
+
+POSTing XML data
 
   XML data is serialized using 
   <<<{{{http://groovy.codehaus.org/gapi/index.html?groovy/xml/StreamingMarkupBuilder.html}StreamingMarkupBuilder}}>>>.  
   You can define the <<<body>>> property as a closure like so:
   
---------------------------------------
-http.request( POST, XML ) {
-  
-  body = {
-    auth {
-      user 'Bob'
-      password 'pass'
-    }
-  }
-}
---------------------------------------
+%{code-snippet|id=xml2|brush=groovy|file=src/site/examples.txt}
 
  The body is then transformed to an XML string by 
  <<<{{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(groovy.lang.Closure)}EncoderRegistry.encodeXML()}}>>>.
@@ -40,30 +67,9 @@ Reading an XML response as plain text
 
   For Example:  
   
---------------------------------------
-  import groovyx.net.http.*
-  import static groovyx.net.http.ContentType.*
-	
-  def twitter = new RESTClient( 'https://twitter.com/statuses/' )
-  // ... auth & setup configuration omitted here ...
-	
-  def resp = twitter.get( path : 'friends_timeline.xml', contentType : TEXT,
-                          headers : [Accept : 'application/xml'] )
-  
-  println resp.data.text       // print the XML
---------------------------------------
+%{code-snippet|id=xml3|brush=groovy|file=src/site/examples.txt}
 
   Furthermore, you can use HTTPBuilder's defaults to reduce the number of 
   parameters passed to each request method like so:
   
---------------------------------------
-  def twitter = new RESTClient( 'https://twitter.com/statuses/' )
-
-  // set a default response content-type
-  twitter.contentType = TEXT
-  /* set default headers which will override what's automatically sent in the
-     request by the default contentType param */  
-  twitter.headers = [ Accept : 'application/xml', ]
-
-  def resp = twitter.get( path : 'friends_timeline.xml' )
---------------------------------------
+%{code-snippet|id=xml4|brush=groovy|file=src/site/examples.txt}

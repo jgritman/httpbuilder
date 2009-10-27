@@ -1,0 +1,29 @@
+                          ------
+                          HttpURLClient
+                          ------
+                          ------
+                          ------
+                          
+HttpURLClient
+
+  HTTPURLClient is an alternate implementation that does not rely on HttpClient 
+  sockets for communication.  The main motivation behind this is use in
+  {{{http://code.google.com/appengine/docs/java/overview.html}Google App Engine}}.  
+  GAE does not allow direct socket communication; instead web resources
+  are accessed only via the <<<HttpURLConnection>>> class.  Since 
+  <<<HttpURLConnection>>> is somewhat cumbersome to use (particularly for REST 
+  operations,) <<<HttpURLClient>>> applies some of HTTPBuilder's idioms on top
+  of an HttpURLConnection.  
+  
+  HttpURLClient supports automatic content-type parsing and request marshalling,
+  URI manipulation and the convenient header access.
+  
+  Here is an example of accessing 
+  {{{http://apiwiki.twitter.com/Twitter-API-Documentation}Twitter's REST interface}}, 
+  using both XML and JSON:
+  
+%{code-snippet|id=urlclient1|brush=groovy|file=src/site/examples.txt}
+
+  Note that the example above can be run by adding the <<<@Grab>>> macro with 
+  Groovy 1.6+ to automatically download the HTTPBuilder libraries.  See the 
+  {{{../download.html}download page}} for more details. 

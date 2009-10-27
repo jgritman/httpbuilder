@@ -1,0 +1,614 @@
+START SNIPPET: overview1
+def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
+
+// perform a GET request, expecting JSON response data
+http.request( GET, JSON ) {
+  uri.path = '/ajax/services/search/web'
+  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+
+  headers.'User-Agent' = 'Mozilla/5.0 Ubuntu/8.10 Firefox/3.0.4'
+
+  // response handler for a success response code:
+  response.success = { resp, json ->
+    println resp.status
+
+    // parse the JSON response object:
+    json.responseData.results.each { 
+      println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
+    }
+  }
+
+  // handler for any failure status code:
+  response.failure = { resp ->
+    println "Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}" 
+  }
+}
+END SNIPPET: overview1
+
+START SNIPPET: doc1
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.TEXT
+
+// initialze a new builder and give a default URL
+def http = new HTTPBuilder( 'http://www.google.com/search' )
+
+http.request(GET,TEXT) { req ->
+  uri.path = '/mail/help/tasks/' // overrides any path in the default URL
+  headers.'User-Agent' = 'Mozilla/5.0'
+  
+  response.success = { resp, reader ->
+    assert resp.statusLine.statusCode == 200
+    println "My response handler got response: ${resp.statusLine}"
+    println "Response length: ${resp.headers.'Content-Length'}" 
+    System.out << reader // print response stream
+  }
+  
+  // called only for a 401 (access denied) status code:
+  response.'404' = { resp ->  
+    println 'Not found'
+  }
+}
+END SNIPPET: doc1
+
+START SNIPPET: doc2
+http.handler.'401' = { resp ->
+  println "Access denied"
+}
+
+// Used for all other failure codes not handled by a code-specific handler:
+http.handler.failure = { resp ->
+  println "Unexpected failure: ${resp.statusLine}"
+}
+END SNIPPET: doc2
+
+
+START SNIPPET: doc3
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.JSON
+
+def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
+http.request( GET, JSON ) {
+  uri.path = '/ajax/services/search/web'
+  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  
+  response.success = { resp, json ->
+    assert json.size() == 3
+    println "Query response: "
+    json.responseData.results.each {
+      println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
+    }
+  }
+}
+END SNIPPET: doc3
+
+START SNIPPET: doc4
+	<category name="org.apache.http.headers">
+		<priority value="DEBUG" />
+	</category>
+	<category name="org.apache.http.wire">
+		<priority value="DEBUG" />
+	</category>
+END SNIPPET: doc4
+
+
+START SNIPPET: get1
+def http = new HTTPBuilder('http://www.google.com')
+
+def html = http.get( path : '/search', query : [q:'Groovy'] )
+
+assert html instanceof GPathResult
+assert html.HEAD.size() == 1
+assert html.BODY.size() == 1
+END SNIPPET: get1
+
+
+START SNIPPET: get2
+def http = new HTTPBuilder('http://www.google.com')
+
+http.get( path : '/search', 
+          contentType : TEXT,
+          query : [q:'Groovy'] ) { resp, reader ->
+          
+  println "response status: ${resp.statusLine}"
+  println 'Headers: -----------'
+  resp.headers.each { h ->
+  	println " ${h.name} : ${h.value}"
+  }
+  println 'Response data: -----'
+  System.out << reader
+  println '\n--------------------'
+}
+END SNIPPET: get2
+
+
+START SNIPPET: get3
+def http = new HTTPBuilder()
+ 
+http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
+  uri.path = '/ajax/services/search/web'
+  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  headers.'User-Agent' = "Mozilla/5.0 Firefox/3.0.4"
+
+  response.success = { resp, stream ->
+    assert resp.statusLine.statusCode == 200
+    println "Got response: ${resp.statusLine}"
+    println "Content-Type: ${resp.headers.'Content-Type'"
+    System.out << stream // print response stream
+  }
+    
+  response.'404' = {
+    println 'Not found'
+  }
+}
+END SNIPPET: get3
+
+
+START SNIPPET: post1
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.ContentType.URLENC
+
+def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
+def postBody = [status:'update!',source:'httpbuilder'] // will be url-encoded
+
+http.post( path: 'update.xml', body: postBody, 
+           requestContentType: URLENC ) { resp ->
+
+  println "Tweet response status: ${resp.statusLine}"
+  assert resp.statusLine.statusCode == 200
+}
+END SNIPPET: post1
+
+
+START SNIPPET: post2
+import groovyx.net.http.HTTPBuilder
+
+def http = new HTTPBuilder('http://twitter.com/statuses/')
+
+http.request( POST ) { 
+  uri.path = 'update.xml'
+  body =  [ status : 'update!' , source : 'httpbuilder' ] 
+  requestContentType = ContentType.URLENC 
+
+  response.success = { resp ->
+    println "Tweet response status: ${resp.statusLine}"
+    assert resp.statusLine.statusCode == 200
+  }
+}
+END SNIPPET: post2
+
+START SNIPPET: post3
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.ContentType.URLENC
+
+def http = new HTTPBuilder('http://twitter.com/statuses/')
+
+http.request( POST ) { 
+  uri.path = 'update.xml'
+  send URLENC, [ status : 'update!' , source : 'httpbuilder' ] 
+  
+  response.success = { .... }
+}
+END SNIPPET: post3
+
+
+START SNIPPET: xml1
+import groovyx.net.http.*
+@Grab(group='org.codehaus.groovy.modules.http-builder', 
+    module='http-builder', version='0.5.0-RC2' )
+def grabMethod() {} // for Grab annotation
+
+def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
+
+http.get( path: 'user_timeline.xml', query:[id:'httpbuilder'] ) { resp, xml ->
+    println resp.status
+    xml.status.each {  // iterate over each XML 'status' element in the response:
+        println it.created_at.text()
+        println "  " + it.text.text()
+    }
+}
+END SNIPPET: xml1
+
+START SNIPPET: xml2
+http.request( POST, XML ) {
+  
+  body = {
+    auth {
+      user 'Bob'
+      password 'pass'
+    }
+  }
+}
+END SNIPPET: xml2
+
+START SNIPPET: xml3
+import groovyx.net.http.*
+import static groovyx.net.http.ContentType.*
+
+def twitter = new RESTClient( 'https://twitter.com/statuses/' )
+// ... auth & setup configuration omitted here ...
+
+def resp = twitter.get( path : 'friends_timeline.xml', contentType : TEXT,
+                        headers : [Accept : 'application/xml'] )
+
+println resp.data.text       // print the XML
+END SNIPPET: xml3
+
+START SNIPPET: xml4
+def twitter = new RESTClient( 'https://twitter.com/statuses/' )
+
+// set a default response content-type
+twitter.contentType = TEXT
+/* set default headers which will override what's automatically sent in the
+   request by the default contentType param */  
+twitter.headers = [ Accept : 'application/xml', ]
+
+def resp = twitter.get( path : 'friends_timeline.xml' )
+END SNIPPET: xml4
+
+START SNIPPET: json1
+import groovyx.net.http.*
+@Grab(group='org.codehaus.groovy.modules.http-builder', 
+    module='http-builder', version='0.5.0-RC2' )
+def grabMethod() {} // for Grab annotation
+
+def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
+
+http.get( path: 'user_timeline.json', 
+        query: [id:'httpbuilder', count:5] ) { resp, json ->
+        
+    println resp.status
+    
+    json.each {  // iterate over JSON 'status' object in the response:
+        println it.created_at
+        println '  ' + it.text
+    }
+}
+END SNIPPET: json1
+
+START SNIPPET: json2
+http.request( POST, JSON ) { req ->
+    body = [name:'bob', title:'construction worker']
+   
+     response.success = { resp, json ->
+        // response handling here
+    }
+}
+END SNIPPET: json2
+
+START SNIPPET: json3
+  http.request( POST, JSON ) { req ->
+      body = [
+      	first : 'Bob',
+      	last : 'Builder',
+      	address : [
+      	  street : '123 Some St',
+      	  town : 'Boston',
+      	  state : 'MA',
+      	  zip : 12345
+      	]
+      ]
+     
+      response.success = { resp, json ->
+          // response handling here
+      }
+  }
+END SNIPPET: json3
+
+START SNIPPET: rest1
+import groovyx.net.http.RESTClient
+import groovy.util.slurpersupport.GPathResult
+import static groovyx.net.http.ContentType.URLENC
+
+twitter = new RESTClient( 'https://twitter.com/statuses/' )
+twitter.auth.basic userName, passwd
+
+
+try { // expect an exception from a 404 response:
+    twitter.head path : 'public_timeline'
+    assert false, 'Expected exception'
+}
+// The exception is used for flow control but has access to the response as well:
+catch( ex ) { assert ex.response.status == 404 }
+
+assert twitter.head( path : 'public_timeline.json' ).status == 200
+END SNIPPET: rest1
+
+START SNIPPET: rest2
+def resp = twitter.get( path : 'friends_timeline.json' )
+assert resp.status == 200
+assert resp.contentType == JSON.toString()
+assert ( resp.data instanceof net.sf.json.JSON )
+assert resp.data.status.size() > 0
+END SNIPPET: rest2
+
+START SNIPPET: rest3 
+def msg = "I'm using HTTPBuilder's RESTClient on ${new Date()}"
+
+resp = twitter.post( path : 'update.xml',
+                     body : [ status:msg, source:'httpbuilder' ],
+                     requestContentType : URLENC )
+
+assert resp.status == 200
+assert ( resp.data instanceof GPathResult ) // parsed using XmlSlurper
+assert resp.data.text == msg
+assert resp.data.user.screen_name == userName
+def postID = resp.data.id.toInteger()
+END SNIPPET: rest3
+
+START SNIPPET: rest4 
+resp = twitter.delete( path : "destroy/${postID}.json" )
+assert resp.status == 200
+assert resp.data.id == postID
+println "Test tweet ID ${resp.data.id} was deleted."
+END SNIPPET: rest4
+
+START SNIPPET: uri1
+import groovyx.net.http.URIBuilder
+
+def uri = new URIBuilder( 'http://www.google.com/one/two?a=1#frag' )
+
+uri.scheme = 'https'
+assert uri.toString() == 'https://www.google.com:80/one/two?a=1#frag'
+		
+uri.host = 'localhost'
+assert uri.toString() == 'https://localhost:80/one/two?a=1#frag'
+
+uri.port = 8080
+assert uri.toString() == 'https://localhost:8080/one/two?a=1#frag'
+
+uri.fragment = 'asdf2'
+assert uri.toString() == 'https://localhost:8080/one/two?a=1#asdf2'
+
+// relative paths:
+uri.path = 'three/four.html'
+assert uri.toString() == 'https://localhost:8080/one/three/four.html?a=1#asdf2'
+
+uri.path = '../four/five'
+assert uri.toString() == 'https://localhost:8080/one/four/five?a=1#asdf2'
+
+// control the entire path with leading '/' :
+uri.path = '/six'
+assert uri.toString() == 'https://localhost:8080/six?a=1#asdf2'
+END SNIPPET: uri1
+
+START SNIPPET: uri2
+def uri = new groovyx.net.http.URIBuilder( 'http://localhost?a=1&b=2' )
+assert uri.query instanceof Map
+assert uri.query.a == '1'
+assert uri.query.b == '2'
+
+uri.addQueryParam 'd', '4'
+uri.removeQueryParam 'b'
+
+assert uri.toString() == 'http://localhost?d=4&a=1'
+
+uri.query = [z:0,y:9,x:8]
+assert uri.toString() == 'http://localhost?z=0&y=9&x=8'
+		
+uri.query = null
+assert uri.toString() == 'http://localhost'
+
+
+// parameters are also properly escaped as well:
+
+uri.query = [q:'a:b',z:'war & peace']
+assert uri.toString() == 'http://localhost?q=a%3Ab&z=war+%26+peace'
+END SNIPPET: uri2
+
+START SNIPPET: uri3
+URIBuilder uri = new URIBuilder( "http://www.google.com/one/two?a=1#frag" );
+
+uri.setScheme( "https" ).setHost( "localhost" ).setPath( "../three" );
+assert uri.toString().equals( "https://localhost/three?a=1#frag" );
+END SNIPPET: uri3
+
+START SNIPPET: async1
+import groovyx.net.http.AsyncHTTPBuilder
+import static groovyx.net.http.ContentType.HTML
+
+def http = new AsyncHTTPBuilder( 
+                poolSize : 4,
+                uri : 'http://hc.apache.org',
+                contentType : HTML )
+        
+        
+def result = http.get(path:'/') { resp, html ->
+    println ' got async response!'
+    return html
+}
+
+assert result instanceof java.util.concurrent.Future
+
+while ( ! result.done ) {
+    println 'waiting...'
+    Thread.sleep(2000)
+}
+
+/* The Future instance contains whatever is returned from the response 
+   closure above; in this case the parsed HTML data: */
+def html = result.get()
+assert html instanceof groovy.util.slurpersupport.GPathResult
+END SNIPPET: async1
+
+START SNIPPET: urlclient1
+import groovyx.net.http.*
+
+def http = new HttpURLClient( url: 'http://twitter.com/statuses/' )
+
+// JSON request:
+def resp = http.request( path: 'user_timeline.json', 
+        query: [id:'httpbuilder', count:5] )
+
+println "JSON response: ${resp.status}"
+
+resp.data.each {  // iterate over each JSON object in the response array:
+    println it.created_at
+    println '  ' + it.text
+}
+
+/* Slightly different request that returns XML; note that Twitter uses the path 
+   to determine if you want a response as XML or JSON: */
+   
+// JSON request:
+def resp = http.request( path: 'user_timeline.xml', 
+        query: [id:'httpbuilder', count:5] )
+
+println "\n\nXML response: ${resp.status}"
+
+resp.data.statuses.each {  // iterate over each XML 'status' element in the response:
+    println it.created_at.text()
+    println '  ' + it.text.text()
+}
+END SNIPPET: urlclient1
+
+START SNIPPET: ssl1
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.HEAD
+
+import java.security.KeyStore
+import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.ssl.SSLSocketFactory
+
+def http = new HTTPBuilder( 'https://www.dev.java.net/' )
+
+def keyStore = KeyStore.getInstance( KeyStore.defaultType )
+
+getClass().getResource( "/truststore.jks" ).withInputStream {
+   keyStore.load( it, "test1234".toCharArray() )
+}
+
+http.client.connectionManager.schemeRegistry.register( 
+		new Scheme("https", new SSLSocketFactory(keyStore), 443) )
+		
+def status = http.request( HEAD ) {
+	response.success = { it.status }
+}
+END SNIPPET: ssl1
+
+START SNIPPET: contenttype1
+import au.com.bytecode.opencsv.CSVReader
+import groovyx.net.http.ParserRegistry
+
+http.parser.'text/csv' = { resp ->
+  return new CSVReader( new InputStreamReader( resp.entity.content,
+                                ParserRegistry.getCharset( resp ) ) )
+}
+END SNIPPET: contenttype1
+
+START SNIPPET: contenttype2
+http.get( uri : 'http://somehost.com/contacts.csv', 
+					contentType : 'text/csv' ) { resp, csv ->
+		
+		assert csv instanceof CSVReader
+		// parse the csv stream here.
+}
+END SNIPPET: contenttype2
+
+START SNIPPET: handler1
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.Method.GET
+import static groovyx.net.http.ContentType.TEXT
+
+new HTTPBuilder('http://www.google.com/').request(GET) { req ->
+  
+  response.success = { resp ->
+    println 'request was successful'
+    assert resp.status < 400
+  }
+  
+  response.failure = { resp ->
+    println 'request failed'
+    assert resp.status >= 400
+  }
+}
+END SNIPPET: handler1
+
+START SNIPPET: handler2
+http.request(...) {
+	// success handler
+	// ...
+
+	// only called for an HTTP 401 response code:
+	response.'401' = { resp ->
+		println 'access denied'
+	}
+}
+END SNIPPET: handler2
+
+START SNIPPET: handler3
+try {
+	def response = new HTTPBuilder('http://www.google.com').request(GET,TEXT) {}
+
+	assert response instanceof Reader // response data is buffered in-memory
+	println response.text()
+}
+catch ( HttpResponseException ex ) {
+	// default failure handler throws an exception:
+	println "Unexpected response error: ${ex.statusCode}"
+}
+END SNIPPET: handler3
+
+START SNIPPET: handler4
+def http = new HTTPBuilder()
+
+http.handler.success = { "Success!" }
+
+http.handler.failure = { resp ->
+	"Unexpected failure: ${resp.statusLine}"
+}
+
+// we can set code-specific default handlers as well:  
+http.handler.'404 = { 'Not Found' }
+
+def result = http.get( uri:'http://www.google.com/asdfg' )
+assert result == 'Not Found'
+END SNIPPET: handler4
+
+START SNIPPET: download1
+  <dependency>
+    <groupId>org.codehaus.groovy.modules.http-builder</groupId>
+    <artifactId>http-builder</artifactId>
+    <version>${project-version}</version>
+  </dependency>
+END SNIPPET: download1
+
+START SNIPPET: download2
+  <repository>
+    <id>Codehaus</id>
+    <url>http://repository.codehaus.org</url>
+  </repository>
+  <repository>
+    <id>Codehaus.Snapshots</id>
+    <url>http://snapshots.repository.codehaus.org</url>
+    <snapshots><enabled>true</enabled></snapshots>
+  </repository>
+END SNIPPET: download2
+
+START SNIPPET: download3
+@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='${project-version}' )
+def someMethod() {}
+
+def http = new groovyx.net.http.HTTPBuilder('http://www.codehaus.org')
+// ....
+END SNIPPET: download3
+
+START SNIPPET: download4
+<?xml version="1.0" encoding="utf-8"?>
+<ivysettings>
+  <settings defaultResolver="downloadGrapes" />
+  <resolvers>
+    <chain name="downloadGrapes">
+      <filesystem name="cachedGrapes">
+        <ivy pattern="${user.home}/.groovy/grapes/[organisation]/[module]/ivy-[revision].xml" />
+        <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]" />
+      </filesystem>
+      <ibiblio name="codehaus" root="http://repository.codehaus.org/" m2compatible="true" />
+      <ibiblio name="codehaus.snapshots" root="http://snapshots.repository.codehaus.org/" m2compatible="true" />
+      <ibiblio name="ibiblio" m2compatible="true" />
+      <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true" />
+    </chain>
+  </resolvers>
+</ivysettings>
+END SNIPPET: download4

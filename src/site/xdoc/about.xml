@@ -5,13 +5,13 @@
 
   <properties>
     <title>About the project</title>
-    <author email="tomstrummer@gmail.com">Tom Nichols</author>
+    <author email="tomstrummer+httpbuilder@gmail.com">Tom Nichols</author>
   </properties>
 
   <body>
     <section name="About This Project">
 
-     <p>HTTPBuilder was written by Tom Nichols (
+    <p>HTTPBuilder was written by Tom Nichols (
 	  <a href='http://www.linkedin.com/in/thomnichols'>LinkedIn profile</a>).
 	  The code  is available under the open-source 
 	  <a href='http://www.apache.org/licenses/LICENSE-2.0'>ASF 2.0 license</a>.  
@@ -43,8 +43,8 @@
   	</section>
   	
   	<section name="Related">
-  		<p>Vaguely related projects I've worked on:</p>
   		<ul>
+  			<li><a href='http://blog.thomnichols.org'>Tech &lt;&lt; Fun</a></li>
   			<li><a href='http://wiki.apache.org/hadoop/Hbase/Groovy'>HBase Groovy client</a></li>
   		</ul>
   	</section>

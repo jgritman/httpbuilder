@@ -10,20 +10,8 @@ Simple POST
  HTTPBuilder defines a {{{../apidocs/groovyx/net/http/HTTPBuilder.html#post(java.util.Map,%20groovy.lang.Closure)}<<<post()>>> 
  convenience method}}, which allows for easily POSTing data as an HTML form:
  
-----------------------
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.ContentType.URLENC
+%{code-snippet|id=post1|brush=groovy|file=src/site/examples.txt}
 
-def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
-def postBody = [status:'update!',source:'httpbuilder'] // will be url-encoded
-
-http.post( path: 'update.xml', body: postBody, 
-           requestContentType: URLENC ) { resp ->
-
-  println "Tweet response status: ${resp.statusLine}"
-  assert resp.statusLine.statusCode == 200
-}
-----------------------
 
  <(Note that the above example excludes some authentication details needed by 
  the Twitter API; see the unit test for a working example.)>
@@ -52,22 +40,7 @@ POSTing with the <<<request(...)>>> Method
 
   This example is equivalent to the above, using the <<<request()>>> method:
 
-----------------------
-import groovyx.net.http.HTTPBuilder
-
-def http = new HTTPBuilder('http://twitter.com/statuses/')
-
-http.request( POST ) { 
-  uri.path = 'update.xml'
-  body =  [ status : 'update!' , source : 'httpbuilder' ] 
-  requestContentType = ContentType.URLENC 
-
-  response.success = { resp ->
-    println "Tweet response status: ${resp.statusLine}"
-    assert resp.statusLine.statusCode == 200
-  }
-}
-----------------------
+%{code-snippet|id=post2|brush=groovy|file=src/site/examples.txt}
 
   In the above example, <<<uri>>>, <<<body>>>, <<<requestContentType>>> and
   <<<response>>> are properties of the 
@@ -79,16 +52,5 @@ http.request( POST ) {
   <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#send(java.lang.Object,%20java.lang.Object)}send()}}>>> 
   method which can be used set the request content-type and data at the same time:
   
-----------------------
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.ContentType.URLENC
 
-def http = new HTTPBuilder('http://twitter.com/statuses/')
-
-http.request( POST ) { 
-  uri.path = 'update.xml'
-  send URLENC, [ status : 'update!' , source : 'httpbuilder' ] 
-  
-  response.success = { .... }
-}
-----------------------
+%{code-snippet|id=post3|brush=groovy|file=src/site/examples.txt}

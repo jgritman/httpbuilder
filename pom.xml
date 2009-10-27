@@ -21,6 +21,9 @@
 		<twitter.user>httpbuilder</twitter.user>
 		<!-- twitter.passwd> stored in settings.xml for security </twitter.passwd -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<m2st.version>2.0</m2st.version>
+		<m2st-gatc-id>UA-11299971-1</m2st-gatc-id>
+		<m2st-gatc-config>_setDetectTitle(true)</m2st-gatc-config>
 	</properties>
 	
 	<dependencies>
@@ -258,6 +261,18 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<dependencies>
+	<!-- For SyntaxHighlighter macro: http://code.google.com/p/m2-site-tools/ -->
+					<dependency>
+						<groupId>com.anasoft.os</groupId>
+						<artifactId>m2st-doxia-macros</artifactId>
+						<version>${m2st.version}</version>
+					</dependency>
+				</dependencies>
+    	</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>

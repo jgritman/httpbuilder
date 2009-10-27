@@ -4,48 +4,33 @@
                           ------
                           ------
 
+Parsing JSON data
+
+  JSON responses can be automatically handled by HTTPBuilder's default 
+  content parser registry.  It uses {{{http://json-lib.sourceforge.net/}JSON-Lib}} 
+  internally to parse the response data into a <<<GPathResult>>>, in a similar 
+  manner used by Groovy's <<<XMLSlurper>>>.
+  
+  The following is a working example (try it!) of accessing a Twitter feed using
+  HTTPBuilder and JSON.  
+  
+%{code-snippet|id=json1|brush=groovy|file=src/site/examples.txt}
 
 
 POSTing JSON data
 
   JSON can just as easily be sent in the body of a <<<POST>>> or <<<PUT>>> 
-  request.  The JSON request encoder can convert a Map, List, JavaBean-style 
-  object, or a closure.
+  request.  The JSON request encoder can convert a Map, List, POJO, or a closure.
   
   The simplest method is to use a map or list like so:
   
------------------------
-  http.request( POST, JSON ) { req ->
-      body = [name:'bob', title:'construction worker']
-     
-       response.success = { resp, json ->
-          // response handling here
-      }
-  }
------------------------
+%{code-snippet|id=json2|file=src/site/examples.txt}
   
   Thanks to Json-Lib's 
   {{{http://json-lib.sourceforge.net/apidocs/net/sf/json/groovy/JsonGroovyBuilder.html}JsonGroovyBuilder}} 
   class, we an also build the request data on-the-fly like so:
   
------------------------
-  http.request( POST, JSON ) { req ->
-      body = [
-      	first : 'Bob',
-      	last : 'Builder',
-      	address : [
-      	  street : '123 Some St',
-      	  town : 'Boston',
-      	  state : 'MA',
-      	  zip : 12345
-      	]
-      ]
-     
-      response.success = { resp, json ->
-          // response handling here
-      }
-  }
------------------------
+%{code-snippet|id=json3|brush=groovy|file=src/site/examples.txt}
 
   See the {{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeJSON(java.lang.Object)}
   API documentation}} for more details.

@@ -8,31 +8,16 @@
 Support for new Content Types
   
   To add parsing for new content types, simply add a new entry to the builder's 
-  <<<{{{../apidocs/groovyx/net/http/ParserRegistry.html}ParserRegistry}}>>>.  For 
-  example, to parse comma-separated-values using 
+  <<<{{{../apidocs/groovyx/net/http/ParserRegistry.html}ParserRegistry}}>>>.  
+  For example, to parse comma-separated-values using 
   {{{http://opencsv.sourceforge.net/}OpenCSV}}:
   
-------------------------
-import au.com.bytecode.opencsv.CSVReader
-import groovyx.net.http.ParserRegistry
-
-http.parser.'text/csv' = { resp ->
-  return new CSVReader( new InputStreamReader( resp.entity.content,
-                                ParserRegistry.getCharset( resp ) ) )
-}
-------------------------
+%{code-snippet|id=contenttype1|brush=groovy|file=src/site/examples.txt}
 
   A <<<CSVReader>>> instance will then be passed as the second argument to the 
   response handler:
   
-------------------------
-http.get( uri : 'http://somehost.com/contacts.csv', 
-					contentType : 'text/csv' ) { resp, csv ->
-		
-		assert csv instanceof CSVReader
-		// parse the csv stream here.
-}
-------------------------
+%{code-snippet|id=contenttype2|brush=groovy|file=src/site/examples.txt}
   
   You can refer to {{{http://www.iana.org/assignments/media-types/}IANA}} for a 
   complete list of registered content-type names, but the most common are 

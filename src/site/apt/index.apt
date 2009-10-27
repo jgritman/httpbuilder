@@ -9,6 +9,19 @@
 News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
+  
+* 16 Oct 2009 - Added Ohloh Stats
+
+  In case you haven't realized, I added this project to Ohloh, which found 
+  HTTPBuilder to be "Extremely well commented," :) but also a 
+  "small development team." :(  The stats are a little off too, since it has 
+  included the HTML and XHTML DTDs which are in source control, but I obviously
+  did not write them...
+  
+  On a related note, if the Ohloh animated GIF on the sidebar 
+  particularly annoys anyone, just complain and I can remove it.  Although I do 
+  like how it brags about the project :)   
+  
 
 * 06 Oct 2009 - More Snapshots & important changes...
 

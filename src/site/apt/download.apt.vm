@@ -24,27 +24,11 @@ Maven Users
 
   Maven users can simply copy the dependency tag into their own project:
   
----------------------------------------
-  <dependency>
-    <groupId>org.codehaus.groovy.modules.http-builder</groupId>
-    <artifactId>http-builder</artifactId>
-    <version>${project-version}</version>
-  </dependency>
----------------------------------------
+%{code-snippet|id=download1|brush=xml|file=src/site/examples.txt}
 
   You might also need to add the Codehaus repository to your project POM as well:
 
----------------------------------------
-  <repository>
-    <id>Codehaus</id>
-    <url>http://repository.codehaus.org</url>
-  </repository>
-  <repository>
-    <id>Codehaus.Snapshots</id>
-    <url>http://snapshots.repository.codehaus.org</url>
-    <snapshots><enabled>true</enabled></snapshots>
-  </repository>
----------------------------------------
+%{code-snippet|id=download2|brush=xml|file=src/site/examples.txt}
 		
 		
 Using Grape
@@ -55,15 +39,16 @@ Using Grape
   You can automatically put HTTPBuilder in your classpath by using the following 
   annotation on a method in your code:
   
-----------------------------------------
-  @Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='${project-version}' )
-  public MyClassOrScript {}
-  
-  def http = new groovyx.net.http.HTTPBuilder('http://www.codehaus.org')
-  // ....
-----------------------------------------
+%{code-snippet|id=download3|brush=groovy|file=src/site/examples.txt}
 
-  If you are having problems, try calling grape from the command line like so:
+  Note that in Groovy 1.6, the <<<@Grab>>> annotation must occur on a method 
+  definition (it can be an empty method.) Putting the annotation before a 
+  statement such as a variable declaration will not work.  This is a common 
+  error and Grape will not provide any indication that it is not augmenting
+  the runtime classpath.  This should change in Groovy 1.7.  
+  
+  If you are still having problems, try calling <<<grape>>> from the command 
+  line like so:
   
 ----------------------------------------
 $ grape resolve org.codehaus.groovy.modules.http-builder http-builder ${project-version}
@@ -78,26 +63,9 @@ $ grape install org.codehaus.groovy.modules.http-builder http-builder ${project-
   from if it cannot find the artifact.  
   
   If you are trying to use a snapshot version of HTTPBuilder, you might also 
-  need to create the following file in ~/.groovy/grapeConfig.xml:
+  need to create the following file in <<<~/.groovy/grapeConfig.xml>>>:
   
------------------------------------------
-<?xml version="1.0" encoding="utf-8"?>
-<ivysettings>
-  <settings defaultResolver="downloadGrapes" />
-  <resolvers>
-    <chain name="downloadGrapes">
-      <filesystem name="cachedGrapes">
-        <ivy pattern="${user.home}/.groovy/grapes/[organisation]/[module]/ivy-[revision].xml" />
-        <artifact pattern="${user.home}/.groovy/grapes/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]" />
-      </filesystem>
-      <ibiblio name="codehaus" root="http://repository.codehaus.org/" m2compatible="true" />
-      <ibiblio name="codehaus.snapshots" root="http://snapshots.repository.codehaus.org/" m2compatible="true" />
-      <ibiblio name="ibiblio" m2compatible="true" />
-      <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true" />
-    </chain>
-  </resolvers>
-</ivysettings>
----------------------------------------
+%{code-snippet|id=download4|brush=xml|file=src/site/examples.txt}
 
   Note the <codehaus.snapshots> line, which tells Grape where HTTPBuilder's 
   snapshot builds are located, since that repository is not searched by default.    

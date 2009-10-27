@@ -60,28 +60,5 @@ Certificate was added to keystore
   
   Now you want to use this truststore in your client:
   
------------------------
-	import groovyx.net.http.HTTPBuilder
-	import static groovyx.net.http.Method.HEAD
-	
-	import java.security.KeyStore
-	import org.apache.http.conn.scheme.Scheme
-	import org.apache.http.conn.ssl.SSLSocketFactory
-
-	def http = new HTTPBuilder( 'https://www.dev.java.net/' )
-
-	def keyStore = KeyStore.getInstance( KeyStore.defaultType )
-	
-	getClass().getResource( "/truststore.jks" ).withInputStream {
-	   keyStore.load( it, "test1234".toCharArray() )
-	}
-
-	http.client.connectionManager.schemeRegistry.register( 
-			new Scheme("https", new SSLSocketFactory(keyStore), 443) )
-			
-	def status = http.request( HEAD ) {
-		response.success = { it.status }
-	}
------------------------
-
+%{code-snippet|id=ssl1|brush=groovy|file=src/site/examples.txt}
   

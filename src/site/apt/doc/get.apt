@@ -10,15 +10,8 @@ Simplified GET Request
  methods.  Here is a simple HTTP <<<GET>>> which parses the response as a DOM 
  object:
  
-------------------------
-def http = new HTTPBuilder('http://www.google.com')
+%{code-snippet|id=get1|brush=groovy|file=src/site/examples.txt}
 
-def html = http.get( path : '/search', query : [q:'Groovy'] )
-
-assert html instanceof GPathResult
-assert html.HEAD.size() == 1
-assert html.BODY.size() == 1
-------------------------
 
  In the above example, we are making a request, and automatically parsing the 
  HTML response based on the response's content-type header.  The HTML stream is 
@@ -36,23 +29,8 @@ assert html.BODY.size() == 1
  Next is another <<<GET>>> request, with custom response-handling logic that 
  prints the response to <<<System.out>>>:
  
-------------------------
-def http = new HTTPBuilder('http://www.google.com')
+%{code-snippet|id=get2|brush=groovy|file=src/site/examples.txt}
 
-http.get( path : '/search', 
-          contentType : TEXT,
-          query : [q:'Groovy'] ) { resp, reader ->
-          
-  println "response status: ${resp.statusLine}"
-  println 'Headers: -----------'
-  resp.headers.each { h ->
-  	println " ${h.name} : ${h.value}"
-  }
-  println 'Response data: -----'
-  System.out << reader
-  println '\n--------------------'
-}
-------------------------
 
  In this version, the <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.html#get(java.util.Map,%20groovy.lang.Closure)}get()}}>>> 
  method also accepts a closure, which is interpreted as the 'success' response 
@@ -71,26 +49,8 @@ http.get( path : '/search',
  HTTPBuilder supports a generic <<<request>>> method that can be used to configure
  the request in a fine-grained manner.
    
-------------------------
-def http = new HTTPBuilder()
- 
-http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
-  uri.path = '/ajax/services/search/web'
-  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
-  headers.'User-Agent' = "Mozilla/5.0 Firefox/3.0.4"
+%{code-snippet|id=get3|brush=groovy|file=src/site/examples.txt}
 
-  response.success = { resp, stream ->
-    assert resp.statusLine.statusCode == 200
-    println "Got response: ${resp.statusLine}"
-    println "Content-Type: ${resp.headers.'Content-Type'"
-    System.out << stream // print response stream
-  }
-    
-  response.'404' = {
-    println 'Not found'
-  }
-}
-------------------------
 
  In the above example, a 'request configuration closure' is defined as the final 
  argument to the request method.  This closure allows fine-grained configuration 

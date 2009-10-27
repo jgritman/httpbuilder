@@ -45,8 +45,6 @@ import net.sf.json.groovy.JsonSlurper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -273,10 +271,22 @@ public class ParserRegistry {
 		return parsers;
 	}
 	
+	/**
+	 * Add a new XML catalog definiton to the static XML resolver catalog.  
+	 * See the <a href='http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/resources/catalog/html.xml?r=root:'>
+	 * HTTPBuilder source catalog</a> for an example.
+	 * 
+	 * @param catalogLocation URL of a catalog definition file
+	 * @throws IOException if the given URL cannot be parsed or accessed for whatever reason.
+	 */
 	public static void addCatalog( URL catalogLocation ) throws IOException {
 		catalogResolver.getCatalog().parseCatalog( catalogLocation );
 	}
 	
+	/**
+	 * Access the default catalog used by all HTTPBuilder instances.
+	 * @return the static {@link CatalogResolver} instance
+	 */
 	public static CatalogResolver getCatalogResolver() {
 		return catalogResolver;
 	}
