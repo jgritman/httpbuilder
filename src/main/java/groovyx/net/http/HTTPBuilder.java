@@ -456,12 +456,13 @@ public class HTTPBuilder {
 				closureArgs = new Object[] { resp };
 				break;
 			case 2 : // parse the response entity if the response handler expects it:
+				HttpEntity entity = resp.getEntity();
 				try {
-					closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
+					if ( entity == null ) closureArgs = new Object[] { resp, null };
+					else closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
 				}
 				catch ( Exception ex ) {
-					HttpEntity e = resp.getEntity();
-					Header h = e != null ? e.getContentType() : null;
+					Header h = entity.getContentType();
 					String respContentType = h != null ? h.getValue() : null;
 					log.warn( "Error parsing '" + respContentType + "' response", ex );
 					throw new ResponseParseException( resp, ex );	
