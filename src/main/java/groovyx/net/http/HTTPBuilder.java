@@ -458,7 +458,8 @@ public class HTTPBuilder {
 			case 2 : // parse the response entity if the response handler expects it:
 				HttpEntity entity = resp.getEntity();
 				try {
-					if ( entity == null ) closureArgs = new Object[] { resp, null };
+					if ( entity == null || entity.getContentLength() == 0 ) 
+						closureArgs = new Object[] { resp, null };
 					else closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
 				}
 				catch ( Exception ex ) {
@@ -507,8 +508,18 @@ public class HTTPBuilder {
 		// first, start with the _given_ content-type
 		String responseContentType = contentType.toString();
 		// if the given content-type is ANY ("*/*") then use the response content-type
-		if ( ContentType.ANY.toString().equals( responseContentType ) )
-			responseContentType = ParserRegistry.getContentType( resp );
+		try {
+			if ( ContentType.ANY.toString().equals( responseContentType ) )
+				responseContentType = ParserRegistry.getContentType( resp );
+		}
+		catch ( RuntimeException ex ) {
+			log.warn( "Could not parse content-type: " + ex.getMessage() );
+			/* if for whatever reason we can't determine the content-type, but
+			 * still want to attempt to parse the data, use the BINARY 
+			 * content-type so that the response will be buffered into a 
+			 * ByteArrayInputStream. */
+			responseContentType = ContentType.BINARY.toString();
+		}
 		
 		Object parsedData = null;
 		Closure parser = parsers.getAt( responseContentType );
