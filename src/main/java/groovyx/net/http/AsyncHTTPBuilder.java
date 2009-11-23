@@ -168,7 +168,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 		super.client = new DefaultHttpClient( cm, params );
 
 		this.threadPool = threadPool != null ? threadPool :
-			new ThreadPoolExecutor( 1, poolSize, 2, TimeUnit.MINUTES, 
+			new ThreadPoolExecutor( 1, poolSize, 120, TimeUnit.SECONDS, 
 					new LinkedBlockingQueue<Runnable>() );
 	}
 	
