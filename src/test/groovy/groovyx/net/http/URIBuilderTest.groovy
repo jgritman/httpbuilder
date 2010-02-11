@@ -89,6 +89,23 @@ public class URIBuilderTest {
 		assert uri.toString() == 'http://localhost/p1%20p2%20p3?one=1#frag'
 	}
 	
+	// When params are added to a path, does it goober up the escaped-then-unescaped path?
+	@Test public void testPathEscaping2() {
+		def uri = new URIBuilder( 'http://johannburkard.de/%22bla%22' )
+		uri.query = [ what_is_this: 'i_dont_even' ]
+
+		uri = new URIBuilder( 'http://codehaus.org/')
+		uri.path = '"bla"'
+		
+		uri.fragment = 'what evs'
+		assert uri.toString() == 'http://codehaus.org/%22bla%22#what%20evs'
+		uri.query = [ a: 'b' ]
+		assert uri.toString() == 'http://codehaus.org/%22bla%22?a=b#what%20evs'
+		uri.port = 80
+		uri.host = 'google.com'
+		uri.scheme = 'http'
+	}
+	
 	@Test public void testParams() {
 		def uri = new URIBuilder( 'http://localhost/p1/p2?a=1&b=2&c=3#frag' )
 		assert uri.query.size() == 3
@@ -105,8 +122,6 @@ public class URIBuilderTest {
 		assert ! uri.hasQueryParam( "b" )
 		assert uri.query.b == null
 		uri.addQueryParam 'b', ''
-		
-		println uri
 		
 		uri.addQueryParams( [ e : 5, f : 6, a : 7 ] )
 		

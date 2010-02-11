@@ -155,11 +155,11 @@ public class URIBuilder implements Cloneable {
 		 * to create a full path+query+fragment and use URI#resolve() to 
 		 * create the new URI.  */
 		StringBuilder sb = new StringBuilder();
-		String path = base.getPath();
+		String path = base.getRawPath();
 		if ( path != null ) sb.append( path );
 		sb.append( '?' );
 		sb.append( URLEncodedUtils.format( nvp, ENC ) ); 
-		String frag = base.getFragment();
+		String frag = base.getRawFragment();
 		if ( frag != null ) sb.append( '#' ).append( frag );
 		this.base = base.resolve( sb.toString() );
 
