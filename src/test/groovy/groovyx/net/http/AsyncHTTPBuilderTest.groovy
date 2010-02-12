@@ -66,7 +66,7 @@ public class AsyncHTTPBuilderTest {
 			print '.'
 			Thread.sleep 2000
 			time += 2000
-			if ( time > timeout ) assert false
+			if ( time > timeout ) assert false : "Timeout waiting for async operations"
 		}
 		http.shutdown()
 		println 'done.'

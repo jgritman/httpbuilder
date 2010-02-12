@@ -214,7 +214,7 @@ class HTTPBuilderTest {
 			 response.success = { resp, xml ->
 				println "Tweet response status: ${resp.statusLine}"
 				assert resp.statusLine.statusCode == 200
-				println "Content Length: ${resp.headers['Content-Length'].value}"
+				println "Content Length: ${resp.headers['Content-Length']?.value}"
 				assert xml instanceof GPathResult 
 				
 				assert xml.text == msg
