@@ -52,7 +52,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -243,8 +242,8 @@ public class ParserRegistry {
 	 */
 	public JSON parseJSON( HttpResponse resp ) throws IOException {
 		// there is a bug in the JsonSlurper.parse method...
-		String jsonTxt = DefaultGroovyMethods.getText( parseText( resp ) );			
-		return new JsonSlurper().parseText( jsonTxt );
+		//String jsonTxt = DefaultGroovyMethods.getText( parseText( resp ) );			
+		return new JsonSlurper().parse( parseText( resp ) );
 	}
 	
 	/**
