@@ -10,13 +10,21 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
   
+* 17 Feb 2010 - 0.5.0-RC3 Released
+
+  I've been extremely lax in getting 0.5.0 out the door, but a couple minor 
+  bugs have been uncovered in the mean time.  All known defects are fixed at 
+  this point, and I'm planning on releasing 0.5.0 final in the next week or so,
+  provided no new defects are uncovered!  
+  
+  Please test out RC3 and stay tuned! 
+  
 * 16 Oct 2009 - Added Ohloh Stats
 
-  In case you haven't realized, I added this project to Ohloh, which found 
-  HTTPBuilder to be "Extremely well commented," :) but also a 
-  "small development team." :(  The stats are a little off too, since it has 
-  included the HTML and XHTML DTDs which are in source control, but I obviously
-  did not write them...
+  So I added this project to Ohloh, which found HTTPBuilder to be "Extremely 
+  well commented," :) but also a "small development team." :(  The stats are a 
+  little off too, since it has included the HTML and XHTML DTDs which are in 
+  source control, but I obviously did not write them...
   
   On a related note, if the Ohloh animated GIF on the sidebar 
   particularly annoys anyone, just complain and I can remove it.  Although I do 
@@ -36,7 +44,9 @@ News
   not allow duplicate keys.  Well, now you can pass a list of values like so:
   <<<uri.query = [ one: ['1','3'] , two: 2 ]>>> which will add two values for 
   <<<one>>>.  Of course, this behavior merits a change to the <<<addQueryParam>>> 
-  method as well.  As a result, <<URIBuilder.addQueryParam>>> and <<<addQueryParams>>>
+  method as well.  
+  
+  As a result, <<<URIBuilder.addQueryParam>>> and <<<addQueryParams>>>
   will not replace any existing parameters with the same name; instead it will 
   add to a multi-valued list for the given parameter.  Parameters with single 
   values will remain as strings, not lists. 
