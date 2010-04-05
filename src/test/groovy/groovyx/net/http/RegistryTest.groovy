@@ -162,7 +162,7 @@ public class RegistryTest {
 		def param1 = "p1"
 		def entity = enc.encodeForm( ["${param1}":'one', p2:['two','three']] )
 		
-		assert entity.contentType.value == 'application/x-www-form-urlencoded'
+		assert entity.contentType.elements[0].name == 'application/x-www-form-urlencoded'
 		assert entity.content.text == "p1=one&p2=two&p2=three"
 		
 		entity = enc.encodeForm( "p1=goober&p2=something+else" )
