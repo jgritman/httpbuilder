@@ -196,7 +196,7 @@ END SNIPPET: post3
 START SNIPPET: xml1
 import groovyx.net.http.*
 @Grab(group='org.codehaus.groovy.modules.http-builder', 
-    module='http-builder', version='0.5.0-RC2' )
+    module='http-builder', version='0.5.0-RC3' )
 def grabMethod() {} // for Grab annotation
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
@@ -250,7 +250,7 @@ END SNIPPET: xml4
 START SNIPPET: json1
 import groovyx.net.http.*
 @Grab(group='org.codehaus.groovy.modules.http-builder', 
-    module='http-builder', version='0.5.0-RC2' )
+    module='http-builder', version='0.5.0-RC3' )
 def grabMethod() {} // for Grab annotation
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
@@ -457,7 +457,7 @@ def resp = http.request( path: 'user_timeline.xml',
 
 println "\n\nXML response: ${resp.status}"
 
-resp.data.statuses.each {  // iterate over each XML 'status' element in the response:
+resp.data.status.each {  // iterate over each XML 'status' element in the response:
     println it.created_at.text()
     println '  ' + it.text.text()
 }
