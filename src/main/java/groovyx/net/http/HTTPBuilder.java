@@ -35,6 +35,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -50,8 +51,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.cookie.params.CookieSpecPNames;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
@@ -177,7 +181,11 @@ public class HTTPBuilder {
 	
 	public HTTPBuilder() { 
 		super();
-		this.client = new DefaultHttpClient();
+		HttpParams defaultParams = new BasicHttpParams();
+		defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
+		        Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", 
+		        		"EEE, dd MMM yyyy HH:mm:ss z") );
+		this.client = new DefaultHttpClient(defaultParams);
 		this.setContentEncoding( ContentEncoding.Type.GZIP, 
 				ContentEncoding.Type.DEFLATE );
 	}
