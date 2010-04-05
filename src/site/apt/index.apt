@@ -10,6 +10,18 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
   
+* 31 Mar 2010 - Problems with Grape/ Grab
+
+  So I had a couple people mention that they had trouble using <<<Grape>>> to 
+  download RC3 due to a bad checksum on the POM file.  I tried re-deploying it, 
+  (thinking it was a bad upload) and now I'm getting a _bunch_ of people saying
+  they can't download it!
+  
+  As a work-around, please add the following line to <<<~/.groovy/grapeConfig.xml>>>:
+  <<<<property name="ivy.checksums" value=""/>>>>.  This should allow Grape to 
+  ignore the checksum and download the file, until I've got the checksum problem
+  resolved.  Stay tuned!
+  
 * 17 Feb 2010 - 0.5.0-RC3 Released
 
   I've been extremely lax in getting 0.5.0 out the door, but a couple minor 
