@@ -10,7 +10,7 @@ def http = new HTTPBuilder('http://twitter.com/statuses/')
 http.auth.basic pom.properties.'twitter.user', 
 				pom.properties.'twitter.passwd'
 
-def msg = "HTTPBuilder v${pom.version} has been released! (${new Date()})"
+def msg = "v${pom.version} has been released! (${new Date()}) http://goo.gl/VzuT #groovy"
 
 println "Tweeting release for v${pom.version}..."
 
