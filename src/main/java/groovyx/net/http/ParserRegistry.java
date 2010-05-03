@@ -49,6 +49,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.HttpEntityWrapper;
+import org.apache.http.message.BasicHeader;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
@@ -193,8 +195,23 @@ public class ParserRegistry {
 	 * @return
 	 * @throws IOException
 	 */
-	public Map<String,String> parseForm( HttpResponse resp ) throws IOException {
-		List<NameValuePair> params = URLEncodedUtils.parse( resp.getEntity() );
+	public Map<String,String> parseForm( final HttpResponse resp ) throws IOException {
+		HttpEntity entity = resp.getEntity();
+		/* URLEncodedUtils won't parse the content unless the content-type is 
+		   application/x-www-form-urlencoded.  Since we want to be able to force 
+		   parsing regardless of what the content-type header says, we need to 
+		   'spoof' the content-type if it's not already acceptable. */
+		if ( ! ContentType.URLENC.toString().equals( ParserRegistry.getContentType( resp ) ) ) {
+			entity = new HttpEntityWrapper( entity ) {
+				@Override public org.apache.http.Header getContentType() {
+					String value = ContentType.URLENC.toString();
+					String charset = ParserRegistry.getCharset( resp );
+					if ( charset != null ) value += "; charset=" + charset; 
+					return new BasicHeader( "Content-Type", value );
+				};
+			};
+		}
+		List<NameValuePair> params = URLEncodedUtils.parse( entity );
 		Map<String,String> paramMap = new HashMap<String,String>(params.size());
 		for ( NameValuePair param : params ) 
 			paramMap.put( param.getName(), param.getValue() );

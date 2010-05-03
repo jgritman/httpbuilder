@@ -1,5 +1,8 @@
 package groovyx.net.http
 
+import org.apache.http.ProtocolVersion
+import org.apache.http.entity.StringEntity
+import org.apache.http.message.BasicHttpResponse
 import org.junit.Testimport java.io.StringReaderimport java.io.ByteArrayInputStream
 import static groovyx.net.http.ContentType.*
 /**
@@ -168,5 +171,20 @@ public class RegistryTest {
 		entity = enc.encodeForm( "p1=goober&p2=something+else" )
 		assert entity.contentType.value == 'application/x-www-form-urlencoded'
 		assert entity.content.text == "p1=goober&p2=something+else"
+	}
+	
+	@Test public void testFormParser() {
+		def parser = new ParserRegistry()
+
+		def entity = new StringEntity( "p1=goober&p2=something+else", "utf-8" )
+		// GMOD-137: URLENC parsing doesn't work w/ bad content-type
+		entity.setContentType "text/plain" // NOT application/x-www-form-urlencoded
+		
+		def response = new BasicHttpResponse( new ProtocolVersion( "HTTP", 1, 1 ), 200, "OK" )
+		response.entity = entity
+		def map = parser.parseForm( response )
+		assert map
+		assert map.p1 == 'goober'
+		assert map.p2 == 'something else' 
 	}
 }
