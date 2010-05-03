@@ -196,8 +196,7 @@ END SNIPPET: post3
 START SNIPPET: xml1
 import groovyx.net.http.*
 @Grab(group='org.codehaus.groovy.modules.http-builder', 
-    module='http-builder', version='0.5.0-RC3' )
-def grabMethod() {} // for Grab annotation
+    module='http-builder', version='0.5.0' )
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 
@@ -250,8 +249,7 @@ END SNIPPET: xml4
 START SNIPPET: json1
 import groovyx.net.http.*
 @Grab(group='org.codehaus.groovy.modules.http-builder', 
-    module='http-builder', version='0.5.0-RC3' )
-def grabMethod() {} // for Grab annotation
+    module='http-builder', version='0.5.0' )
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 
@@ -588,7 +586,6 @@ END SNIPPET: download2
 
 START SNIPPET: download3
 @Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='${project-version}' )
-def someMethod() {}
 
 def http = new groovyx.net.http.HTTPBuilder('http://www.codehaus.org')
 // ....

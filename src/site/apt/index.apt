@@ -10,6 +10,14 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
   
+* 3 May 1020 - 0.5.0 Released (finally!)
+
+  I've pushed 0.5.0 out the door!  It's the same as RC3, so if you've been using
+  that you should be able to just change the version number and you're good to 
+  go.  I'm already working on some minor improvements for a minor release (0.5.1)
+  but they didn't merit being squeezed into the 0.5.0 release since it's already
+  been delayed so long.  Enjoy!
+  
 * 31 Mar 2010 - Problems with Grape/ Grab
 
   So I had a couple people mention that they had trouble using <<<Grape>>> to 

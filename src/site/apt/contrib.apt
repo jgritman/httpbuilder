@@ -1,0 +1,18 @@
+                                    ------
+                                    Contributions
+                                    ------
+                                    ------
+                                    ------
+
+Contributions and Extensions
+
+	Since HTTPBuilder is meant to be a general-purpose (and extensible) tool, it's
+	not surprising that other users will create adaptations for specific tasks.  
+	What are other people doing with HTTPBuilder?  Share your extensions!
+	
+	<<{{{http://pastebin.com/ZGY25cq4}OAuth for HTTPBuilder}}>> by Erem Boto \
+	Simple class to support OAuth using the {{{http://github.com/fernandezpablo85/scribe}Scribe project}}.  
+	{{{http://pastebin.com/ywagxPdP}Spock test class}}.
+	
+	<<{{{http://code.google.com/p/css-selector-httpbuilder/}CSS Selector}}>> \
+	Naviagate a parsed HTML tree using CSS selectors rather than GPath. 
