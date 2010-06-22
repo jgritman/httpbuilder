@@ -440,6 +440,10 @@ public class HTTPBuilder {
 		
 		reqMethod.setHeader( "Accept", acceptContentTypes );
 		reqMethod.setURI( delegate.getUri().toURI() );
+
+		if ( reqMethod.getURI() == null)
+			throw new IllegalStateException( "Request URI cannot be null" );
+		
 		log.debug( reqMethod.getMethod() + " " + reqMethod.getURI() );
 
 		// set any request headers from the delegate
