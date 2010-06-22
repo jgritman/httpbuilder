@@ -21,9 +21,15 @@
  */
 package groovyx.net.http;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -128,7 +134,7 @@ public class HttpURLClient {
 		arg = null;
 		arg = args.remove( "query" );
 		if ( arg != null ) {
-			if ( ! ( arg instanceof Map ) ) 
+			if ( ! ( arg instanceof Map<?,?> ) ) 
 				throw new IllegalArgumentException( "'query' must be a map" ); 
 			url.setQuery( (Map<?,?>)arg );
 		}
@@ -177,7 +183,7 @@ public class HttpURLClient {
 		arg = null;
 		arg = args.remove( "headers" );
 		if ( arg != null ) {
-			if ( ! ( arg instanceof Map ) ) 
+			if ( ! ( arg instanceof Map<?,?> ) ) 
 				throw new IllegalArgumentException( "'headers' must be a map" ); 
 			Map<?,?> headers = (Map<?,?>)arg;
 			for ( Object key : headers.keySet() ) conn.addRequestProperty( 
@@ -201,16 +207,15 @@ public class HttpURLClient {
 			finally { conn.getOutputStream().close(); }
 		}
 		if ( args.size() > 0 ) for ( Object k : args.keySet() ) 
-			log.warn( "request() : Unkown named parameter '" + k + "'" );
+			log.warn( "request() : Unknown named parameter '" + k + "'" );
 		
-		log.debug( conn.getRequestMethod() + " " + url );
+		String method = conn.getRequestMethod();
+		log.debug( method + " " + url );
 		
 		HttpResponse response = new HttpURLResponseAdapter(conn);
 		if ( ContentType.ANY.equals( contentType ) ) contentType = conn.getContentType();
 
-		String method = conn.getRequestMethod();
-		Object result = method.equals( "HEAD" ) || method.equals( "OPTIONS" ) ?
-				null : parserRegistry.getAt( contentType ).call( response );
+		Object result = this.getparsedResult(method, contentType, response);
 		
 		log.debug( response.getStatusLine() );
 		HttpResponseDecorator decoratedResponse = new HttpResponseDecorator( response, result );
@@ -224,6 +229,32 @@ public class HttpURLClient {
 			throw new HttpResponseException( decoratedResponse );
 		
 		return decoratedResponse;
+	}
+	
+	private Object getparsedResult( String method, Object contentType, HttpResponse response ) 
+			throws ResponseParseException {
+		
+		Object parsedData = method.equals( "HEAD" ) || method.equals( "OPTIONS" ) ?
+				null : parserRegistry.getAt( contentType ).call( response );
+		try {
+			//If response is streaming, buffer it in a byte array:
+			if ( parsedData instanceof InputStream ) {
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+				DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
+				parsedData = new ByteArrayInputStream( buffer.toByteArray() );
+			}
+			else if ( parsedData instanceof Reader ) {
+				StringWriter buffer = new StringWriter();
+				DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
+				parsedData = new StringReader( buffer.toString() );
+			}
+			else if ( parsedData instanceof Closeable )
+				log.warn( "Parsed data is streaming, but cannot be buffered: " + parsedData.getClass() );
+			return parsedData;
+		}
+		catch ( IOException ex ) {
+			throw new ResponseParseException( new HttpResponseDecorator(response,null), ex );
+		}
 	}
 	
 	private String getBasicAuthHeader( String user, String pass ) throws UnsupportedEncodingException {
