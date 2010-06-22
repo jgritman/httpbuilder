@@ -98,7 +98,7 @@ def http = new HTTPBuilder('http://www.google.com')
 
 def html = http.get( path : '/search', query : [q:'Groovy'] )
 
-assert html instanceof GPathResult
+assert html instanceof groovy.util.slurpersupport.GPathResult
 assert html.HEAD.size() == 1
 assert html.BODY.size() == 1
 END SNIPPET: get1
@@ -134,7 +134,7 @@ http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
   response.success = { resp, stream ->
     assert resp.statusLine.statusCode == 200
     println "Got response: ${resp.statusLine}"
-    println "Content-Type: ${resp.headers.'Content-Type'"
+    println "Content-Type: ${resp.headers.'Content-Type'}"
     System.out << stream // print response stream
   }
     

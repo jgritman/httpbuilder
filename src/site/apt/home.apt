@@ -55,7 +55,7 @@ HTTPBuilder {Overview}
   API class which is used to make requests and parse responses.   
   {{{apidocs/groovyx/net/http/AsyncHTTPBuilder.html}AsyncHTTPBuilder}} is a 
   subclass of the base HTTPBuilder which transparently delegates all requests 
-  to a thread pool for execution.  {{{apidocs/groovyx/net/http/.html}RESTClient}} 
+  to a thread pool for execution.  {{{apidocs/groovyx/net/http/RESTClient.html}RESTClient}} 
   extends HTTPBuilder to eliminate the closure definition, to make REST 
   operations particularly easy.  Finally, 
   {{{apidocs/groovyx/net/http/HttpURLClient.html}HttpURLClient}} provides most of 
