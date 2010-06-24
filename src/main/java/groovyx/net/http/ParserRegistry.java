@@ -73,6 +73,9 @@ import org.xml.sax.XMLReader;
  * a NullPointerException is not thrown by passing a response that contains no
  * entity.</p>
  * 
+ * <p>You can see the list of content-type parsers that are built-in to the 
+ * ParserRegistry class in {@link #buildDefaultParserMap()}.</p>
+ * 
  * @see ContentType
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
@@ -135,7 +138,7 @@ public class ParserRegistry {
 			return charset.getValue();
 		}
 		catch ( RuntimeException ex ) { // NPE or OOB Exceptions
-			log.warn( "Could not parse content-type header in response", ex );
+			log.warn( "Could not parse charset from content-type header in response" );
 			return Charset.defaultCharset().name();
 		}
 	}
@@ -154,7 +157,7 @@ public class ParserRegistry {
 			return resp.getEntity().getContentType().getElements()[0].getName();
 		}
 		catch ( RuntimeException ex ) {  // NPE or OOB Exceptions
-			throw new IllegalArgumentException( "Could not parse content-type from response", ex );
+			throw new IllegalArgumentException( "Could not parse content-type from response" );
 		}
 	}
 	
@@ -264,10 +267,21 @@ public class ParserRegistry {
 	}
 	
 	/**
-	 * Returns a map of default parsers.  Override this method to change 
-	 * what parsers are registered by default.  You can of course call
+	 * <p>Returns a map of default parsers.  Override this method to change 
+	 * what parsers are registered by default.  A 'parser' is really just a 
+	 * closure that acceipts an {@link HttpResponse} instance and returns 
+	 * some parsed data.  You can of course call
 	 * <code>super.buildDefaultParserMap()</code> and then add or remove 
-	 * from that result as well.
+	 * from that result as well.</p>
+	 * 
+	 * <p>Default registered parsers are:
+	 * <ul>
+	 * <li>{@link ContentType#BINARY} :  {@link #parseStream(HttpResponse) parseStream()}</li>
+	 * <li>{@link ContentType#TEXT} :  {@link #parseText(HttpResponse) parseText()}</li>
+	 * <li>{@link ContentType#URLENC} :  {@link #parseForm(HttpResponse) parseForm()}</li>
+	 * <li>{@link ContentType#XML} :  {@link #parseXML(HttpResponse) parseXML()}</li>
+	 * <li>{@link ContentType#JSON} :  {@link #parseJSON(HttpResponse) parseJSON()}</li>
+	 * </ul>
 	 */
 	protected Map<String,Closure> buildDefaultParserMap() {
 		Map<String,Closure> parsers = new HashMap<String,Closure>();
