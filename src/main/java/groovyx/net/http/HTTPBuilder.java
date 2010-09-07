@@ -49,6 +49,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.cookie.params.CookieSpecPNames;
@@ -56,6 +57,7 @@ import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
@@ -456,7 +458,8 @@ public class HTTPBuilder {
 		}
 		
 		HttpResponseDecorator resp = new HttpResponseDecorator( 
-				client.execute( reqMethod ), null);
+				client.execute( reqMethod, delegate.getContext() ),
+				delegate.getContext(), null );
 		try {
 			int status = resp.getStatusLine().getStatusCode();
 			Closure responseClosure = delegate.findResponseHandler( status );
@@ -879,6 +882,7 @@ public class HTTPBuilder {
 		private Map<Object,Closure> responseHandlers = new StringHashMap<Closure>();
 		private URIBuilder uri;
 		private Map<Object,Object> headers = new StringHashMap<Object>();
+		private HttpContextDecorator context = new HttpContextDecorator();
 		
 		public RequestConfigDelegate( HttpRequestBase request, Object contentType, 
 				Map<?,?> defaultRequestHeaders,
@@ -1173,5 +1177,19 @@ public class HTTPBuilder {
 		 * @return
 		 */
 		public Map<Object,Closure> getResponse() { return this.responseHandlers; }
+		
+		/**
+		 * Get the {@link HttpContext} that will be used for this request.  By
+		 * default, a new context is created for each request.
+		 * @see ClientContext
+		 * @return
+		 */
+		public HttpContextDecorator getContext() { return this.context; }
+		
+		/**
+		 * Set the {@link HttpContext} that will be used for this request.
+		 * @param ctx
+		 */
+		public void setContext( HttpContext ctx ) { this.context = new HttpContextDecorator(ctx); }
 	}
 }

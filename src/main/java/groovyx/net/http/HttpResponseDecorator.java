@@ -31,6 +31,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * This class is a wrapper for {@link HttpResponse}, which allows for 
@@ -45,10 +47,16 @@ public class HttpResponseDecorator implements HttpResponse {
 	
 	HeadersDecorator headers = null;
 	HttpResponse responseBase;
+	HttpContextDecorator context;
 	Object responseData;
 	
 	public HttpResponseDecorator( HttpResponse base, Object parsedResponse ) {
+		this( base, null, parsedResponse );
+	}
+	
+	public HttpResponseDecorator( HttpResponse base, HttpContextDecorator context, Object parsedResponse ) {
 		this.responseBase = base;
+		this.context = context;
 		this.responseData = parsedResponse;
 	}
 	
@@ -97,6 +105,13 @@ public class HttpResponseDecorator implements HttpResponse {
 	public Object getData() { return this.responseData; }
 	
 	void setData( Object responseData ) { this.responseData = responseData; }
+	
+	/**
+	 * Get the execution context used during this request
+	 * @see ExecutionContext
+	 * @return the {@link HttpContext} 
+	 */
+	public HttpContextDecorator getContext() { return this.context; }
 	
 	/**
 	 * This class is returned by {@link HttpResponseDecorator#getHeaders()}.
