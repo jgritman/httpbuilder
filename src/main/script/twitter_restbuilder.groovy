@@ -7,8 +7,10 @@ import groovy.util.slurpersupport.GPathResult
 import static groovyx.net.http.ContentType.URLENC
 
 twitter = new RESTClient( 'https://twitter.com/statuses/' )
-twitter.auth.basic System.getProperty( 'user' ), System.getProperty( 'passwd' )
-
+twitter.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
+		System.getProperty('twitter.oauth.consumerSecret'),
+		System.getProperty('twitter.oauth.accessToken'),
+		System.getProperty('twitter.oauth.secretToken')
 
 // Test a URL using the HEAD method:
 
