@@ -2,13 +2,26 @@ package groovyx.net.http
 
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
-import org.junit.Test
-import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStreamimport org.apache.xml.resolver.tools.CatalogResolverimport java.net.ServerSocketimport org.apache.http.params.HttpConnectionParamsimport org.apache.commons.io.IOUtils
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Readerimport java.io.ByteArrayOutputStreamimport java.lang.AssertionError
+import java.net.ServerSocket
+import groovy.util.XmlSlurper
+import groovy.util.slurpersupport.GPathResult
+import org.apache.commons.io.IOUtils
+import org.apache.http.client.HttpResponseException
+import org.apache.http.params.HttpConnectionParams
+import org.apache.xml.resolver.tools.CatalogResolverimport org.junit.Test
+
 class HTTPBuilderTest {
 	
-	def twitter = [user: System.getProperty('twitter.user'),
-	               passwd: System.getProperty('twitter.passwd') ]
-	
+	def twitter = [ user: System.getProperty('twitter.user'),
+					consumerKey: System.getProperty('twitter.oauth.consumerKey'),
+					consumerSecret: System.getProperty('twitter.oauth.consumerSecret'),
+					accessToken: System.getProperty('twitter.oauth.accessToken'),
+					secretToken: System.getProperty('twitter.oauth.secretToken') ]
+	               
 	/**
 	 * This method will parse the content based on the response content-type
 	 */
@@ -27,54 +40,6 @@ class HTTPBuilderTest {
 		}
 	}
 	
-//	@Test 
-	public void testAlternateParsing() {
-		
-		println "-----------TESTING self-server"
-		def request = ''
-		def done = false
-		Thread.start {
-			println "- Thread running"
-			def ss
-			try {
-				ss = new ServerSocket(11234)
-				while ( ! done ) {
-					ss.accept { sock ->
-						println "- connected"
-						sock.soTimeout = 10000
-						sock.withStreams { input, output ->
-							request = IOUtils.toString( input )
-							println "- got request: $request"
-							println "- Connected: ${sock.connected} Closed: ${sock.closed}"
-							output << "HTTP/1.1 200 OK\r\nContent-Type:text/plain\r\n" \
-								+ "Content-Length:5\r\nConnection: Close\r\n\r\nHello\u0000"
-							output.flush()
-							println "- sent response!"
-							output.close()
-						}
-					}
-				}
-				println "- Done normally"
-			} finally { 
-				ss?.close()
-				println "- Server closed."
-			}
-		}
-		
-		def http = new HTTPBuilder( 'http://localhost:11234', TEXT )
-		http.headers = ['Content-Type':'text/xml',Accept:'text/xml'] 
-		HttpConnectionParams.setSoTimeout( http.client.params, 10000 )
-		
-		println "= Client Sending request..."
-		def response = http.get( path:'/one/two' )
-		println "= Client got response"
-		done = true
-		
-		assert request
-		assert response		
-		// TODO validate headers
-	}
-
 	@Test public void testDefaultSuccessHandler() {
 		def http = new HTTPBuilder('http://www.google.com')
 		def html = http.request( GET ) {
@@ -190,27 +155,16 @@ class HTTPBuilderTest {
 	@Test public void testPOSTwithXML() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic twitter.user, twitter.passwd
-		/* twitter doesn't like the Expect: 100 header because it would have
-		   replied with a 401 error --- but since "Expect: 100" is there, it 
-		   will actually reply with a 417 (Expectation failed) instead!  So
-		   the easiest solution is to remove the Expect header.  You might 
-		   also be able to add an "Expect: 401?" 
-		   
-		   This could also be solved by doing a GET request or the like first, 
-		   which will cause the client to encounter the 401.  Another option 
-		   would be 'preemptive auth' but that would take some more code to 
-		   implement.  */
-		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
+				twitter.accessToken, twitter.secretToken
 		
 		def msg = "HTTPBuilder unit test was run on ${new Date()}"
+		
 		
 		def postID = http.request( POST, XML ) { req ->
 			uri.path = 'update.xml'
 			send URLENC, [status:msg,source:'httpbuilder']
-			
-			//req.params.setBooleanParameter 'http.protocol.expect-continue', false
-			
+
 			 response.success = { resp, xml ->
 				println "Tweet response status: ${resp.statusLine}"
 				assert resp.statusLine.statusCode == 200
@@ -239,8 +193,8 @@ class HTTPBuilderTest {
 	@Test public void testPlainURLEnc() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic twitter.user, twitter.passwd
-		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
+				twitter.accessToken, twitter.secretToken
 		
 		def msg = "HTTPBuilder's second unit test was run on ${new Date()}"
 			
@@ -257,15 +211,15 @@ class HTTPBuilderTest {
 		}
 	}
 	
-	@Test public void testHeadMethod() {
+//	@Test 
+	public void testHeadMethod() {
 		def http = new HTTPBuilder('http://twitter.com/statuses/')
 		
-		http.auth.basic twitter.user, twitter.passwd
+		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
+				twitter.accessToken, twitter.secretToken
 		
 		http.request( HEAD, XML ) {
 			uri.path = 'friends_timeline.xml' 
-			
-//			response.'401' = { }
 			
 			response.success = { resp ->
 				assert resp.getFirstHeader('Status').value == "200 OK"
@@ -273,13 +227,6 @@ class HTTPBuilderTest {
 				assert resp.headers['Content-Encoding'].value == "gzip"
 			}
 		}
-		
-//		http.request( HEAD, XML ) { 
-//			uri.path = 'friends_timeline.xml' 
-//			response.success = { resp ->
-//				assert resp.statusLine.statusCode == 200
-//			}
-//		}
 	}
 	
 	@Test public void testRequestAndDefaultResponseHandlers() {

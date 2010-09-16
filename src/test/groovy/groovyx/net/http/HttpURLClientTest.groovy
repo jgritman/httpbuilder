@@ -1,14 +1,19 @@
 package groovyx.net.http
 
 import org.junit.Test
-import java.lang.AssertionErrorimport java.io.Readerimport groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStream
+import java.lang.AssertionErrorimport java.io.Readerimport java.io.StringReader;
+
+import groovy.util.XmlSlurperimport groovy.util.slurpersupport.GPathResultimport org.apache.http.client.HttpResponseExceptionimport java.io.ByteArrayOutputStream
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*import org.apache.xml.resolver.tools.CatalogResolver
 class HttpURLClientTest {
 	
-	def twitter = [user: System.getProperty('twitter.user'),
-	               passwd: System.getProperty('twitter.passwd') ]
-	
+	def twitter = [ user: System.getProperty('twitter.user'),
+					consumerKey: System.getProperty('twitter.oauth.consumerKey'),
+					consumerSecret: System.getProperty('twitter.oauth.consumerSecret'),
+					accessToken: System.getProperty('twitter.oauth.accessToken'),
+					secretToken: System.getProperty('twitter.oauth.secretToken') ]
+
 	/**
 	 * This method will parse the content based on the response content-type
 	 */
@@ -91,7 +96,7 @@ class HttpURLClientTest {
 		
 		println "response status: ${resp.statusLine}"
 		
-		assert resp.data instanceof Reader
+		assert resp.data instanceof StringReader
 			
 		// we'll validate the reader by passing it to an XmlSlurper manually.
 		def resolver = ParserRegistry.catalogResolver
@@ -118,9 +123,10 @@ class HttpURLClientTest {
 
 	@Test public void testPOSTwithXML() {
 		def http = new HttpURLClient(url:'http://twitter.com/statuses/')
-		
-		http.setBasicAuth twitter.user, twitter.passwd
-		
+
+		http.setOAuth twitter.consumerKey, twitter.consumerSecret,
+				twitter.accessToken, twitter.secretToken
+
 		def msg = "HTTPBuilder unit test was run on ${new Date()}"
 		
 		def resp = http.request( method:POST, contentType:XML,
@@ -137,11 +143,8 @@ class HttpURLClientTest {
 		assert xml.user.screen_name == twitter.user
 		def postID = xml.id
 		
-		http.setBasicAuth null, null
-		
 		// delete the test message.
 		resp = http.request( method:DELETE, contentType:JSON,
-				auth : [twitter.user, twitter.passwd],
 			path : "destroy/${postID}.json" )
 			
 		def json = resp.data
@@ -150,13 +153,15 @@ class HttpURLClientTest {
 		println "Test tweet ID ${json.id} was deleted."
 	}
 	
-	@Test public void testHeadMethod() {
+//	@Test
+	public void testHeadMethod() {
 		def http = new HttpURLClient(url:'http://twitter.com/statuses/')
 		
 		assert http.url.toString() == "http://twitter.com/statuses/"
 		
-		http.setBasicAuth twitter.user, twitter.passwd
-		
+		http.setOAuth twitter.consumerKey, twitter.consumerSecret,
+				twitter.accessToken, twitter.secretToken
+
 		def resp = http.request( method:HEAD, contentType:"application/xml", 
 				path : 'friends_timeline.xml' ) 
 			
@@ -172,7 +177,9 @@ class HttpURLClientTest {
 				url:'http://twitter.com/statuses/',
 				parsers : parsers )
 		
-		http.setBasicAuth twitter.user, twitter.passwd
+		http.setOAuth twitter.consumerKey, twitter.consumerSecret,
+				twitter.accessToken, twitter.secretToken
+		
 		def resp = http.request( path : 'friends_timeline.xml' ) 
 		assert done
 		assert resp.data

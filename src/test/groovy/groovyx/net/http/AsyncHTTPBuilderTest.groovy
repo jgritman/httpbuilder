@@ -88,9 +88,11 @@ public class AsyncHTTPBuilderTest {
 	@Test public void testPostAndDelete() {
 		def http = new AsyncHTTPBuilder(uri:'http://twitter.com/statuses/')
 		
-		http.auth.basic System.getProperty('twitter.user'),
-		               System.getProperty('twitter.passwd')
-
+		http.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
+				System.getProperty('twitter.oauth.consumerSecret'),
+				System.getProperty('twitter.oauth.accessToken'),
+				System.getProperty('twitter.oauth.secretToken')
+			   
 		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
 		
 		def msg = "AsyncHTTPBuilder unit test was run on ${new Date()}"
