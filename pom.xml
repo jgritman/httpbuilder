@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>http-builder</artifactId>
 	<groupId>org.codehaus.groovy.modules.http-builder</groupId>
-	<version>0.5.0-SNAPSHOT</version>
+	<version>0.5.1-SNAPSHOT</version>
 	<name>HTTP client framework for Groovy</name>
 	<url>http://groovy.codehaus.org/modules/http-builder/</url>
 	<inceptionYear>2008</inceptionYear>
@@ -33,6 +33,7 @@
 			<version>4.0.1</version>
 		</dependency>
 		<dependency>
+			<!-- Only needed for JSON parsing -->
 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
 			<version>2.3</version>
@@ -72,15 +73,31 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<!-- Only needed for HTML parsing -->
 			<groupId>net.sourceforge.nekohtml</groupId>
 			<artifactId>nekohtml</artifactId>
 			<version>1.9.9</version>
 		</dependency>
 		<dependency>
+			<!-- (Usually) only needed for HTML parsing -->
 			<groupId>xml-resolver</groupId>
 			<artifactId>xml-resolver</artifactId>
 			<version>1.2</version>
 		</dependency> 
+		<dependency>
+			<!-- Add this dependency if you are using OAuth in HTTPBuilder or RESTClient -->
+			<groupId>oauth.signpost</groupId>
+			<artifactId>signpost-commonshttp4</artifactId>
+			<version>1.2.1.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<!-- Add this dependency if you are using OAuth in HttpURLClient -->
+			<groupId>oauth.signpost</groupId>
+			<artifactId>signpost-core</artifactId>
+			<version>1.2.1.1</version>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
@@ -146,8 +163,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.groovy.maven</groupId>
+				<groupId>org.codehaus.gmaven</groupId>
 				<artifactId>gmaven-plugin</artifactId>
+				<version>1.4-SNAPSHOT</version>
 				<executions>
 					<execution>
 						<id>build</id>
@@ -190,6 +208,22 @@
 						<property>
 							<name>twitter.passwd</name>
 							<value>${twitter.passwd}</value>
+						</property>
+						<property>
+							<name>twitter.oauth.consumerKey</name>
+							<value>${twitter.oauth.consumerKey}</value>
+						</property>
+						<property>
+							<name>twitter.oauth.consumerSecret</name>
+							<value>${twitter.oauth.consumerSecret}</value>
+						</property>
+						<property>
+							<name>twitter.oauth.accessToken</name>
+							<value>${twitter.oauth.accessToken}</value>
+						</property>
+						<property>
+							<name>twitter.oauth.secretToken</name>
+							<value>${twitter.oauth.secretToken}</value>
 						</property>
 					</systemProperties>
 				</configuration>
@@ -268,6 +302,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
+				<version>2.1.1</version>
 				<dependencies>
 	<!-- For SyntaxHighlighter macro: http://code.google.com/p/m2-site-tools/ -->
 					<dependency>
@@ -275,12 +310,21 @@
 						<artifactId>m2st-doxia-macros</artifactId>
 						<version>${m2st.version}</version>
 					</dependency>
+  					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-sink-api</artifactId>
+ 						<version>1.1.3</version>
+					</dependency>
+ 					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-core</artifactId>
+ 						<version>1.1.3</version>
+					</dependency>
 				</dependencies>
-    	</plugin>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.0-beta-8</version>
 				<configuration>
 					<preparationGoals>clean verify</preparationGoals>
 				</configuration>
@@ -293,6 +337,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.2</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -343,6 +388,14 @@
 			</plugin>
 		</plugins>
 	</reporting>
+	
+	<pluginRepositories>
+		<pluginRepository>
+			<id>m2st-releases</id>
+			<url>http://anasoft-os-repo.googlecode.com/svn/repository/releases</url>
+			<releases><enabled>true</enabled></releases>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<scm>
 		<developerConnection>scm:https://svn.codehaus.org/gmod/httpbuilder/</developerConnection>
