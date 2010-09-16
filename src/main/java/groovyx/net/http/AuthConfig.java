@@ -24,14 +24,27 @@ package groovyx.net.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.commonshttp.HttpRequestAdapter;
+import oauth.signpost.exception.OAuthException;
+
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * Encapsulates all configuration related to HTTP authentication methods.
@@ -94,5 +107,46 @@ public class AuthConfig {
         
         builder.getClient().getConnectionManager().getSchemeRegistry()
         	.register( new Scheme("https", ssl, 443) );
+	}
+
+	public void oauth( String consumerKey, String consumerSecret,
+			String accessToken, String secretToken ) {		
+		this.builder.client.removeRequestInterceptorByClass( OAuthSigner.class );
+		if ( consumerKey != null )
+			this.builder.client.addRequestInterceptor( new OAuthSigner(
+				consumerKey, consumerSecret, accessToken, secretToken ) );
+	}
+	
+	static class OAuthSigner implements HttpRequestInterceptor {
+		protected OAuthConsumer oauth;
+		public OAuthSigner( String consumerKey, String consumerSecret,
+			String accessToken, String secretToken ) {		
+			this.oauth = new CommonsHttpOAuthConsumer( consumerKey, consumerSecret );
+			oauth.setTokenWithSecret( accessToken, secretToken );
+		}
+		
+		public void process(HttpRequest request, HttpContext ctx) throws HttpException, IOException {
+			/* The full request URI must be reconstructed between the context and the request URI.  
+			 * Best we can do until AuthScheme supports HttpContext.  See:
+			 * https://issues.apache.org/jira/browse/HTTPCLIENT-901 */
+			try {
+				HttpUriRequest uriRequest = (HttpUriRequest)request;
+				HttpHost host = (HttpHost) ctx.getAttribute( ExecutionContext.HTTP_TARGET_HOST );
+				
+				final URI requestURI = new URI( host.toURI() ).resolve(uriRequest.getURI()); 
+				HttpRequestAdapter oAuthRequest = new HttpRequestAdapter( uriRequest ) {
+					/* @Override */ 
+					public String getRequestUrl() { return requestURI.toString(); }
+				};
+				this.oauth.sign( oAuthRequest );
+			}
+			catch ( ClassCastException ex ) {
+				throw new HttpException( "Request must be an instance of HttpUriRequest", ex);
+			} catch ( URISyntaxException ex ) {
+				throw new HttpException( "Error rebuilding request URI", ex );
+			} catch (OAuthException e) {
+				throw new HttpException( "OAuth signing error", e);
+			}
+		}
 	}
 }

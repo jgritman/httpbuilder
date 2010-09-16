@@ -41,6 +41,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.basic.DefaultOAuthConsumer;
+import oauth.signpost.basic.HttpURLConnectionRequestAdapter;
+import oauth.signpost.exception.OAuthException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
@@ -67,7 +72,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * Notably absent are status-code based response handling and the more complex 
  * authentication mechanisms.</p>
  * 
- * TODO request encoding support?
+ * TODO request encoding support (if anyone asks for it)
  *
  * @see <a href='http://code.google.com/appengine/docs/java/urlfetch/overview.html'>GAE URLFetch</a>
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
@@ -81,8 +86,9 @@ public class HttpURLClient {
 	private Object contentType = ContentType.ANY;
 	private Object requestContentType = null;
 	private URIBuilder defaultURL = null;
-	private boolean followRedirects = true; 
-	
+	private boolean followRedirects = true;
+	protected OAuthWrapper oauth;
+		
 	/** Logger instance defined for use by sub-classes */
 	protected Log log =  LogFactory.getLog( getClass() );
 	
@@ -170,6 +176,7 @@ public class HttpURLClient {
 		arg = null;
 		arg = args.remove( "auth" );
 		if ( arg != null ) {
+			if ( oauth != null ) log.warn( "You are trying to use both OAuth and basic authentication!" );
 			try { 
 				List<?> vals = (List<?>)arg;
 				conn.addRequestProperty( "Authorization", getBasicAuthHeader( 
@@ -190,22 +197,29 @@ public class HttpURLClient {
 					key.toString(), headers.get( key ).toString() );
 		}
 		
+		
 		arg = null;
 		arg = args.remove( "body" );
-		if ( arg != null ) {
+		if ( arg != null ) {  // if there is a request POST or PUT body
 			conn.setDoOutput( true );
-			HttpEntity body = (HttpEntity)encoderRegistry.getAt( 
+			final HttpEntity body = (HttpEntity)encoderRegistry.getAt( 
 					requestContentType ).call( arg );
 			// TODO configurable request charset
 			
 			//TODO don't override if there is a 'content-type' in the headers list
 			conn.addRequestProperty( "Content-Type", requestContentType );
 			try {
+				// OAuth Sign if necessary.  
+				if ( oauth != null ) conn = oauth.sign( conn, body );
+				// send request data
 				DefaultGroovyMethods.leftShift( conn.getOutputStream(), 
 						body.getContent() );
 			}
 			finally { conn.getOutputStream().close(); }
 		}
+		// sign the request if we're using OAuth
+		else if ( oauth != null ) conn = oauth.sign(conn, null);
+		
 		if ( args.size() > 0 ) for ( Object k : args.keySet() ) 
 			log.warn( "request() : Unknown named parameter '" + k + "'" );
 		
@@ -273,6 +287,60 @@ public class HttpURLClient {
 		if ( user == null ) this.defaultHeaders.remove( "Authorization" );
 		else this.defaultHeaders.put( "Authorization", 
 				getBasicAuthHeader( user.toString(), pass.toString() ) );
+	}
+	
+	/**
+	 * Sign all outbound requests with the given OAuth keys and tokens.  It 
+	 * is assumed you have already retrieved a proper access token from your
+	 * target service (see Signpost documentation for more details.)
+	 * @param consumerKey null if you want to _stop_ signing requests.
+	 * @param consumerSecret
+	 * @param accessToken
+	 * @param accessSecret
+	 */
+	public void setOAuth( Object consumerKey, Object consumerSecret,
+			Object accessToken, Object accessSecret ) {
+		if ( consumerKey == null ) {
+			oauth = null;
+			return;
+		}
+		this.oauth = new OAuthWrapper(consumerKey, consumerSecret, accessToken, accessSecret);
+	}
+	
+	/**
+	 * This class basically wraps Signpost classes so they are not loaded 
+	 * until #setOAuth is called.  This allows Signpost to act as an optional
+	 * dependency.  If you are not using Signpost, you don't need the JAR 
+	 * on your classpath.
+	 */
+	private static class OAuthWrapper {
+		protected OAuthConsumer oauth;
+		OAuthWrapper( Object consumerKey, Object consumerSecret,
+			Object accessToken, Object accessSecret ) {
+			oauth = new DefaultOAuthConsumer( consumerKey.toString(), consumerSecret.toString() );
+			oauth.setTokenWithSecret( accessToken.toString(), accessSecret.toString() );		
+		}
+		
+		HttpURLConnection sign( HttpURLConnection request, final HttpEntity body ) throws IOException {
+			try {  // OAuth Sign.  
+				// Note that the request body must be repeatable even though it is an input stream.
+				if ( body == null ) return (HttpURLConnection)oauth.sign( request ).unwrap();
+				else return (HttpURLConnection)oauth.sign( 
+						new HttpURLConnectionRequestAdapter(request) {
+							/* @Override */
+							public InputStream getMessagePayload() throws IOException {
+								return body.getContent();
+							}
+						}).unwrap();
+			}
+			catch ( final OAuthException ex ) {
+//				throw new IOException( "OAuth signing error", ex ); // 1.6 only!
+				throw new IOException( "OAuth signing error: " + ex.getMessage() ) {
+					private static final long serialVersionUID = -13848840190384656L;
+					/* @Override */ public Throwable getCause() { return ex; }
+				};
+			}
+		}
 	}
 	
 	/**
