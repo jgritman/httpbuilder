@@ -1,6 +1,5 @@
 // Send a Twitter update when a release is made.  Cool!
 
-print 'testtesttesttesttesttesttestesttesttest'
 import groovyx.net.http.HTTPBuilder
 
 import static groovyx.net.http.Method.*
