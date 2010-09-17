@@ -32,7 +32,7 @@ RESTClient
   
 * Examples
 
-  All of these examples use the {{{http://apiwiki.twitter.com/REST+API+Documentation}Twitter REST API.}}   
+  All of these examples use the {{{http://apiwiki.twitter.com/Twitter-API-Documentation}Twitter REST API.}}   
 
 **  Test a URL using the <<<HEAD>>> method 
 

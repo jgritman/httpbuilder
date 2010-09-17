@@ -12,7 +12,7 @@ Introduction
   
   [[]]  Automatic response parsing based on content-type
    
-  [[]]  Logic based on the response status code
+  [[]]  Sucess & failure handling based on the response status code
   
   []
   
@@ -83,7 +83,8 @@ The Magic: Built-in Content-Type Parsing
   regardless of what the server actually responds with.   The first example on
   this page actually uses that strategy to parse an HTML document as plain text
   (i.e. by creating a <<<Reader>>>) rather than detecting an HTML content-type
-  and using the default HTML parsing method.
+  and using the default HTML parsing method.  You can read more about automatic
+  content-type parsing on the {{{./contentTypes.html}Content Types page}}.
 
 
 

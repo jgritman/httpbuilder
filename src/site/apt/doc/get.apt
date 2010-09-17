@@ -6,7 +6,7 @@
 
 Simplified GET Request
 
- HTTPBuilder has convenience methods for <<<GET>>> and <<<{{{post.html}POST}}>>>
+ HTTPBuilder has convenience methods for <<<GET>>> and <<<{{{post}POST}}>>>
  methods.  Here is a simple HTTP <<<GET>>> which parses the response as a DOM 
  object:
  
@@ -18,10 +18,10 @@ Simplified GET Request
  normalized (thanks to {{{http://nekohtml.sourceforge.net/}Neko,}}) and then 
  parsed by an
  {{{http://groovy.codehaus.org/Reading+XML+using+Groovy%27s+XmlSlurper}XmlSlurper}}
- for easy DOM parsing.  
+ for easy DOM traversal.  
  
  We are also taking advantage of HTTPBuilder's 
- {{{../apidocs/groovyx/net/http/HTTPBuilder.html#defaultSuccessHandler(org.apache.http.HttpResponse,%20java.lang.Object)}default
+ {{{../apidocs/groovyx/net/http/HTTPBuilder.html#defaultSuccessHandler(groovyx.net.http.HttpResponseDecorator,%20java.lang.Object)}default
  success handler}} since we're not supplying a 'success' response handler 
  closure.  The default handler defined by HTTPBuilder (which can be overridden)
  simply returns the parsed response data. 
@@ -32,10 +32,10 @@ Simplified GET Request
 %{code-snippet|id=get2|brush=groovy|file=src/site/examples.txt}
 
 
- In this version, the <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.html#get(java.util.Map,%20groovy.lang.Closure)}get()}}>>> 
+ In this version, the <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.html#get%28java.util.Map%2C%20groovy.lang.Closure%29}get()}}>>> 
  method also accepts a closure, which is interpreted as the 'success' response 
  handler.  A failure response (i.e. status code of 400 or greater) is still handled by the builder's 
- {{{../apidocs/groovyx/net/http/HTTPBuilder.html#defaultFailureHandler(org.apache.http.HttpResponse)}
+ {{{../apidocs/groovyx/net/http/HTTPBuilder.html#defaultFailureHandler(groovyx.net.http.HttpResponseDecorator)}
  default failure handler}}.
  
  Additionally, we are telling HTTPBuilder to parse the response as 

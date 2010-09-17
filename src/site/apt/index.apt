@@ -4,13 +4,13 @@
                                     ------
                                     ------
 
-  <New to HTTPBuilder?  See the {{{home.html}Overview}} page.>  
+  <New to HTTPBuilder?  See the {{{./home.html}Overview}} page.>  
 
 News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
   
-* 3 May 1020 - 0.5.0 Released (finally!)
+* 3 May 2010 - 0.5.0 Released (finally!)
 
   I've pushed 0.5.0 out the door!  It's the same as RC3, so if you've been using
   that you should be able to just change the version number and you're good to 
@@ -73,7 +73,7 @@ News
 
 * 16 June 2009 - 0.5.0 RC1!
   
-  RC1 is released!  Go {{{download.html}download it}}!
+  RC1 is released!  Go {{{./download.html}download it}}!
   
   Keep in mind there are a few breaking changes from 0.4.1.  See the 
   {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA report}} 
@@ -150,7 +150,7 @@ News
   The latest 0.5 version now includes a new RESTClient class for even easier 
   REST-style operations without a user-defined closure!  See 
   {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/script/twitter_restbuilder.groovy?r=root:}
-  the Twitter example}}, and the updated {{{apidocs/groovyx/net/http/RESTClient.html}JavaDoc}}.
+  the Twitter example}}, and the updated {{{./apidocs/groovyx/net/http/RESTClient.html}JavaDoc}}.
 
 * 04 Mar 2009
 

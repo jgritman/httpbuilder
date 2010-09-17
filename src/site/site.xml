@@ -41,10 +41,12 @@
 			<item name="On Twitter!" href="http://twitter.com/httpbuilder" />
 			<item name="On Ohloh" href="https://www.ohloh.net/p/http-builder" />
 			<item name="Support" href="home.html#Support" />
+			<item name="Blog" href="http://blog.thomnichols.org/" />
 			<item name="About" href="about.html" />
 		</menu>
 		<menu name="Additional Reference">
 			<item name="Groovy" href="http://groovy.codehaus.org/Documentation" />
+			<item name="HTTP/1.1 RFC" href="http://www.w3.org/Protocols/rfc2616/rfc2616.html" />
 			<item name="HttpClient" href="http://hc.apache.org/httpcomponents-client/" />
 			<item name="HttpCore" href="http://hc.apache.org/httpcomponents-core/" />
 			<item name="JSON-Lib" href="http://json-lib.sourceforge.net/" />
@@ -61,12 +63,12 @@
 
 			<style> #bodyColumn { max-width: 840px } </style>
 
-			<script language="javaScript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"></script>
-			<script language="javaScript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushGroovy.js"></script>
+			<script language="javascript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js"></script>
+			<script language="javascript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushGroovy.js"></script>
 			<!-- 
-			<script language="javaScript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJava.js"></script>
+			<script language="javascript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJava.js"></script>
 			 -->
-			<script language="javaScript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushXml.js"></script>
+			<script language="javascript" src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushXml.js"></script>
 			<script language="javascript">
 			 SyntaxHighlighter.defaults['light'] = true;
 			 SyntaxHighlighter.all();

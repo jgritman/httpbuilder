@@ -41,10 +41,10 @@ http.request(GET,TEXT) { req ->
     assert resp.statusLine.statusCode == 200
     println "My response handler got response: ${resp.statusLine}"
     println "Response length: ${resp.headers.'Content-Length'}" 
-    System.out << reader // print response stream
+    System.out << reader // print response reader
   }
   
-  // called only for a 401 (access denied) status code:
+  // called only for a 404 (not found) status code:
   response.'404' = { resp ->  
     println 'Not found'
   }
@@ -130,12 +130,13 @@ http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
   uri.path = '/ajax/services/search/web'
   uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
   headers.'User-Agent' = "Mozilla/5.0 Firefox/3.0.4"
+  headers.Accept = 'application/json'
 
-  response.success = { resp, stream ->
+  response.success = { resp, reader ->
     assert resp.statusLine.statusCode == 200
     println "Got response: ${resp.statusLine}"
     println "Content-Type: ${resp.headers.'Content-Type'}"
-    System.out << stream // print response stream
+    println reader.text
   }
     
   response.'404' = {
@@ -503,6 +504,29 @@ http.get( uri : 'http://somehost.com/contacts.csv',
 		// parse the csv stream here.
 }
 END SNIPPET: contenttype2
+
+
+START SNIPPET: contenttype3
+def http = new HTTPBuilder('http://ajax.googleapis.com')
+
+http.request( Method.GET, ContentType.TEXT ) { req ->
+  uri.path = '/ajax/services/search/web'
+  uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+  headers.Accept = 'application/json'
+ 
+  response.success = { resp, reader ->
+    println "Got response: ${resp.statusLine}"
+    println "Content-Type: ${resp.headers.'Content-Type'}"
+    print reader.text
+  }
+}
+END SNIPPET: contenttype3
+
+
+START SNIPPET: contenttype4
+http.parser.'application/xml' = http.parser.'text/plain'
+END SNIPPET: contenttype4
+
 
 START SNIPPET: handler1
 import groovyx.net.http.HTTPBuilder

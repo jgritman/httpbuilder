@@ -37,11 +37,15 @@ Success vs Failure
   the redirect by re-sending the request to the new URL.  You do not need to 
   do anything special in order to follow 302 responses.  
   
-  Similarly, a 401 status code will be handled transparently by HttpClient if 
+  Similarly, a 401 status code can be handled transparently by HttpClient when 
   authorization has been configured.  In most cases, you (the user) are not 
   interested in these 'intermediate' responses, so they are handled internally
   by the framework.  If you <want> to handle these responses directly, it can
   be configured through the underlying HttpClient instance. 
+  
+  Similarly, HttpURLClient has a 
+  <<<{{{../apidocs/groovyx/net/http/HttpURLClient.html#setFollowRedirects(boolean)}followRedirects}}>>> 
+  property to configure redirect behavior.
   
 Default Handlers
 

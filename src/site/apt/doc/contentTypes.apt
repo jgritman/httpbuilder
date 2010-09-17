@@ -5,6 +5,42 @@
                                     ------
 
 
+Content-Type Response Parsing
+
+  One of HTTPBuilder's strengths is its in-built ability to parse many content-types.
+  If a response is <<<text/xml>>> it is automatically parsed by <<<groovy.util.XmlSlurper>>>.
+  An <<<application/json>>> response will be parsed into a POGO object via Json-Lib, 
+  and a <<<text/plain>>> response will come back as a <<<java.io.Reader>>>.  This is done
+  by comparing the response's <<<Content-Type>>> header to entries in the current 
+  <<<{{{../apidocs/groovyx/net/http/ParserRegistry.html}ParserRegistry}}>>> instance.
+  
+  You can see the default content-types handled by HTTPBuilder in the 
+  {{{../apidocs/groovyx/net/http/ParserRegistry.html#buildDefaultParserMap()}ParserRegistry class}}}.
+
+  If you want to override the automatic parsing (say, to get an XML response as a plain
+  string) you can tell HTTPBuilder how it should try to parse the text.  (This
+  is also handy if a server is being dumb and serving HTML data as plain text, for instance.)
+  
+  The <<<contentType>>> parameter tells HTTPBuilder how it should parse the response.
+  
+%{code-snippet|id=contenttype3|brush=groovy|file=src/site/examples.txt}
+  
+  The <<<contentType>>> parameter also instructs HTTPBuilder to add an <<<Accept>>> header 
+  to the request for the specified content-type.  Assuming we still want to <get> JSON data,
+  but not parse it, the <<<headers.Accept = ...>>> line above overrides the automatic 
+  <<<Accept: text/plain>>> header that would otherwise be added by the <<<ContentType.TEXT>>>
+  argument.
+  
+  Now assume we <always> want to handle XML as plain text.  (maybe you're passing it on to 
+  a SAX parser or something similar.)  We can re-use the TEXT content-type handler by assigning
+  it to the XML content-type in the ParserRegistry:
+  
+%{code-snippet|id=contenttype4|brush=groovy|file=src/site/examples.txt}
+  
+  Now, any response that comes in with a <<<Content-Type: application/xml>>> header will be handled
+  using the plain-text parser -- meaning it's simply returned as a reader.
+
+
 Support for new Content Types
   
   To add parsing for new content types, simply add a new entry to the builder's 

@@ -28,45 +28,45 @@ HTTPBuilder {Overview}
     
 {Features}
     
-  * Builder and parser support for {{{doc/xml.html}XML}}, {{{doc/json.html}JSON}}, and HTML
+  * Builder and parser support for {{{./doc/xml.html}XML}}, {{{./doc/json.html}JSON}}, and HTML
   
-  * Easy {{{doc/uribuilder.html}URI manipulation}}
+  * Easy {{{./doc/uribuilder.html}URI manipulation}}
   
-  * Streamlined {{{doc/rest.html}client for REST}} interfaces
+  * Streamlined {{{./doc/rest.html}client for REST}} interfaces
   
   * Built-in support for GZIP and Deflate content-encoding
   
   * Built-in support for HTTP Basic, Digest, and SSL certificate authentication
   
-  * Status code based {{{doc/handlers.html}response handling}}
+  * Status code based {{{./doc/handlers.html}response handling}}
   
-  * Convenience methods for {{{doc/get.html}GET}} and {{{doc/post.html}POST}}
+  * Convenience methods for {{{./doc/get.html}GET}} and {{{./doc/post.html}POST}}
   
-  * {{{doc/httpurlclient.html}Compatible}} with Google App Engine
+  * {{{./doc/httpurlclient.html}Compatible}} with Google App Engine
   
-  * {{{doc/async.html}AsyncHTTPBuilder}} for asynchronous requests
+  * {{{./doc/async.html}AsyncHTTPBuilder}} for asynchronous requests
   
   * Easily extensible API
     
     
 {Components}
     
-  {{{apidocs/groovyx/net/http/HTTPBuilder.html}HTTPBuilder}} is the main 
+  {{{./apidocs/groovyx/net/http/HTTPBuilder.html}HTTPBuilder}} is the main 
   API class which is used to make requests and parse responses.   
-  {{{apidocs/groovyx/net/http/AsyncHTTPBuilder.html}AsyncHTTPBuilder}} is a 
+  {{{./apidocs/groovyx/net/http/AsyncHTTPBuilder.html}AsyncHTTPBuilder}} is a 
   subclass of the base HTTPBuilder which transparently delegates all requests 
-  to a thread pool for execution.  {{{apidocs/groovyx/net/http/RESTClient.html}RESTClient}} 
+  to a thread pool for execution.  {{{./apidocs/groovyx/net/http/RESTClient.html}RESTClient}} 
   extends HTTPBuilder to eliminate the closure definition, to make REST 
   operations particularly easy.  Finally, 
-  {{{apidocs/groovyx/net/http/HttpURLClient.html}HttpURLClient}} provides most of 
+  {{{./apidocs/groovyx/net/http/HttpURLClient.html}HttpURLClient}} provides most of 
   HTTPBuilder's intelligent handling in a package that can be used from 
   Google App Engine.
   
-  {{{apidocs/groovyx/net/http/URIBuilder.html}URIBuilder}} provides a fluent
+  {{{./apidocs/groovyx/net/http/URIBuilder.html}URIBuilder}} provides a fluent
   interface for manipulating complex URLs.  It is also used internally by 
   HTTPBuilder to handle path and query string modification.
   
-  See the {{{apidocs/index.html}JavaDoc}} for full documentation. 
+  See the {{{./apidocs/index.html}JavaDoc}} for full documentation. 
     
     
 {Requirements}
@@ -76,17 +76,17 @@ HTTPBuilder {Overview}
   * Groovy 1.5 or later, although it should work with earlier versions
   
   * JAR dependencies can be found in the packaged distributions linked from the
-    {{{download.html}download page}}. 
+    {{{./download.html}download page}}. 
     
 {Support}
   
-  If you are having trouble, {{{doc/index.html#Logging_and_Debugging}start here}}.
+  If you are having trouble, {{{./doc/index.html#Logging_and_Debugging}start here}}.
   
   The best place to ask for help would be the 
   {{{http://xircles.codehaus.org/lists/user@groovy.codehaus.org}Groovy-User mailing list.}}  
   If you do not want to subscribe to the mailing list, you can also post questions 
   through {{{http://www.nabble.com/groovy---user-f11867.html}Nabble.}}  See the
-  {{{about.html}About page}} for additional contact information.
+  {{{./about.html}About page}} for additional contact information.
   
   Please report any problems or errors to the mailing list (or 
   {{{http://jira.codehaus.org/browse/GMOD/component/13625}JIRA}}) and it should 

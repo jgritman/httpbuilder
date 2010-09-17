@@ -109,6 +109,20 @@ public class AuthConfig {
         	.register( new Scheme("https", ssl, 443) );
 	}
 
+	/**
+	 * OAuth sign all requests.  Note that this currently does <strong>not</strong>
+	 * wait for a <code>WWW-Authenticate</code> challenge before sending the 
+	 * the OAuth header.
+	 * 
+	 * This assumes you've already generated an <code>accessToken</code> and 
+	 * <code>secretToken</code> for the site you're targeting.  For More information
+	 * on how to achieve this, see the <a href='#'>Signpost documentation</a>.
+	 * @since 0.5.1
+	 * @param consumerKey
+	 * @param consumerSecret
+	 * @param accessToken
+	 * @param secretToken
+	 */
 	public void oauth( String consumerKey, String consumerSecret,
 			String accessToken, String secretToken ) {		
 		this.builder.client.removeRequestInterceptorByClass( OAuthSigner.class );

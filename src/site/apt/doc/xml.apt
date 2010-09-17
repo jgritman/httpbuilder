@@ -50,7 +50,8 @@ POSTing XML data
 %{code-snippet|id=xml2|brush=groovy|file=src/site/examples.txt}
 
  The body is then transformed to an XML string by 
- <<<{{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(groovy.lang.Closure)}EncoderRegistry.encodeXML()}}>>>.
+file:///Users/tnichols/dev/http-builder/target/site/apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(java.lang.Object)
+ <<<{{{../apidocs/groovyx/net/http/EncoderRegistry.html#encodeXML(java.lang.Object)}EncoderRegistry.encodeXML()}}>>>.
  Alternatively, the XML body may be passed as a raw string as well.
 
  
