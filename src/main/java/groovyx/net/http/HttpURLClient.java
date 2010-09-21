@@ -291,8 +291,10 @@ public class HttpURLClient {
 	
 	/**
 	 * Sign all outbound requests with the given OAuth keys and tokens.  It 
-	 * is assumed you have already retrieved a proper access token from your
-	 * target service (see Signpost documentation for more details.)
+	 * is assumed you have already generated a consumer keypair and retrieved 
+	 * a proper access token pair from your target service (see 
+	 * <a href='http://code.google.com/p/oauth-signpost/wiki/TwitterAndSignpost'>Signpost documentation</a> 
+	 * for more details.)  Once this has been done all requests will be signed.
 	 * @param consumerKey null if you want to _stop_ signing requests.
 	 * @param consumerSecret
 	 * @param accessToken
@@ -309,9 +311,11 @@ public class HttpURLClient {
 	
 	/**
 	 * This class basically wraps Signpost classes so they are not loaded 
-	 * until #setOAuth is called.  This allows Signpost to act as an optional
+	 * until {@link HttpURLClient#setOAuth(Object, Object, Object, Object)} 
+	 * is called.  This allows Signpost to act as an optional
 	 * dependency.  If you are not using Signpost, you don't need the JAR 
 	 * on your classpath.
+	 * @since 0.5.1
 	 */
 	private static class OAuthWrapper {
 		protected OAuthConsumer oauth;

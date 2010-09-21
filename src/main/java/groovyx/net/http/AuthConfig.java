@@ -110,15 +110,18 @@ public class AuthConfig {
 	}
 
 	/**
-	 * OAuth sign all requests.  Note that this currently does <strong>not</strong>
+	 * </p>OAuth sign all requests.  Note that this currently does <strong>not</strong>
 	 * wait for a <code>WWW-Authenticate</code> challenge before sending the 
-	 * the OAuth header.
+	 * the OAuth header.  All requests to all domains will be signed for this
+	 * instance.</p>
 	 * 
-	 * This assumes you've already generated an <code>accessToken</code> and 
+	 * <p>This assumes you've already generated an <code>accessToken</code> and 
 	 * <code>secretToken</code> for the site you're targeting.  For More information
-	 * on how to achieve this, see the <a href='#'>Signpost documentation</a>.
+	 * on how to achieve this, see the 
+	 * <a href='http://code.google.com/p/oauth-signpost/wiki/GettingStarted#Using_Signpost'>Signpost documentation</a>.</p>
 	 * @since 0.5.1
-	 * @param consumerKey
+	 * @param consumerKey <code>null</code> if you want to <strong>unset</strong>
+	 *  OAuth handling and stop signing requests.
 	 * @param consumerSecret
 	 * @param accessToken
 	 * @param secretToken
@@ -131,6 +134,11 @@ public class AuthConfig {
 				consumerKey, consumerSecret, accessToken, secretToken ) );
 	}
 	
+	/**
+	 * This class is used to sign all requests via an {@link HttpRequestInterceptor}
+	 * until the context-aware AuthScheme is released in HttpClient 4.1.
+	 * @since 0.5.1
+	 */
 	static class OAuthSigner implements HttpRequestInterceptor {
 		protected OAuthConsumer oauth;
 		public OAuthSigner( String consumerKey, String consumerSecret,
