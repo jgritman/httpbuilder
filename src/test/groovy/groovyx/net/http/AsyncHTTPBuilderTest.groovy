@@ -42,12 +42,12 @@ public class AsyncHTTPBuilderTest {
 			true
 		}
 
-		done << http.get(path:'/httpcomponents-client/httpclient/') { resp, html ->
+		done << http.get(path:'/httpcomponents-client-ga/') { resp, html ->
 			println ' response 2'
 			true
 		}
 
-		done << http.get(path:'/httpcomponents-core/') { resp, html ->
+		done << http.get(path:'/httpcomponents-core-dev/') { resp, html ->
 			println ' response 3'
 			true
 		}
