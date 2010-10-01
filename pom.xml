@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>http-builder</artifactId>
 	<groupId>org.codehaus.groovy.modules.http-builder</groupId>
-	<version>0.5.1-SNAPSHOT</version>
+	<version>0.5.1</version>
 	<name>HTTP client framework for Groovy</name>
 	<url>http://groovy.codehaus.org/modules/http-builder/</url>
 	<inceptionYear>2008</inceptionYear>
@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.0.1</version>
+			<version>4.0.3</version>
 		</dependency>
 		<dependency>
 			<!-- Only needed for JSON parsing -->
@@ -56,7 +56,7 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
-			<version>[1.5,1.7]</version>
+			<version>[1.5,1.7.99]</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.ant</groupId>
@@ -165,7 +165,7 @@
 			<plugin>
 				<groupId>org.codehaus.gmaven</groupId>
 				<artifactId>gmaven-plugin</artifactId>
-				<version>1.4-SNAPSHOT</version>
+				<version>1.3</version>
 				<executions>
 					<execution>
 						<id>build</id>
@@ -354,8 +354,8 @@
 					<linksource>true</linksource>
 					<links>
 						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
-						<link>http://hc.apache.org/httpcomponents-client/httpclient/apidocs/</link>
-						<link>http://hc.apache.org/httpcomponents-core/httpcore/apidocs/</link>
+						<link>http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/</link>
+						<link>http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/</link>
 						<link>http://groovy.codehaus.org/api/</link>
 						<link>http://json-lib.sourceforge.net/apidocs/jdk15</link>
 						<link>http://xml.apache.org/commons/components/apidocs/resolver</link>
