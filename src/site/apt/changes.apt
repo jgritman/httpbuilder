@@ -9,6 +9,18 @@ Change Log
 
    See the {{{./jira-report.html}JIRA Report}} for a comprehensive change list.
    
+* v0.5.1 - 30 Sept 2010
+
+  * OAuth support via Signpost
+  
+  * Access to the request context used in the response
+  
+  * Updated HttpClient dependency to 4.0.3
+  
+  * Fixed cookie expiry date parsing
+  
+  * Fixed parsing URL-encoded response
+   
 * v0.5.0 - 03 May 2010
 
   * RESTClient for more REST-ful request API.

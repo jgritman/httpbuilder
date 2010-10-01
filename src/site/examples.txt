@@ -151,6 +151,7 @@ import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.ContentType.URLENC
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
+// auth omitted...
 def postBody = [status:'update!',source:'httpbuilder'] // will be url-encoded
 
 http.post( path: 'update.xml', body: postBody, 
@@ -166,7 +167,7 @@ START SNIPPET: post2
 import groovyx.net.http.HTTPBuilder
 
 def http = new HTTPBuilder('http://twitter.com/statuses/')
-
+// auth omitted...
 http.request( POST ) { 
   uri.path = 'update.xml'
   body =  [ status : 'update!' , source : 'httpbuilder' ] 
@@ -184,7 +185,7 @@ import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.ContentType.URLENC
 
 def http = new HTTPBuilder('http://twitter.com/statuses/')
-
+// auth omitted...
 http.request( POST ) { 
   uri.path = 'update.xml'
   send URLENC, [ status : 'update!' , source : 'httpbuilder' ] 
@@ -197,7 +198,7 @@ END SNIPPET: post3
 START SNIPPET: xml1
 import groovyx.net.http.*
 @Grab(group='org.codehaus.groovy.modules.http-builder', 
-    module='http-builder', version='0.5.0' )
+    module='http-builder', version='0.5.1' )
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 
@@ -250,7 +251,7 @@ END SNIPPET: xml4
 START SNIPPET: json1
 import groovyx.net.http.*
 @Grab(group='org.codehaus.groovy.modules.http-builder', 
-    module='http-builder', version='0.5.0' )
+    module='http-builder', version='0.5.1' )
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 
@@ -301,8 +302,7 @@ import groovy.util.slurpersupport.GPathResult
 import static groovyx.net.http.ContentType.URLENC
 
 twitter = new RESTClient( 'https://twitter.com/statuses/' )
-twitter.auth.basic userName, passwd
-
+// twitter auth omitted
 
 try { // expect an exception from a 404 response:
     twitter.head path : 'public_timeline'
@@ -588,11 +588,54 @@ def result = http.get( uri:'http://www.google.com/asdfg' )
 assert result == 'Not Found'
 END SNIPPET: handler4
 
+START SNIPPET: auth1
+groovy:000> import oauth.signpost.basic.*
+===> [import oauth.signpost.*, import oauth.signpost.basic.*]
+groovy:000> consumer = new DefaultOAuthConsumer('<YOUR CONSUMER KEY HERE>', '<YOUR CONSUMER SECRET HERE>')
+===> oauth.signpost.basic.DefaultOAuthConsumer@67f6dc61
+groovy:000> provider = new DefaultOAuthProvider(
+groovy:001>                 "http://twitter.com/oauth/request_token",
+groovy:002>                 "http://twitter.com/oauth/access_token",
+groovy:003>                 "http://twitter.com/oauth/authorize");
+===> oauth.signpost.basic.DefaultOAuthProvider@1b2dd1b8
+groovy:000> provider.retrieveRequestToken(consumer, OAuth.OUT_OF_BAND);
+===> 'http://twitter.com/oauth/authorize?oauth_token=t66pPODPkOxnfEPZqziXp4xU7X4ByplHUFiFN5ylIA'
+groovy:000> // copy the above line, paste it in your browser; Twitter will ask you to authorize...
+groovy:000> provider.retrieveAccessToken(consumer, '<PIN NUMBER FROM BROWSER>')
+===> null
+groovy:000> println consumer.token
+<YOUR ACCESS TOKEN>
+===> null
+groovy:000> println consumer.tokenSecret
+<YOUR SECRET TOKEN>
+===> null
+END SNIPPET: auth1
+
+START SNIPPET: auth2
+def twitter = new RESTClient( 'https://twitter.com/statuses/' )
+twitter.auth.oauth consumerKey, consumerSecret, accessToken, secretToken
+
+assert twitter.get( path : 'public_timeline.json' ).status == 200
+
+// in HttpURLClient:
+def twitter = new HttpURLClient(url:'https://twitter.com/statuses/')
+
+http.setOAuth consumerKey, consumerSecret, accessToken, secretToken 
+assert twitter.request( path : 'public_timeline.json' ).status == 200
+END SNIPPET: auth2
+
+START SNIPPET: auth3
+def authSite = new HTTPBuilder( 'https://some-protected-site.com/' )
+authSite.auth.basic 'myUserName', 'myPassword'
+
+secrets = authSite.get( path:'secret-info.txt' )
+END SNIPPET: auth3
+
 START SNIPPET: download1
   <dependency>
     <groupId>org.codehaus.groovy.modules.http-builder</groupId>
     <artifactId>http-builder</artifactId>
-    <version>${project-version}</version>
+    <version>0.5.1</version>
   </dependency>
 END SNIPPET: download1
 
@@ -609,7 +652,7 @@ START SNIPPET: download2
 END SNIPPET: download2
 
 START SNIPPET: download3
-@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='${project-version}' )
+@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.5.1' )
 
 def http = new groovyx.net.http.HTTPBuilder('http://www.codehaus.org')
 // ....

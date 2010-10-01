@@ -57,5 +57,5 @@ Simplified GET Request
  of the request and response handling behavior.  Within the closure, there are a
  number of properties available via the {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}closure's delegate}}.  
  <<<req>>> is an instance of 
- <<<{{{http://hc.apache.org/httpcomponents-core/httpcore/apidocs/index.html?org/apache/http/HttpRequest.html}HttpRequest}}>>>
+ <<<{{{http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/index.html?org/apache/http/HttpRequest.html}HttpRequest}}>>>
  to directly access the Apache HttpClient API.  

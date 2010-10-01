@@ -30,6 +30,7 @@
 				<item name="RESTClient" href="doc/rest.html" />
 				<item name="AsyncHTTPBuilder" href="doc/async.html" />
 				<item name="HttpURLClient" href='doc/httpurlclient.html' />
+				<item name="Authentication" href="doc/auth.html" />
 				<item name="Content Types" href="doc/contentTypes.html" />
 				<item name="Response Handlers" href="doc/handlers.html" />
 				<item name="URIBuilder" href="doc/uribuilder.html" />

@@ -10,6 +10,28 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
   
+* 30 Sept 2010 - 0.5.1 with OAuth Support!
+
+  I've been meaning to implement this for a while now, especially since Twitter
+  made the switch, and I use the Twitter API for a lot of unit tests.  Now,
+  {{{http://oauth.net}OAuth}} is supported in HTTPBuilder 0.5.1 thanks to the 
+  {{{http://code.google.com/p/oauth-signpost/}Signpost framework}}.  The 
+  implementation isn't perfect due to 
+  {{{http://issues.apache.org/jira/browse/HTTPCLIENT-901}a limitation}} in 
+  HttpClient 4.0.  However, once HttpClient 4.1 is released, I expect to update 
+  the implementation which should be transparent to most users.
+  
+  I did my best to ensure this release is binary compatible with version 0.5.0.
+  While 0.5.1 has an <optional> dependency on Signpost, if you are not using 
+  OAuth to sign your requests, you should not need the Signpost JARs on your 
+  classpath.  No Signpost classes are loaded until you indicate that you want to 
+  OAuth sign your requests.
+  
+  Want to see the API changes?  
+  <<<{{{./apidocs/groovyx/net/http/AuthConfig.html#oauth(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String)}HTTPBuilder.auth.oauth()}}>>> 
+  and  
+  <<<{{{./apidocs/groovyx/net/http/HttpURLClient.html#setOAuth(java.lang.Object,%20java.lang.Object,%20java.lang.Object,%20java.lang.Object)}HttpURLClient.setOAuth()}}>>>.
+  
 * 3 May 2010 - 0.5.0 Released (finally!)
 
   I've pushed 0.5.0 out the door!  It's the same as RC3, so if you've been using

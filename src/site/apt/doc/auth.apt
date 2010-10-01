@@ -1,0 +1,68 @@
+                                    ------
+                                    Authentication
+                                    ------
+                                    ------
+                                    ------
+
+
+Authentication
+
+ HTTPBuilder supports a number of authentication mechanisms natively, to make 
+ working with protected sites as simple as possible.
+
+*Basic Authentication
+
+ Basic auth isn't terribly complicated in Apache HttpClient, but it's dead-simple 
+ in HTTPBuilder:
+
+%{code-snippet|id=auth3|brush=groovy|file=src/site/examples.txt}
+
+ When a request is made, the server will respond with a 401 status and a 
+ <<<WWW-Authenticate>>> header, indicating that authorization is required.  
+ HTTPBuilder will then re-request with the proper <<<Authorization>>> header
+ containing your credentials.  This is all transparent to the developer, as it 
+ simply appears that the first request completed successfully.  
+ 
+ See the {{{http://hc.apache.org/httpcomponents-client-ga/tutorial/html/authentication.html}HTTPClient authentication doc}} 
+ for more details.
+
+*OAuth Support
+
+ {{{http://oauth.net}OAuth}} is supported in HTTPBuilder since version 0.5.1.  
+ Support is provided by the {{{http://code.google.com/p/oauth-signpost/}Signpost framework}} 
+ in  HTTPBuilder, RESTClient and HttpURLClient.
+ 
+** Obtaining an Access Token Pair
+
+ The Signpost documentation contains {{{http://code.google.com/p/oauth-signpost/wiki/TwitterAndSignpost}an example}} 
+ of how to obtain access tokens out-of-band.  It's not completely 
+ straightforward, but it can be made significantly easier by using an 
+ interactive Groovy shell session.  This allows execution to pause while you 
+ switch to your browser to access the validation URL.  Below is an example:
+ 
+%{code-snippet|id=auth1|brush=groovy|file=src/site/examples.txt}
+
+ Your app will now be authorized to make requests on behalf of the user that was
+ logged in when you accessed the given URL in your browser.  Now that you have 
+ your consumer key, consumer secret, access token an access key, give all four 
+ values to HTTPBuilder like so:
+ 
+%{code-snippet|id=auth2|brush=groovy|file=src/site/examples.txt}
+ 
+**A final note about OAuth
+
+ Unlike basic auth and other schemes supported natively by HttpClient, OAuth
+ does <not> wait for a <<<WWW-Authenticate>>> challenge from the server before signing
+ a request, and OAuth cannot be configured for multiple domains in a single
+ HTTPBuilder client.  The means that once you call <<<http.auth.oauth()>>>,
+ request signing is effectively 'turned on' for every request you make with that
+ HTTPBuilder instance.  If you want to <stop> signing requests, call 
+ <<<http.auth.oauth(null,'','','')>>>.
+ 
+*Other Auth Mechanisms
+ 
+ HTTPBuilder and RESTClient also support 'Digest' and certificate authentication
+ out-of-the-box, which simply exposes the underlying features present in Apache 
+ HttpClient.  See the {{{../apidocs/groovyx/net/http/AuthConfig.html}AuthConfig javadoc}}
+ for a list of all authentication schemes supported.  Currently HttpURLClient 
+ only supports 'Basic' and 'OAuth' authentication.

@@ -9,7 +9,7 @@ HTTPBuilder {Overview}
 	HTTPBuilder is the easiest way to manipulate HTTP-based resources from the JVM.
 
   In a nutshell, HTTPBuilder is a wrapper for Apache's 
-  {{{http://hc.apache.org/httpcomponents-client/}HttpClient}}, with some (actually, 
+  {{{http://hc.apache.org/httpcomponents-client-ga/}HttpClient}}, with some (actually, 
   a lot of) Groovy syntactical sugar thrown on top.  The request/response model is 
   also inspired by Prototype.js' 
   {{{http://prototypejs.org/api/ajax/request}Ajax.Request}}.  
@@ -36,7 +36,7 @@ HTTPBuilder {Overview}
   
   * Built-in support for GZIP and Deflate content-encoding
   
-  * Built-in support for HTTP Basic, Digest, and SSL certificate authentication
+  * Built-in support for most {{{./doc/auth.html}common authentication schemes}}
   
   * Status code based {{{./doc/handlers.html}response handling}}
   

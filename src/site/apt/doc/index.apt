@@ -38,7 +38,7 @@ Introduction
   class. 
   
   The <<<req>>> parameter passed to the closure is an 
-  {{{http://hc.apache.org/httpcomponents-core/httpcore/apidocs/org/apache/http/message/BasicHttpRequest.html}HttpRequest}}
+  {{{http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/org/apache/http/message/BasicHttpRequest.html}HttpRequest}}
   instance, which can be used to configure additional aspects of the request 
   for which HTTPBuilder does not provide a wrapper. 
   
