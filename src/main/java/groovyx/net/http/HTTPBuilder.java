@@ -181,15 +181,28 @@ public class HTTPBuilder {
 	protected EncoderRegistry encoders = new EncoderRegistry();
 	protected ParserRegistry parsers = new ParserRegistry();
 	
+	/**
+	 * Creates a new instance with a <code>null</code> default URI.
+	 */
 	public HTTPBuilder() { 
 		super();
 		HttpParams defaultParams = new BasicHttpParams();
 		defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
 		        Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", 
 		        		"EEE, dd MMM yyyy HH:mm:ss z") );
-		this.client = new DefaultHttpClient(defaultParams);
+		this.client = this.createClient(defaultParams);
 		this.setContentEncoding( ContentEncoding.Type.GZIP, 
 				ContentEncoding.Type.DEFLATE );
+	}
+	
+	/**
+	 * Override this method in a subclass to customize creation of the 
+	 * HttpClient instance.
+	 * @param params
+	 * @return
+	 */
+	protected AbstractHttpClient createClient( HttpParams params ) {
+		return new DefaultHttpClient(params);
 	}
 	
 	/**
