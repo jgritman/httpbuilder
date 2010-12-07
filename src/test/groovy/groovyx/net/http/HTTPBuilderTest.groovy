@@ -153,7 +153,7 @@ class HTTPBuilderTest {
 	 */
 
 	@Test public void testPOSTwithXML() {
-		def http = new HTTPBuilder('http://twitter.com/statuses/')
+		def http = new HTTPBuilder('http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -191,7 +191,7 @@ class HTTPBuilderTest {
 	}
 	
 	@Test public void testPlainURLEnc() {
-		def http = new HTTPBuilder('http://twitter.com/statuses/')
+		def http = new HTTPBuilder('http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -213,7 +213,7 @@ class HTTPBuilderTest {
 	
 //	@Test 
 	public void testHeadMethod() {
-		def http = new HTTPBuilder('http://twitter.com/statuses/')
+		def http = new HTTPBuilder('http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken

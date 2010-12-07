@@ -122,7 +122,7 @@ class HttpURLClientTest {
 	 */
 
 	@Test public void testPOSTwithXML() {
-		def http = new HttpURLClient(url:'http://twitter.com/statuses/')
+		def http = new HttpURLClient(url:'http://api.twitter.com/1/statuses/')
 
 		http.setOAuth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -155,9 +155,9 @@ class HttpURLClientTest {
 	
 //	@Test
 	public void testHeadMethod() {
-		def http = new HttpURLClient(url:'http://twitter.com/statuses/')
+		def http = new HttpURLClient(url:'http://api.twitter.com/1/statuses/')
 		
-		assert http.url.toString() == "http://twitter.com/statuses/"
+		assert http.url.toString() == "http://api.twitter.com/1/statuses/"
 		
 		http.setOAuth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -174,7 +174,7 @@ class HttpURLClientTest {
 		parsers.'application/xml' = { done = true }
 		
 		def http = new HttpURLClient(
-				url:'http://twitter.com/statuses/',
+				url:'http://api.twitter.com/1/statuses/',
 				parsers : parsers )
 		
 		http.setOAuth twitter.consumerKey, twitter.consumerSecret,

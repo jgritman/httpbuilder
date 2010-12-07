@@ -16,7 +16,7 @@ public class RESTClientTest {
 	def userID = System.getProperty('twitter.user')
 	
 	@Before public void setUp() {
-		twitter = new RESTClient( 'https://twitter.com/statuses/' )
+		twitter = new RESTClient( 'https://api.twitter.com/1/statuses/' )
 		twitter.auth.oauth System.getProperty('twitter.oauth.consumerKey'), 
 				System.getProperty('twitter.oauth.consumerSecret'),
 				System.getProperty('twitter.oauth.accessToken'),
@@ -39,7 +39,7 @@ public class RESTClientTest {
 			assert false : 'Expected exception'
 		}
 		// test the exception class:
-		catch( ex ) { assert ex.response.status == 406 }
+		catch( ex ) { assert ex.response.status == 401 }
 		
 		assert twitter.head( path : 'public_timeline.json' ).status == 200
 	}
@@ -132,7 +132,8 @@ public class RESTClientTest {
 	@Test public void testDefaultHandlers() {
 		twitter.contentType = 'text/plain'
 		twitter.headers = [Accept:'text/xml']
-		def resp = twitter.get( path : 'user_timeline/httpbuilder.xml' )
+		def resp = twitter.get( path : 'user_timeline.xml', 
+			query : [screen_name :'httpbuilder',count:2] )
 		def text = resp.data.text
 		assert text.endsWith( "</statuses>\n" )
 		
@@ -141,7 +142,7 @@ public class RESTClientTest {
 			assert false : "exception should be thrown"
 		}
 		catch ( HttpResponseException ex ) {
-			assert ex.response.status == 403
+			assert ex.response.status == 404
 			text = ex.response.data.text
 //			println text
 			assert text.endsWith('</hash>\n')
