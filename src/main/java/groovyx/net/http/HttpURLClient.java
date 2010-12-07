@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2008 the original author or authors.
+ * Copyright 2008-2011 Thomas Nichols.  http://blog.thomnichols.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  *
  * You are receiving this code free of charge, which represents many hours of
  * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are asked (but not required) to donate any 
+ * of the community, you are encouraged (but not required) to donate any 
  * enhancements or improvements back to the community under a similar open 
  * source license.  Thank you. -TMN
  */
+
 package groovyx.net.http;
 
 import java.io.ByteArrayInputStream;
