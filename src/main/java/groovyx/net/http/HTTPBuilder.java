@@ -215,7 +215,7 @@ public class HTTPBuilder {
 	 */
 	public HTTPBuilder( Object defaultURI ) throws URISyntaxException {
 		this();
-		this.defaultURI = new URIBuilder( convertToURI( defaultURI ) );
+		this.setUri( defaultURI );
 	}
 	
 	/**
@@ -231,7 +231,7 @@ public class HTTPBuilder {
 	 */
 	public HTTPBuilder( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
 		this();
-		this.defaultURI = new URIBuilder( convertToURI( defaultURI ) );
+		this.setUri( defaultURI );
 		this.defaultContentType = defaultContentType; 
 	}
 	
@@ -760,7 +760,7 @@ public class HTTPBuilder {
 	 * @throws URISyntaxException if the uri argument does not represent a valid URI
 	 */
 	public void setUri( Object uri ) throws URISyntaxException {
-		this.defaultURI = new URIBuilder( convertToURI( uri ) );
+		this.defaultURI = uri != null ? new URIBuilder( convertToURI( uri ) ) : null;
 	}
 	
 	/**
