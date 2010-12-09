@@ -19,7 +19,7 @@ class GAETest {
 	def http = null
 	
 	@Test public void testURLFetchService() {
- 		http = new GAEHTTPBuilder()
+ 		http = newBuilder()
 		http.uri = 'http://ajax.googleapis.com/ajax/services/search/web'
 		http.request(GET) {
 			uri.query = [ v:'1.0', q: 'HTTPBuilder' ]
@@ -44,7 +44,7 @@ class GAETest {
 	 * This method will parse the content based on the response content-type
 	 */
 	@Test public void testGET() {
-		def http = new GAEHTTPBuilder('http://www.google.com')
+		def http = newBuilder('http://www.google.com')
 		http.get( path:'/search', query:[q:'Groovy'], 
 				headers:['User-Agent':"Firefox"] ) { resp, html ->
 			println "response status: ${resp.statusLine}"
@@ -59,7 +59,7 @@ class GAETest {
 	}
 	
 	@Test public void testDefaultSuccessHandler() {
-		def http = new GAEHTTPBuilder('http://www.google.com')
+		def http = newBuilder('http://www.google.com')
 		def html = http.request( GET ) {
 			headers = ['User-Agent':"Firefox"] 
 			uri.path = '/search'
@@ -77,7 +77,7 @@ class GAETest {
 	}
 	
 	@Test public void testSetHeaders() {
-		def http = new GAEHTTPBuilder('http://www.google.com')
+		def http = newBuilder('http://www.google.com')
 		def val = '1'
 		def v2 = 'two'
 		def h3 = 'three'
@@ -112,7 +112,7 @@ class GAETest {
 	 * TEXT or BINARY.
 	 */
 	@Test public void testReaderWithDefaultResponseHandler() {
-		def http = new GAEHTTPBuilder('http://validator.w3.org/about.html')
+		def http = newBuilder('http://validator.w3.org/about.html')
 		
 		def reader = http.get( contentType:TEXT )
 		
@@ -125,7 +125,7 @@ class GAETest {
 	}
 	
 	@Test public void testDefaultFailureHandler() {
-		def http = new GAEHTTPBuilder('http://www.google.com')
+		def http = newBuilder('http://www.google.com')
 
 		try {
 			http.get( path:'/adsasf/kjsslkd' ) {
@@ -145,7 +145,7 @@ class GAETest {
 	 * based on the given content-type, i.e. TEXT (text/plain).  
 	 */
 	@Test public void testReader() {
-		def http = new GAEHTTPBuilder('http://w3c.org')
+		def http = newBuilder('http://w3c.org')
 		http.get( uri:'http://validator.w3.org/about.html', 
 				  contentType: TEXT, headers: [Accept:'*/*'] ) { resp, reader ->
 			println "response status: ${resp.statusLine}"
@@ -171,7 +171,7 @@ class GAETest {
 	 */
 
 	@Test public void testPOSTwithXML() {
-		def http = new GAEHTTPBuilder('http://api.twitter.com/1/statuses/')
+		def http = newBuilder('http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -209,7 +209,7 @@ class GAETest {
 	}
 	
 	@Test public void testPlainURLEnc() {
-		def http = new GAEHTTPBuilder('http://api.twitter.com/1/statuses/')
+		def http = newBuilder('http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -231,7 +231,7 @@ class GAETest {
 	
 //	@Test 
 	public void testHeadMethod() {
-		def http = new GAEHTTPBuilder('http://api.twitter.com/1/statuses/')
+		def http = newBuilder('http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
 				twitter.accessToken, twitter.secretToken
@@ -248,7 +248,7 @@ class GAETest {
 	}
 	
 	@Test public void testRequestAndDefaultResponseHandlers() {
-		def http = new GAEHTTPBuilder()
+		def http = newBuilder()
 
 //		 default response handlers.
 		http.handler.'401' = { resp ->
@@ -276,7 +276,7 @@ class GAETest {
 	 * Test a response handler that is assigned within a request config closure:
 	 */
 	@Test public void test404() {
-		new GAEHTTPBuilder().request('http://www.google.com',GET,TEXT) {
+		newBuilder().request('http://www.google.com',GET,TEXT) {
 			uri.path = '/asdfg/asasdfs' // should produce 404
 			response.'404' = {
 				println 'got expected 404!'
@@ -292,7 +292,7 @@ class GAETest {
 	 */
 	@Test public void testJSON() {
 		
-		def builder = new GAEHTTPBuilder()
+		def builder = newBuilder()
 		
 //		builder.parser.'text/javascript' = builder.parsers."$JSON"
 		
@@ -315,7 +315,7 @@ class GAETest {
 	}
 	
 	@Test public void testAuth() {
-		def http = new GAEHTTPBuilder( 'http://test.webdav.org' )
+		def http = newBuilder( 'http://test.webdav.org' )
 		
 		/* The path issues a 404, but it does an auth challenge first. */
 		http.handler.'404' = { println 'Auth successful' }
@@ -340,20 +340,19 @@ class GAETest {
 	}
 	
 	@Test public void testCatalog() {
-		def http = new GAEHTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
+		def http = newBuilder( 'http://weather.yahooapis.com/forecastrss' )
 		
 		http.parser.addCatalog getClass().getResource( '/rss-catalog.xml')
 		def xml = http.get( query : [p:'02110',u:'f'] )
 		
 		
 	}
-}
-
-class GAEHTTPBuilder extends groovyx.net.http.HTTPBuilder {
-	public GAEHTTPBuilder() { super() }
-	public GAEHTTPBuilder( String uri ) { super(uri) }
-	@Override protected AbstractHttpClient getClient(HttpParams params) {
-		return new DefaultHttpClient( new GAEConnectionManager(), params)
+	
+	def newBuilder( uri ) {
+		return new groovyx.net.http.HTTPBuilder(uri) {
+			@Override protected AbstractHttpClient getClient(HttpParams params) {
+				return new DefaultHttpClient( new GAEConnectionManager(), params)
+			}
+		}
 	}
 }
-
