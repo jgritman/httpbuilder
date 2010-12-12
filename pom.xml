@@ -332,6 +332,13 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-http</artifactId>
+				<version>1.0-beta-7</version>
+			</extension>
+		</extensions>
 	</build>
 
 	<reporting>
@@ -410,17 +417,17 @@
 		<repository>
 			<id>Groovy-Contrib</id>
 			<name>Codehaus Groovy Repo</name>
-			<url>dav:https://dav.codehaus.org/repository/gmod</url>
+			<url>https://dav.codehaus.org/repository/gmod</url>
 		</repository>
 		<snapshotRepository>
 			<id>Groovy-Contrib</id>
 			<name>Codehaus Groovy Snapshots Repo</name>
-			<url>dav:https://dav.codehaus.org/snapshots.repository/gmod</url>
+			<url>https://dav.codehaus.org/snapshots.repository/gmod</url>
 		</snapshotRepository>
 		<site>
 			<id>Groovy-Contrib</id>
 			<name>Codehaus Groovy WebDAV</name>
-			<url>dav:https://dav.codehaus.org/groovy/modules/http-builder</url>
+			<url>https://dav.codehaus.org/groovy/modules/http-builder</url>
 		</site>
 	</distributionManagement>
 
