@@ -105,6 +105,20 @@ public class URIBuilder implements Cloneable {
 		return this;
 	}
 	
+	/**
+	 * Get the scheme for this URI.  See {@link URI#getScheme()}
+	 * @return the scheme portion of the URI
+	 */
+	public String getScheme() {
+		return this.base.getScheme();
+	}
+	
+	/**
+	 * Set the port for this URI, or <code>-1</code> to unset the port.
+	 * @param port
+	 * @return this URIBuilder instance
+	 * @throws URISyntaxException
+	 */
 	public URIBuilder setPort( int port ) throws URISyntaxException {
 		this.base = new URI( base.getScheme(), base.getUserInfo(), 
 				base.getHost(), port, base.getPath(),
@@ -112,11 +126,33 @@ public class URIBuilder implements Cloneable {
 		return this;
 	}
 	
+	/**
+	 * See {@link URI#getPort()}
+	 * @return the port portion of this URI (-1 if a port is not specified.)
+	 */
+	public int getPort() {
+		return this.base.getPort();
+	}
+	
+	/**
+	 * Set the host portion of this URI.
+	 * @param host
+	 * @return this URIBuilder instance
+	 * @throws URISyntaxException if the host parameter contains illegal characters.
+	 */
 	public URIBuilder setHost( String host ) throws URISyntaxException {
 		this.base = new URI( base.getScheme(), base.getUserInfo(), 
 				host, base.getPort(), base.getPath(),
 				base.getQuery(), base.getFragment() );
 		return this;
+	}
+	
+	/**
+	 * See {@link URI#getHost()}
+	 * @return the host portion of the URI
+	 */
+	public String getHost() {
+		return base.getHost();
 	}
 	
 	/**
@@ -146,6 +182,18 @@ public class URIBuilder implements Cloneable {
 //				base.getHost(), base.getPort(), path,
 //				base.getQuery(), base.getFragment() );
 		return this;
+	}
+	
+	/**
+	 * Note that this property is <strong>not</strong> necessarily reflexive 
+	 * with the {@link #setPath(String)} method!  <code>URIBuilder.setPath()</code>
+	 * will resolve a relative path, whereas this method will always return the
+	 * full, absolute path.
+	 * See {@link URI#getPath()}
+	 * @return the full path portion of the URI.
+	 */
+	public String getPath() {
+		return this.base.getPath();
 	}
 	
 	/* TODO null/ zero-size check if this is ever made public */
@@ -348,7 +396,8 @@ public class URIBuilder implements Cloneable {
 	}
 	
 	/**
-	 * The document fragment, without a preceeding '#'
+	 * The document fragment, without a preceeding '#'.  Use <code>null</code>
+	 * to use no document fragment.
 	 * @param fragment
 	 * @return this URIBuilder instance, for method chaining.
 	 * @throws URISyntaxException if the given value contains illegal characters. 
@@ -358,6 +407,38 @@ public class URIBuilder implements Cloneable {
 				base.getHost(), base.getPort(), base.getPath(),
 				base.getQuery(), fragment );
 		return this;
+	}
+	
+	/**
+	 * See {@link URI#getFragment()}
+	 * @return the URI document fragment
+	 */
+	public String getFragment() {
+		return this.base.getFragment();
+	}
+	
+	/**
+	 * Set the userInfo portion of the URI, or <code>null</code> if the URI
+	 * should have no user information.
+	 * @param userInfo
+	 * @return this URIBuilder instance
+	 * @throws URISyntaxException if the given value contains illegal characters. 
+	 */
+	public URIBuilder setUserInfo( String userInfo ) throws URISyntaxException {
+		this.base = new URI( base.getScheme(), userInfo, 
+				base.getHost(), base.getPort(), base.getPath(),
+				base.getQuery(), base.getFragment() );
+		
+		return this;
+	}
+	
+	/**
+	 * See {@link URI#getUserInfo()}
+	 * @return the user info portion of the URI, or <code>null</code> if it 
+	 * is not specified.
+	 */
+	public String getUserInfo() {
+		return this.base.getUserInfo();
 	}
 	
 	/**

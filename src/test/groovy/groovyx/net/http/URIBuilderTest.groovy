@@ -182,4 +182,24 @@ public class URIBuilderTest {
 		uri.query = ['a&b':'c+d=e']
 		assert "http://localhost:8080?a%26b=c%2Bd%3De#test" == uri.toString() 
 	}
+	
+	@Test public void testProperties() {
+		// getQuery is already covered;
+		def uri = new URIBuilder('http://localhost/')
+		uri.setScheme( 'https' )
+			.setUserInfo( 'bill' )
+			.setHost( 'www.google.com' )
+			.setPort( 88 )
+			.setPath( 'test' )
+			.setFragment( 'blah' )
+			
+		assert uri.toString() == 'https://bill@www.google.com:88/test#blah'
+		
+		assert uri.scheme == 'https'
+		assert uri.userInfo == 'bill'
+		assert uri.host == 'www.google.com'
+		assert uri.port == 88
+		assert uri.path == '/test'
+		assert uri.fragment == 'blah'
+	}
 }
