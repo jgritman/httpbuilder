@@ -25,10 +25,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.print.URIException;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -92,6 +95,17 @@ public class URIBuilder implements Cloneable {
 		return new URI( uri.toString() ); // assume any other object type produces a valid URI string
 	}
 	
+	protected URI update( String scheme, String userInfo, String host, int port, 
+			String path, String query, String fragment ) throws URISyntaxException {
+		URI u = new URI( scheme, userInfo, host, port, base.getPath(), null, null );
+		
+		StringBuilder sb = new StringBuilder();
+		if ( path != null ) sb.append( path );
+		if ( query != null ) 
+		sb.append( '?' ).append( query ); 
+		if ( fragment != null ) sb.append( '#' ).append( fragment );
+		return u.resolve( sb.toString() );
+	}
 	
 	/**
 	 * Set the URI scheme, AKA the 'protocol.'  e.g. 
@@ -99,9 +113,9 @@ public class URIBuilder implements Cloneable {
 	 * @throws URISyntaxException if the given scheme contains illegal characters. 
 	 */
 	public URIBuilder setScheme( String scheme ) throws URISyntaxException {
-		this.base = new URI( scheme, base.getUserInfo(), 
-				base.getHost(), base.getPort(), base.getPath(),
-				base.getQuery(), base.getFragment() );
+		this.base = update( scheme, base.getUserInfo(), 
+				base.getHost(), base.getPort(), 
+				base.getRawPath(), base.getRawQuery(), base.getRawFragment() );
 		return this;
 	}
 	
@@ -120,9 +134,9 @@ public class URIBuilder implements Cloneable {
 	 * @throws URISyntaxException
 	 */
 	public URIBuilder setPort( int port ) throws URISyntaxException {
-		this.base = new URI( base.getScheme(), base.getUserInfo(), 
-				base.getHost(), port, base.getPath(),
-				base.getQuery(), base.getFragment() );
+		this.base = update( base.getScheme(), base.getUserInfo(), 
+				base.getHost(), port, base.getRawPath(),
+				base.getRawQuery(), base.getRawFragment() );
 		return this;
 	}
 	
@@ -141,9 +155,9 @@ public class URIBuilder implements Cloneable {
 	 * @throws URISyntaxException if the host parameter contains illegal characters.
 	 */
 	public URIBuilder setHost( String host ) throws URISyntaxException {
-		this.base = new URI( base.getScheme(), base.getUserInfo(), 
-				host, base.getPort(), base.getPath(),
-				base.getQuery(), base.getFragment() );
+		this.base = update( base.getScheme(), base.getUserInfo(), 
+				host, base.getPort(), base.getRawPath(),
+				base.getRawQuery(), base.getRawFragment() );
 		return this;
 	}
 	
@@ -176,11 +190,10 @@ public class URIBuilder implements Cloneable {
 	 *   cannot be converted to a valid URI
 	 */
 	public URIBuilder setPath( String path ) throws URISyntaxException {
-		this.base = base.resolve( new URI(null,null, path, base.getQuery(), base.getFragment()) );
-//		path = base.resolve( path ).getPath();
-//		this.base = new URI( base.getScheme(), base.getUserInfo(), 
-//				base.getHost(), base.getPort(), path,
-//				base.getQuery(), base.getFragment() );
+		this.base = update( base.getScheme(), base.getUserInfo(), 
+				base.getHost(), base.getPort(), 
+				new URI( null, null, path, null, null ).getRawPath(),
+				base.getRawQuery(), base.getRawFragment() );
 		return this;
 	}
 	
@@ -264,6 +277,7 @@ public class URIBuilder implements Cloneable {
 	public Map<String,Object> getQuery() {
 		Map<String,Object> params = new HashMap<String,Object>();		
 		List<NameValuePair> pairs = this.getQueryNVP();
+		if ( pairs == null ) return null;
 		
 		for ( NameValuePair pair : pairs ) {
 			
@@ -287,6 +301,7 @@ public class URIBuilder implements Cloneable {
 	}
 	
 	protected List<NameValuePair> getQueryNVP() {
+		if ( this.base.getQuery() == null ) return null;
 		List<NameValuePair> nvps = URLEncodedUtils.parse( this.base, ENC );
 		List<NameValuePair> newList = new ArrayList<NameValuePair>();
 		if ( nvps != null ) newList.addAll( nvps );
@@ -327,6 +342,7 @@ public class URIBuilder implements Cloneable {
 	
 	protected URIBuilder addQueryParam( NameValuePair nvp ) throws URISyntaxException {
 		List<NameValuePair> params = getQueryNVP();
+		if ( params == null ) params = new ArrayList<NameValuePair>();
 		params.add( nvp );
 		this.setQueryNVP( params );
 		return this;
@@ -348,15 +364,14 @@ public class URIBuilder implements Cloneable {
 	 * @see #setQuery(Map) 
 	 */
 	public URIBuilder addQueryParam( String param, Object value ) throws URISyntaxException {
-		List<NameValuePair> params = getQueryNVP();
-		params.add( new BasicNameValuePair( param, 
+		this.addQueryParam( new BasicNameValuePair( param, 
 				( value != null ) ? value.toString() : "" ) );
-		this.setQueryNVP( params );
 		return this;
 	}
 	
 	protected URIBuilder addQueryParams( List<NameValuePair> nvp ) throws URISyntaxException {
 		List<NameValuePair> params = getQueryNVP();
+		if ( params == null ) params = new ArrayList<NameValuePair>();
 		params.addAll( nvp );
 		this.setQueryNVP( params );
 		return this;
@@ -403,9 +418,9 @@ public class URIBuilder implements Cloneable {
 	 * @throws URISyntaxException if the given value contains illegal characters. 
 	 */
 	public URIBuilder setFragment( String fragment ) throws URISyntaxException {
-		this.base = new URI( base.getScheme(), base.getUserInfo(), 
-				base.getHost(), base.getPort(), base.getPath(),
-				base.getQuery(), fragment );
+		this.base = update( base.getScheme(), base.getUserInfo(), 
+				base.getHost(), base.getPort(), base.getRawPath(),
+				base.getRawQuery(), new URI( null, null, null, fragment ).getRawFragment() );
 		return this;
 	}
 	
@@ -425,9 +440,9 @@ public class URIBuilder implements Cloneable {
 	 * @throws URISyntaxException if the given value contains illegal characters. 
 	 */
 	public URIBuilder setUserInfo( String userInfo ) throws URISyntaxException {
-		this.base = new URI( base.getScheme(), userInfo, 
-				base.getHost(), base.getPort(), base.getPath(),
-				base.getQuery(), base.getFragment() );
+		this.base = update( base.getScheme(), userInfo, 
+				base.getHost(), base.getPort(), base.getRawPath(),
+				base.getRawQuery(), base.getRawFragment() );
 		
 		return this;
 	}

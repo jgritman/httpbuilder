@@ -84,6 +84,9 @@ public class URIBuilderTest {
 		uri.path = "/p1 p2"
 		assert uri.toString() == 'http://localhost/p1%20p2'
 		
+		uri.fragment = 'fr#ag'
+		assert uri.toString() == 'http://localhost/p1%20p2#fr%23ag'
+		
 		uri = new URIBuilder( 'http://localhost/p1?one=1#frag' )
 		uri.path = "/p1 p2 p3"
 		assert uri.toString() == 'http://localhost/p1%20p2%20p3?one=1#frag'
@@ -99,11 +102,12 @@ public class URIBuilderTest {
 		
 		uri.fragment = 'what evs'
 		assert uri.toString() == 'http://codehaus.org/%22bla%22#what%20evs'
-		uri.query = [ a: 'b' ]
-		assert uri.toString() == 'http://codehaus.org/%22bla%22?a=b#what%20evs'
+		uri.query = [ a: 'b#' ]
+		assert uri.toString() == 'http://codehaus.org/%22bla%22?a=b%23#what%20evs'
 		uri.port = 80
 		uri.host = 'google.com'
-		uri.scheme = 'http'
+		uri.scheme = 'https'
+		assert uri.toString() == 'https://google.com:80/%22bla%22?a=b%23#what%20evs'
 	}
 	
 	@Test public void testParams() {
@@ -154,20 +158,26 @@ public class URIBuilderTest {
 	}
 
 	@Test public void testMostEverythingElse() {
-		def url = 'http://www.google.com:80/one/two?a=1#frag'		
+		def url = 'http://localhost:80/one/two?a=%261#frag'		
 		def uri = new URIBuilder( url )
 		
-		uri.scheme = "https"
-		assert uri.toString() == 'https://www.google.com:80/one/two?a=1#frag'
-				
-		uri.host = "localhost"
-		assert uri.toString() == 'https://localhost:80/one/two?a=1#frag'
+		uri.fragment = 'asdf#2'
+		assert uri.toString() == 'http://localhost:80/one/two?a=%261#asdf%232'
 		
+		uri.path = '/one two'
+		assert uri.toString() == 'http://localhost:80/one%20two?a=%261#asdf%232'
+		
+		uri.scheme = "https"
+		assert uri.toString() == 'https://localhost:80/one%20two?a=%261#asdf%232'
+				
 		uri.port = 8080
-		assert uri.toString() == 'https://localhost:8080/one/two?a=1#frag'
+		assert uri.toString() == 'https://localhost:8080/one%20two?a=%261#asdf%232'
 
-		uri.fragment = 'asdf2'
-		assert uri.toString() == 'https://localhost:8080/one/two?a=1#asdf2'
+		uri.host = 'google.com'
+		assert uri.toString() == 'https://google.com:8080/one%20two?a=%261#asdf%232'
+		
+		uri.userInfo = 'billy'
+		assert uri.toString() == 'https://billy@google.com:8080/one%20two?a=%261#asdf%232'
 	}
 	
 	@Test public void testParamEncoding(){
@@ -176,11 +186,26 @@ public class URIBuilderTest {
 		uri.query = [q:'a:b',z:'y&z']
 		assert 'http://localhost:8080?q=a%3Ab&z=y%26z#test' == uri.toString()
 		
-		uri.query = [q:"war & peace"]
-		assert "http://localhost:8080?q=war+%26+peace#test" == uri.toString()
-						
+		uri.scheme = 'ftp'
+		assert 'ftp://localhost:8080?q=a%3Ab&z=y%26z#test' == uri.toString()
+		
+		uri.path = '/one'
+		assert 'ftp://localhost:8080/one?q=a%3Ab&z=y%26z#test' == uri.toString()
+
 		uri.query = ['a&b':'c+d=e']
-		assert "http://localhost:8080?a%26b=c%2Bd%3De#test" == uri.toString() 
+		assert "ftp://localhost:8080/one?a%26b=c%2Bd%3De#test" == uri.toString() 
+
+		uri.query = [q:"war & peace"]
+		assert "ftp://localhost:8080/one?q=war+%26+peace#test" == uri.toString()
+
+		uri.host = 'google.com'
+		assert "ftp://google.com:8080/one?q=war+%26+peace#test" == uri.toString()
+
+		uri.port = 29
+		assert "ftp://google.com:29/one?q=war+%26+peace#test" == uri.toString()
+		
+		uri.fragment = "hi"
+		assert "ftp://google.com:29/one?q=war+%26+peace#hi" == uri.toString()
 	}
 	
 	@Test public void testProperties() {
