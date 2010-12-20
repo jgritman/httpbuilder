@@ -58,12 +58,13 @@ public enum ContentType {
 	JSON("application/json","application/javascript","text/javascript"),
 	/** 
 	 * <ul>
-	 *  <li><code>application/json</code></li>
-	 *  <li><code>application/javascript</code></li>
-	 *  <li><code>text/javascript</code></li>
+	 *  <li><code>application/xml</code></li>
+	 *  <li><code>text/xml</code></li>
+	 *  <li><code>application/xhtml+xml</code></li>
+	 *  <li><code>application/atom+xml</code></li>
 	 * </ul>
 	 */
-	XML("application/xml","text/xml","application/xhtml+xml"),
+	XML("application/xml","text/xml","application/xhtml+xml","application/atom+xml"),
 	/** <code>text/html</code> */
 	HTML("text/html"),
 	/** <code>application/x-www-form-urlencoded</code> */
