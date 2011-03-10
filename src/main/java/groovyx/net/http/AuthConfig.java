@@ -28,19 +28,21 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.commonshttp.HttpRequestAdapter;
 import oauth.signpost.exception.OAuthException;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.protocol.ExecutionContext;
@@ -152,23 +154,66 @@ public class AuthConfig {
 			 * Best we can do until AuthScheme supports HttpContext.  See:
 			 * https://issues.apache.org/jira/browse/HTTPCLIENT-901 */
 			try {
-				HttpUriRequest uriRequest = (HttpUriRequest)request;
 				HttpHost host = (HttpHost) ctx.getAttribute( ExecutionContext.HTTP_TARGET_HOST );
+				final URI requestURI = new URI( host.toURI() ).resolve( request.getRequestLine().getUri() );
 				
-				final URI requestURI = new URI( host.toURI() ).resolve(uriRequest.getURI()); 
-				HttpRequestAdapter oAuthRequest = new HttpRequestAdapter( uriRequest ) {
-					/* @Override */ 
-					public String getRequestUrl() { return requestURI.toString(); }
-				};
+				oauth.signpost.http.HttpRequest oAuthRequest = 
+					new OAuthRequestAdapter(request, requestURI);
 				this.oauth.sign( oAuthRequest );
 			}
-			catch ( ClassCastException ex ) {
-				throw new HttpException( "Request must be an instance of HttpUriRequest", ex);
-			} catch ( URISyntaxException ex ) {
+			catch ( URISyntaxException ex ) {
 				throw new HttpException( "Error rebuilding request URI", ex );
-			} catch (OAuthException e) {
+			}
+			catch (OAuthException e) {
 				throw new HttpException( "OAuth signing error", e);
 			}
 		}
+		
+		static class OAuthRequestAdapter implements oauth.signpost.http.HttpRequest {
+			
+			final HttpRequest request;
+			final URI requestURI;
+			OAuthRequestAdapter( HttpRequest request, URI requestURI ) {
+				this.request = request;
+				this.requestURI = requestURI;
+			}
+			
+			public String getRequestUrl() { return requestURI.toString(); }
+			public void setRequestUrl(String url) {/*ignore*/}
+			public Map<String, String> getAllHeaders() {
+				Map<String,String> headers = new HashMap<String,String>();
+				// FIXME this doesn't account for repeated headers,
+				// which are allowed by the HTTP spec!!
+				for ( Header h : request.getAllHeaders() )
+					headers.put(h.getName(), h.getValue()); 
+				return headers;
+			}
+			public String getContentType() {
+				try {
+					return request.getFirstHeader("content-type").getValue();
+				}
+				catch ( Exception ex ) { // NPE or ArrayOOBEx
+					return null;
+				}
+			}
+			public String getHeader(String name) {
+				Header h = request.getFirstHeader(name);
+				return h != null ? h.getValue() : null;
+			}
+			public InputStream getMessagePayload() throws IOException {
+				if ( request instanceof HttpEntityEnclosingRequest )
+					return ((HttpEntityEnclosingRequest)request).getEntity().getContent();
+				return null;
+			}
+			public String getMethod() {
+				return request.getRequestLine().getMethod();
+			}
+			public void setHeader(String key, String val) {
+				request.setHeader(key, val);
+			}
+			public Object unwrap() {
+				return request;
+			}
+		};
 	}
 }
