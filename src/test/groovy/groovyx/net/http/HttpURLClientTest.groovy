@@ -215,5 +215,18 @@ class HttpURLClientTest {
 		json.responseData.results.each { 
 			println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
 		}
-	}	
+	}
+	
+	@Test public void testUnknownNamedParam() {
+		def http = new HttpURLClient()
+		
+		try {
+			def resp = http.request( url:'http://ajax.googleapis.com',
+					method:GET, contentType:JSON ,
+				Path : '/ajax/services/search/web',
+				query : [ v:'1.0', q: 'Calvin and Hobbes' ] )
+			assert false : "Unknown argument should have thrown exception"
+		}
+		catch ( IllegalArgumentException ex ) { /* Expected exception */ }
+	}
 }

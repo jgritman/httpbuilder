@@ -38,22 +38,22 @@ public class AsyncHTTPBuilderTest {
 		def done = []
 		
 		done << http.get(path:'/') { resp, html ->
-			println ' response 1'
+			println "${Thread.currentThread().name} response 1"
 			true
 		}
 
 		done << http.get(path:'/httpcomponents-client-ga/') { resp, html ->
-			println ' response 2'
+			println "${Thread.currentThread().name} response 2"
 			true
 		}
 
 		done << http.get(path:'/httpcomponents-core-dev/') { resp, html ->
-			println ' response 3'
+			println "${Thread.currentThread().name} response 3"
 			true
 		}
 
 		done << http.get(uri:'http://svn.apache.org/') { resp, html ->
-			println ' response 4'
+			println "${Thread.currentThread().name} response 4"
 			true
 		}
 		
@@ -86,7 +86,7 @@ public class AsyncHTTPBuilderTest {
 	}
 
 	@Test public void testPostAndDelete() {
-		def http = new AsyncHTTPBuilder(uri:'http://twitter.com/statuses/')
+		def http = new AsyncHTTPBuilder(uri:'http://api.twitter.com/1/statuses/')
 		
 		http.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
 				System.getProperty('twitter.oauth.consumerSecret'),
@@ -142,7 +142,7 @@ public class AsyncHTTPBuilderTest {
 	}
 	
 	@Test public void testPoolsizeAndQueueing() {
-		def http = new AsyncHTTPBuilder( poolsize : 1 ,
+		def http = new AsyncHTTPBuilder( poolSize : 1 ,
 				uri : 'http://ajax.googleapis.com/ajax/services/search/web' )
 		
 		def responses = []
@@ -164,4 +164,14 @@ public class AsyncHTTPBuilderTest {
 		println()
 		http.shutdown()
 	}
+	
+	@Test public void testInvalidNamedArg() {
+		try {
+			def http = new AsyncHTTPBuilder( poolsize : 1 ,
+				uri : 'http://ajax.googleapis.com/ajax/services/search/web' )
+			throw new AssertionError("request should have failed due to invalid kwarg.")
+		}
+		catch ( IllegalArgumentException ex ) { /* Expected result */ }
+	}
+
 }

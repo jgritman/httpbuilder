@@ -5,14 +5,17 @@ import static groovyx.net.http.ContentType.*
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.Readerimport java.io.ByteArrayOutputStreamimport java.lang.AssertionError
+import java.io.Reader
+import java.io.ByteArrayOutputStream
+import java.lang.AssertionError
 import java.net.ServerSocket
 import groovy.util.XmlSlurper
 import groovy.util.slurpersupport.GPathResult
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.HttpResponseException
 import org.apache.http.params.HttpConnectionParams
-import org.apache.xml.resolver.tools.CatalogResolverimport org.junit.Test
+import org.apache.xml.resolver.tools.CatalogResolver
+import org.junit.Test
 
 class HTTPBuilderTest {
 	
@@ -328,5 +331,14 @@ class HTTPBuilderTest {
 		def xml = http.get( query : [p:'02110',u:'f'] )
 		
 		
+	}
+	
+	@Test public void testInvalidNamedArg() {
+		def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
+		try {
+			def xml = http.get( query : [p:'02110',u:'f'], blah : 'asdf' )
+			throw new AssertionError("request should have failed due to invalid kwarg.")
+		}
+		catch ( IllegalArgumentException ex ) { /* Expected result */ }
 	}
 }

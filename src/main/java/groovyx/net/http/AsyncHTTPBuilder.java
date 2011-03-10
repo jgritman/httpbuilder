@@ -86,25 +86,31 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 		int poolSize = DEFAULT_POOL_SIZE;
 		ExecutorService threadPool = null;
 		if ( args != null ) { 
-			threadPool = (ExecutorService)args.get( "threadPool" );
+			threadPool = (ExecutorService)args.remove( "threadPool" );
 
 			if ( threadPool instanceof ThreadPoolExecutor )
 				poolSize = ((ThreadPoolExecutor)threadPool).getMaximumPoolSize();
 			
-			Object poolSzArg = args.get("poolSize");
+			Object poolSzArg = args.remove("poolSize");
 			if ( poolSzArg != null ) poolSize = Integer.parseInt( poolSzArg.toString() );
 			
-			if ( args.get( "url" ) != null ) throw new IllegalArgumentException(
+			if ( args.containsKey( "url" ) ) throw new IllegalArgumentException(
 				"The 'url' parameter is deprecated; use 'uri' instead" );
-			Object defaultURI = args.get("uri");
+			Object defaultURI = args.remove("uri");
 			if ( defaultURI != null ) super.setUri(defaultURI);
 				
-			Object defaultContentType = args.get("contentType");
+			Object defaultContentType = args.remove("contentType");
 			if ( defaultContentType != null ) 
 				super.setContentType(defaultContentType);
 			
-			Object timeout = args.get( "timeout" );
+			Object timeout = args.remove( "timeout" );
 			if ( timeout != null ) setTimeout( (Integer) timeout );
+
+			if ( args.size() > 0 ) {
+				String invalidArgs = "";
+				for ( String k : args.keySet() ) invalidArgs += k + ",";
+				throw new IllegalArgumentException("Unexpected keyword args: " + invalidArgs);
+			}
 		}
 		this.initThreadPools( poolSize, threadPool );
 	}

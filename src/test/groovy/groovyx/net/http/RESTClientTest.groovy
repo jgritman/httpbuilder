@@ -41,7 +41,7 @@ public class RESTClientTest {
 		// test the exception class:
 		catch( ex ) { assert ex.response.status == 401 }
 		
-		assert twitter.head( path : 'public_timeline.json' ).status == 200
+//		assert twitter.head( path : 'public_timeline.json' ).status == 200
 	}
 	
 	@Test public void testGet() {
@@ -147,5 +147,14 @@ public class RESTClientTest {
 //			println text
 			assert text.endsWith('</hash>\n')
 		}
+	}
+	
+	@Test public void testUnknownNamedParams() {
+		try {
+			twitter.get( Path : 'user_timeline.json',
+				query : [screen_name :'httpbuilder',count:2] )
+			assert false : "exception should be thrown"
+		}
+		catch ( IllegalArgumentException ex ) { /* Expected exception */ }
 	}
 }

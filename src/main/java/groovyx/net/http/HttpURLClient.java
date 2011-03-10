@@ -221,8 +221,11 @@ public class HttpURLClient {
 		// sign the request if we're using OAuth
 		else if ( oauth != null ) conn = oauth.sign(conn, null);
 		
-		if ( args.size() > 0 ) for ( Object k : args.keySet() ) 
-			log.warn( "request() : Unknown named parameter '" + k + "'" );
+		if ( args.size() > 0 ) {
+			String illegalArgs = "";
+			for ( String k : args.keySet() ) illegalArgs += k + ","; 
+			throw new IllegalArgumentException("Unknown named parameters: " + illegalArgs);
+		}
 		
 		String method = conn.getRequestMethod();
 		log.debug( method + " " + url );

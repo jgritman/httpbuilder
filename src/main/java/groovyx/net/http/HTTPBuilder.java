@@ -1047,35 +1047,41 @@ public class HTTPBuilder {
 		@SuppressWarnings("unchecked")
 		protected void setPropertiesFromMap( Map<String,?> args ) throws URISyntaxException {
 			if ( args == null ) return;
-			if ( args.get( "url" ) != null ) throw new IllegalArgumentException(
+			if ( args.containsKey( "url" ) ) throw new IllegalArgumentException(
 					"The 'url' parameter is deprecated; use 'uri' instead" );
-			Object uri = args.get( "uri" );
+			Object uri = args.remove( "uri" );
 			if ( uri == null ) uri = defaultURI;
 			if ( uri == null ) throw new IllegalStateException( 
 					"Default URI is null, and no 'uri' parameter was given" );
 			this.uri = new URIBuilder( convertToURI( uri ) );
 			
-			Map query = (Map)args.get( "params" );
+			Map query = (Map)args.remove( "params" );
 			if ( query != null ) { 
 				log.warn( "'params' argument is deprecated; use 'query' instead." );
 				this.uri.setQuery( query );
 			}
-			query = (Map)args.get( "query" );
+			query = (Map)args.remove( "query" );
 			if ( query != null ) this.uri.setQuery( query );
-			Map headers = (Map)args.get( "headers" );
+			Map headers = (Map)args.remove( "headers" );
 			if ( headers != null ) this.getHeaders().putAll( headers );
 			
-			Object path = args.get( "path" );
+			Object path = args.remove( "path" );
 			if ( path != null ) this.uri.setPath( path.toString() );
 			
-			Object contentType = args.get( "contentType" );
+			Object contentType = args.remove( "contentType" );
 			if ( contentType != null ) this.setContentType( contentType );
 			
-			contentType = args.get( "requestContentType" );
+			contentType = args.remove( "requestContentType" );
 			if ( contentType != null ) this.setRequestContentType( contentType.toString() );
 			
-			Object body = args.get("body");
+			Object body = args.remove("body");
 			if ( body != null ) this.setBody( body );
+			
+			if ( args.size() > 0 ) {
+				String invalidArgs = "";
+				for ( String k : args.keySet() ) invalidArgs += k + ",";
+				throw new IllegalArgumentException("Unexpected keyword args: " + invalidArgs);
+			}
 		}
 
 		/**
