@@ -87,9 +87,15 @@ public class ParserRegistry {
 	 * returns the unaltered response stream.
 	 */
 	protected final Closure DEFAULT_PARSER = new MethodClosure( this, "parseStream" );
-
+	/**
+	 * The default charset to use when no charset is given in the Content-Type
+	 * header of a response.  This can be modifid via {@link #setDefaultCharset(String)}. 
+	 */
+	public static final String DEFAULT_CHARSET = "UTF-8";
+	
 	private Closure defaultParser = DEFAULT_PARSER;
 	private Map<String,Closure> registeredParsers = buildDefaultParserMap();
+	private static String defaultCharset = DEFAULT_CHARSET;
 	
 	protected static final Log log = LogFactory.getLog( ParserRegistry.class );
 	
@@ -118,6 +124,16 @@ public class ParserRegistry {
 	}
 	
 	/**
+	 * Set the charset to use for parsing character streams when no charset 
+	 * is given in the Content-Type header.
+	 * @param charset the charset to use, or <code>null</code> to use 
+	 *     {@link #DEFAULT_CHARSET}
+	 */
+	public static void setDefaultCharset( String charset ) {
+		defaultCharset = charset == null ? DEFAULT_CHARSET : charset;
+	}
+	
+	/**
 	 * Helper method to get the charset from the response.  This should be done 
 	 * when manually parsing any text response to ensure it is decoded using the
 	 * correct charset. For instance:<pre>
@@ -131,8 +147,8 @@ public class ParserRegistry {
 				.getElements()[0].getParameterByName("charset");
 			
 			if ( charset == null || charset.getValue().trim().equals("") ) {
-				log.warn( "Could not find charset in response" );
-				return Charset.defaultCharset().name();
+				log.debug( "Could not find charset in response; using " + defaultCharset );
+				return defaultCharset;
 			}
 				
 			return charset.getValue();
