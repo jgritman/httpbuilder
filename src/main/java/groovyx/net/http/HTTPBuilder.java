@@ -172,6 +172,7 @@ public class HTTPBuilder {
 	
 	protected Object defaultContentType = ContentType.ANY;
 	protected Object defaultRequestContentType = null;
+	protected boolean autoAcceptHeader = true;
 	protected final Map<Object,Closure> defaultResponseHandlers = 
 		new StringHashMap<Closure>( buildDefaultResponseHandlers() );
 	protected ContentEncodingRegistry contentEncodingHandler = new ContentEncodingRegistry();
@@ -449,13 +450,15 @@ public class HTTPBuilder {
 		final HttpRequestBase reqMethod = delegate.getRequest();
 		
 		Object contentType = delegate.getContentType();
-		String acceptContentTypes = contentType.toString();
-		if ( contentType instanceof ContentType ) 
-			acceptContentTypes = ((ContentType)contentType).getAcceptHeader();
 		
-		reqMethod.setHeader( "Accept", acceptContentTypes );
+		if ( this.autoAcceptHeader ) {
+			String acceptContentTypes = contentType.toString();
+			if ( contentType instanceof ContentType ) 
+				acceptContentTypes = ((ContentType)contentType).getAcceptHeader();	
+			reqMethod.setHeader( "Accept", acceptContentTypes );
+		}
+		
 		reqMethod.setURI( delegate.getUri().toURI() );
-
 		if ( reqMethod.getURI() == null)
 			throw new IllegalStateException( "Request URI cannot be null" );
 		
@@ -741,6 +744,29 @@ public class HTTPBuilder {
 	}
 	
 	/**
+	 * Indicate whether or not this cliernt should send an <code>Accept</code>
+	 * header automatically based on the {@link #getContentType() contentType}
+	 * property.  
+	 * @param shouldSendAcceptHeader <code>true</code> if the client should
+	 * automatically insert an <code>Accept</code> header, otherwise <code>false</code>.
+	 */
+	public void setAutoAcceptHeader( boolean shouldSendAcceptHeader ) {
+		this.autoAcceptHeader = shouldSendAcceptHeader;
+	}
+	
+	/**
+	 * Indicates whether or not this client should automatically send an 
+	 * <code>Accept</code> header based on the {@link #getContentType() contentType}
+	 * property.  Default is <code>true</code>.
+	 * @return <code>true</code> if the client should automatically add an 
+	 * <code>Accept</code> header to the request; if <code>false</code>, no 
+	 * header is added.
+	 */
+	public boolean isAutoAcceptHeader() {
+		return this.autoAcceptHeader;
+	}
+	
+	/**
 	 * Set acceptable request and response content-encodings. 
 	 * @see ContentEncodingRegistry
 	 * @param encodings each Object should be either a 
@@ -891,7 +917,7 @@ public class HTTPBuilder {
 	protected class RequestConfigDelegate {
 		private HttpRequestBase request;
 		private Object contentType;
-		private String requestContentType;
+		private Object requestContentType;
 		private Map<Object,Closure> responseHandlers = new StringHashMap<Closure>();
 		private URIBuilder uri;
 		private Map<Object,Object> headers = new StringHashMap<Object>();
@@ -1001,11 +1027,11 @@ public class HTTPBuilder {
 		
 		/**
 		 * The request content-type, if different from the {@link #contentType}.
-		 * @return
+		 * @return either a {@link ContentType} value or String like <code>text/plain</code>
 		 */
-		protected String getRequestContentType() {
+		protected Object getRequestContentType() {
 			if ( this.requestContentType != null ) return this.requestContentType;
-			else return this.getContentType().toString();
+			else return this.getContentType();
 		}
 		
 		/**
@@ -1021,7 +1047,7 @@ public class HTTPBuilder {
 		 * @param ct either a {@link ContentType} value or a valid content-type
 		 * String.
 		 */
-		protected void setRequestContentType( String ct ) { 
+		protected void setRequestContentType( Object ct ) { 
 			this.requestContentType = ct; 
 		}
 		
@@ -1072,7 +1098,7 @@ public class HTTPBuilder {
 			if ( contentType != null ) this.setContentType( contentType );
 			
 			contentType = args.remove( "requestContentType" );
-			if ( contentType != null ) this.setRequestContentType( contentType.toString() );
+			if ( contentType != null ) this.setRequestContentType( contentType );
 			
 			Object body = args.remove("body");
 			if ( body != null ) this.setBody( body );
@@ -1145,7 +1171,7 @@ public class HTTPBuilder {
 		 * @param requestBody
 		 */
 		public void send( Object contentType, Object requestBody ) {
-			this.setRequestContentType( contentType.toString() );
+			this.setRequestContentType( contentType );
 			this.setBody( requestBody );
 		}
 
@@ -1163,8 +1189,11 @@ public class HTTPBuilder {
 				throw new IllegalArgumentException( 
 						"Cannot set a request body for a " + request.getMethod() + " method" );
 			Closure encoder = encoders.getAt( this.getRequestContentType() );
-			HttpEntity entity = (HttpEntity)encoder.call( body );
 			
+			HttpEntity entity = encoder.getMaximumNumberOfParameters() == 2 
+					? (HttpEntity)encoder.call( new Object[] { body, this.getRequestContentType() } )
+					: (HttpEntity)encoder.call( body );
+						
 			((HttpEntityEnclosingRequest)this.request).setEntity( entity );
 		}
 		

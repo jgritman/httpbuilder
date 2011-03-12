@@ -115,7 +115,8 @@ public class EncoderRegistry {
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public InputStreamEntity encodeStream( Object data ) throws UnsupportedEncodingException {
+	public InputStreamEntity encodeStream( Object data, Object contentType ) 
+			throws UnsupportedEncodingException {
 		InputStreamEntity entity = null;
 		
 		if ( data instanceof ByteArrayInputStream ) {
@@ -146,7 +147,8 @@ public class EncoderRegistry {
 		if ( entity == null ) throw new IllegalArgumentException( 
 				"Don't know how to encode " + data + " as a byte stream" );
 		
-		entity.setContentType( ContentType.BINARY.toString() );
+		if ( contentType == null ) contentType = ContentType.BINARY;
+		entity.setContentType( contentType.toString() );
 		return entity;
 	}
 	
@@ -165,7 +167,7 @@ public class EncoderRegistry {
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws IOException
 	 */
-	public HttpEntity encodeText( Object data ) throws IOException {
+	public HttpEntity encodeText( Object data, Object contentType ) throws IOException {
 		if ( data instanceof Closure ) {
 			StringWriter out = new StringWriter();
 			PrintWriter writer = new PrintWriter( out );
@@ -189,7 +191,8 @@ public class EncoderRegistry {
 			data = out;
 		}
 		// if data is a String, we are already covered.
-		return createEntity( ContentType.TEXT, data.toString() );
+		if ( contentType == null ) contentType = ContentType.TEXT;
+		return createEntity( contentType, data.toString() );
 	}
 	
 	/**
@@ -203,12 +206,17 @@ public class EncoderRegistry {
 	 */
 	public UrlEncodedFormEntity encodeForm( Map<?,?> params ) 
 			throws UnsupportedEncodingException {
+		return encodeForm( params, null );
+	}
+	
+	public UrlEncodedFormEntity encodeForm( Map<?,?> params, Object contentType ) 
+			throws UnsupportedEncodingException {
 		List<NameValuePair> paramList = new ArrayList<NameValuePair>();
 
 		for ( Object key : params.keySet() ) {
 			Object val = params.get( key );
-			if ( val instanceof List ) 
-				for ( Object subVal : (List)val ) 
+			if ( val instanceof List<?> ) 
+				for ( Object subVal : (List<?>)val ) 
 					paramList.add( new BasicNameValuePair( key.toString(), 
 							( subVal == null ) ? "" : subVal.toString() ) );
 
@@ -216,7 +224,10 @@ public class EncoderRegistry {
 					( val == null ) ? "" : val.toString() ) );
 		}
 			
-		return new UrlEncodedFormEntity( paramList, charset.name() );
+		UrlEncodedFormEntity e = new UrlEncodedFormEntity( paramList, charset.name() );
+		if ( contentType != null ) e.setContentType( contentType.toString() );
+		return e;
+		
 	}
 	
 	/**
@@ -228,8 +239,9 @@ public class EncoderRegistry {
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public HttpEntity encodeForm( String formData ) throws UnsupportedEncodingException {
-		return this.createEntity( ContentType.URLENC, formData );
+	public HttpEntity encodeForm( String formData, Object contentType ) throws UnsupportedEncodingException {
+		if ( contentType == null ) contentType = ContentType.URLENC;
+		return this.createEntity( contentType, formData );
 	}
 	
 	/**
@@ -241,12 +253,14 @@ public class EncoderRegistry {
 	 * @return an {@link HttpEntity} encapsulating this request data
 	 * @throws UnsupportedEncodingException
 	 */
-	public HttpEntity encodeXML( Object xml ) throws UnsupportedEncodingException {
+	public HttpEntity encodeXML( Object xml, Object contentType ) 
+			throws UnsupportedEncodingException {
 		if ( xml instanceof Closure ) {
 			StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
 			xml = smb.bind( xml );
 		}
-		return createEntity( ContentType.XML, xml.toString() );
+		if ( contentType == null ) contentType = ContentType.XML;
+		return createEntity( contentType, xml.toString() );
 	}
 	
 	/**
@@ -280,7 +294,7 @@ public class EncoderRegistry {
 	 * @throws UnsupportedEncodingException
 	 */
 	@SuppressWarnings("unchecked")
-	public HttpEntity encodeJSON( Object model ) throws UnsupportedEncodingException {
+	public HttpEntity encodeJSON( Object model, Object contentType ) throws UnsupportedEncodingException {
 		
 		Object json;	
 		if ( model instanceof Map ) {
@@ -300,7 +314,8 @@ public class EncoderRegistry {
 			json = model; // assume string is valid JSON already.
 		else json = JSONObject.fromObject( model ); // Assume object is a JavaBean
 		
-		return this.createEntity( ContentType.JSON, json.toString() );
+		if ( contentType == null ) contentType = ContentType.JSON;
+		return this.createEntity( contentType, json.toString() );
 	}
 	
 	/**
@@ -315,7 +330,7 @@ public class EncoderRegistry {
 	 *  {@link HttpEntityEnclosingRequest#setEntity(HttpEntity) request content} 
 	 * @throws UnsupportedEncodingException
 	 */
-	protected StringEntity createEntity( ContentType ct, String data ) 
+	protected StringEntity createEntity( Object ct, String data ) 
 			throws UnsupportedEncodingException {
 		StringEntity entity = new StringEntity( data, charset.toString() );
 		entity.setContentType( ct.toString() );
