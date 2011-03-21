@@ -149,6 +149,16 @@ public class RESTClientTest {
 		}
 	}
 	
+	@Test public void testQueryParameters() {
+		twitter.contentType = 'text/javascript'
+		twitter.headers = null
+		def resp = twitter.get( 
+			path : 'user_timeline.json',
+			queryString : 'count=5&trim_user=1',
+			query : [screen_name :'httpbuilder'] )
+		assert resp.data.size() == 4
+	}
+	
 	@Test public void testUnknownNamedParams() {
 		try {
 			twitter.get( Path : 'user_timeline.json',

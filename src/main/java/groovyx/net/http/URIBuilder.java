@@ -25,13 +25,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.print.URIException;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -247,8 +244,8 @@ public class URIBuilder implements Cloneable {
 			List<NameValuePair> nvp = new ArrayList<NameValuePair>(params.size());
 			for ( Object key : params.keySet() ) {
 				Object value = params.get(key);
-				if ( value instanceof List ) {
-					for (Object val : (List)value )
+				if ( value instanceof List<?> ) {
+					for (Object val : (List<?>)value )
 						nvp.add( new BasicNameValuePair( key.toString(), 
 								( val != null ) ? val.toString() : "" ) );
 				}
@@ -257,6 +254,19 @@ public class URIBuilder implements Cloneable {
 			}
 			this.setQueryNVP( nvp );
 		}
+		return this;
+	}
+	
+	/**
+	 * Set the raw, already-escaped query string.  No additional escaping will 
+	 * be done on the string.
+	 * @param query
+	 * @return
+	 */
+	public URIBuilder setRawQuery( String query ) throws URISyntaxException {
+		this.base = update( base.getScheme(), base.getUserInfo(), 
+				base.getHost(), base.getPort(), 
+				base.getRawPath(), query, base.getRawFragment() );
 		return this;
 	}
 	
@@ -286,7 +296,7 @@ public class URIBuilder implements Cloneable {
 
 			if ( existing == null ) params.put( key, pair.getValue() );
 
-			else if ( existing instanceof List ) 
+			else if ( existing instanceof List<?> ) 
 				((List)existing).add( pair.getValue() );
 
 			else {

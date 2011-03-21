@@ -227,4 +227,17 @@ public class URIBuilderTest {
 		assert uri.path == '/test'
 		assert uri.fragment == 'blah'
 	}
+	
+	@Test public void testRawQuery() {
+		def uri = new URIBuilder('http://localhost:80/')
+		uri.rawQuery = '1%20AND%202'
+		assert uri.toString() == 'http://localhost:80/?1%20AND%202'
+		assert uri.toURI().rawQuery == '1%20AND%202'
+		uri.path = 'some/path'
+		assert uri.toString() == 'http://localhost:80/some/path?1%20AND%202'
+		uri.fragment = 'asdf'
+		assert uri.toString() == 'http://localhost:80/some/path?1%20AND%202#asdf'
+		uri.rawQuery = "a%20b=c%31d"
+		assert uri.toString() == 'http://localhost:80/some/path?a%20b=c%31d#asdf'
+	}
 }

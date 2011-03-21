@@ -1059,6 +1059,7 @@ public class HTTPBuilder {
 		 *   	If this parameter is not supplied, the HTTPBuilder's default 
 		 *   	URI is used.</dd>
 		 *   <dt>path</dt><dd>Request path that is merged with the URI</dd>
+		 *   <dt>queryString</dt><dd>an escaped query string</dd>
 		 *   <dt>query</dt><dd>Map of URL query parameters</dd>
 		 *   <dt>headers</dt><dd>Map of HTTP headers</dd>
 		 *   <dt>contentType</dt><dd>Request content type and Accept header.  
@@ -1067,6 +1068,9 @@ public class HTTPBuilder {
 		 *      is different from the expected response content-type</dd>
 		 *   <dt>body</dt><dd>Request body that will be encoded based on the given contentType</dd>
 		 * </dl>
+		 * Note that if both <code>queryString</code> and <code>query</code> are given,
+		 * <code>query</code> will be merged with (and potentially override) 
+		 * the parameters given as part of <code>queryString</code>.
 		 * @param args named parameters to set properties on this delegate.
 		 * @throws URISyntaxException if the uri argument does not represent a valid URI
 		 */
@@ -1086,8 +1090,11 @@ public class HTTPBuilder {
 				log.warn( "'params' argument is deprecated; use 'query' instead." );
 				this.uri.setQuery( query );
 			}
+			String queryString = (String)args.remove("queryString");
+			if ( queryString != null ) this.uri.setRawQuery(queryString);
+			
 			query = (Map)args.remove( "query" );
-			if ( query != null ) this.uri.setQuery( query );
+			if ( query != null ) this.uri.addQueryParams( query );
 			Map headers = (Map)args.remove( "headers" );
 			if ( headers != null ) this.getHeaders().putAll( headers );
 			
