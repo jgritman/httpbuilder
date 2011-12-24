@@ -10,7 +10,7 @@ import org.apache.http.conn.scheme.Schemeimport org.apache.http.conn.ssl.SSLSoc
  */
 public class SSLTest {
 
-	def uri = "https://www.dev.java.net/" ;
+	def uri = "https://dev.java.net/" ;
 	
 	@Test public void testTrustedCert() {
 		def http = new HTTPBuilder( uri )
@@ -29,7 +29,12 @@ public class SSLTest {
 				
 		def status = http.request( HEAD ) {
 			response.success = { it.statusLine.statusCode }
+			response.failure = { it.statusLine.statusCode }
 		}
-		assert status == 200
+		// dev.java.net doesn't exist anymore, but the server will redirect
+		// to http://java.net/project/dev which is a 404 page.
+		// but we still won't get the PeerUnverifiedException which is what 
+		// we're attempting to achieve.
+		assert status == 404 // 200
 	}	
 }

@@ -1,9 +1,11 @@
 package groovyx.net.http
 
-import org.junit.Testimport org.junit.Before
-import junit.framework.Assertimport groovy.util.slurpersupport.GPathResult
-import org.apache.http.params.HttpConnectionParams
-import static groovyx.net.http.ContentType.*
+import org.junit.Test
+import org.junit.Before
+import junit.framework.Assert
+import groovy.util.slurpersupport.GPathResult
+import org.apache.http.params.HttpConnectionParams
+import static groovyx.net.http.ContentType.*
 
 /**
  * @author tnichols
@@ -56,7 +58,7 @@ public class RESTClientTest {
 		
 		resp = twitter.get( path : 'friends_timeline.json' )
 		assert resp.status == 200
-		assert resp.headers.Server == "hi"
+		assert resp.headers.Server == "tfe"
 		assert resp.headers.Server == resp.headers['Server'].value
 		assert resp.contentType == JSON.toString()
 		assert ( resp.data instanceof net.sf.json.JSON )
@@ -156,7 +158,7 @@ public class RESTClientTest {
 			path : 'user_timeline.json',
 			queryString : 'count=5&trim_user=1',
 			query : [screen_name :'httpbuilder'] )
-		assert resp.data.size() == 4
+		assert resp.data.size() == 5
 	}
 	
 	@Test public void testUnknownNamedParams() {
@@ -166,5 +168,32 @@ public class RESTClientTest {
 			assert false : "exception should be thrown"
 		}
 		catch ( IllegalArgumentException ex ) { /* Expected exception */ }
+	}
+
+	@Test public void testJSONPost() {
+		def http = new RESTClient("http://restmirror.appspot.com/")
+		def resp = http.post(
+			path:'/', contentType:'text/javascript',
+			body: [name: 'bob', title: 'construction worker'] )
+
+		println "JSON POST Success: ${resp.statusLine}"
+		assert resp.data instanceof net.sf.json.JSONObject
+		assert resp.data.name == 'bob'
+	}
+
+	@Test public void testXMLPost() {
+		def http = new RESTClient("http://restmirror.appspot.com/")
+
+		def postBody = {
+			person( name: 'bob', title: 'builder' )
+		}
+
+		def resp = http.post(	path:'/', contentType: XML, body: postBody )
+
+		println "XML POST Success: ${resp.statusLine}"
+		assert resp.data instanceof GPathResult
+		assert resp.data.name() == 'person'
+		assert resp.data.@name == 'bob'
+		assert resp.data.@title == 'builder'
 	}
 }

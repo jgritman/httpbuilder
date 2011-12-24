@@ -341,4 +341,23 @@ class HTTPBuilderTest {
 		}
 		catch ( IllegalArgumentException ex ) { /* Expected result */ }
 	}
+
+	@Test public void testJSONPost() {
+     def builder = new HTTPBuilder("http://restmirror.appspot.com/")
+		 def result = builder.request(POST, JSON) { req ->
+				 body = [name: 'bob', title: 'construction worker']
+
+				 response.success = {resp, json ->
+						 println "JSON POST Success: ${resp.statusLine}"
+						 assert json instanceof net.sf.json.JSONObject
+						 assert json.name == 'bob'
+						 return json.name
+				 }
+
+				 response.failure = {resp ->
+						 println "JSON POST Failed: ${resp.statusLine}"
+				 }
+		 }
+		 assert result == 'bob'
+	}
 }
