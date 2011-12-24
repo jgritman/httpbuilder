@@ -38,7 +38,7 @@ http.request(GET,TEXT) { req ->
   headers.'User-Agent' = 'Mozilla/5.0'
   
   response.success = { resp, reader ->
-    assert resp.statusLine.statusCode == 200
+    assert resp.status == 200
     println "My response handler got response: ${resp.statusLine}"
     println "Response length: ${resp.headers.'Content-Length'}" 
     System.out << reader // print response reader
