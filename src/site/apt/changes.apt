@@ -9,6 +9,16 @@ Change Log
 
    See the {{{./jira-report.html}JIRA Report}} for a comprehensive change list.
    
+* v0.5.2 - 26 Dec 2011
+
+  * Support for escaped URI query parameters
+  
+  * Fixes for AsyncHTTPBuilder
+  
+  * AppEngine connection manager
+  
+  * Ability to customize HttpClient construction e.g. with a connection manager
+
 * v0.5.1 - 30 Sept 2010
 
   * OAuth support via Signpost

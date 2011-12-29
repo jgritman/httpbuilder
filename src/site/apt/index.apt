@@ -9,6 +9,16 @@
 News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
+
+* 26 Dec 2011 - 0.5.2 finally finally released for reals
+
+  With so many other projects, HTTPBuilder has taken a back seat, to say the least.
+  Well, I've finally made 0.5.2 official, so folks relying on snapshots can now
+  use a release version.  I hope to turn around 0.5.3 quickly to address a couple
+  important issues like the Groovy range dependency, SSL host verification, 
+  preemptive auth and maybe whitespace URI parameter encoding.  
+  
+  Stay tuned and watch for snapshots! 
   
 * 30 Sept 2010 - 0.5.1 with OAuth Support!
 
