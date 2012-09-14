@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -35,33 +35,33 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
 /**
- * This class is a wrapper for {@link HttpResponse}, which allows for 
+ * This class is a wrapper for {@link HttpResponse}, which allows for
  * simplified header access, as well as carrying the auto-parsed response data.
  * (see {@link HTTPBuilder#parseResponse(HttpResponse, Object)}).
- * 
+ *
  * @see HeadersDecorator
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5.0
  */
 public class HttpResponseDecorator implements HttpResponse {
-	
+
 	HeadersDecorator headers = null;
 	HttpResponse responseBase;
 	HttpContextDecorator context;
 	Object responseData;
-	
+
 	public HttpResponseDecorator( HttpResponse base, Object parsedResponse ) {
 		this( base, null, parsedResponse );
 	}
-	
+
 	public HttpResponseDecorator( HttpResponse base, HttpContextDecorator context, Object parsedResponse ) {
 		this.responseBase = base;
 		this.context = context;
 		this.responseData = parsedResponse;
 	}
-	
-	/** 
-	 * Return a {@link HeadersDecorator}, which provides a more Groovy API for 
+
+	/**
+	 * Return a {@link HeadersDecorator}, which provides a more Groovy API for
 	 * accessing response headers.
 	 * @return the headers for this response
 	 */
@@ -69,16 +69,16 @@ public class HttpResponseDecorator implements HttpResponse {
 		if ( headers == null ) headers = new HeadersDecorator();
 		return headers;
 	}
-	
+
 	/**
 	 * Quickly determine if the request resulted in an error code.
-	 * @return true if the response code is within the range of 
+	 * @return true if the response code is within the range of
 	 *   {@link Status#SUCCESS}
 	 */
 	public boolean isSuccess() {
 		return Status.find( getStatus() ) == Status.SUCCESS;
 	}
-	
+
 	/**
 	 * Get the response status code.
 	 * @see StatusLine#getStatusCode()
@@ -87,7 +87,7 @@ public class HttpResponseDecorator implements HttpResponse {
 	public int getStatus() {
 		return responseBase.getStatusLine().getStatusCode();
 	}
-	
+
 	/**
 	 * Get the content-type for this response.
 	 * @see ParserRegistry#getContentType(HttpResponse)
@@ -96,28 +96,28 @@ public class HttpResponseDecorator implements HttpResponse {
 	public String getContentType() {
 		return ParserRegistry.getContentType( responseBase );
 	}
-	
+
 	/**
 	 * Return the parsed data from this response body.
 	 * @return the parsed response object, or <code>null</code> if the response
 	 * does not contain any data.
 	 */
 	public Object getData() { return this.responseData; }
-	
+
 	void setData( Object responseData ) { this.responseData = responseData; }
-	
+
 	/**
 	 * Get the execution context used during this request
 	 * @see ExecutionContext
-	 * @return the {@link HttpContext} 
+	 * @return the {@link HttpContext}
 	 */
 	public HttpContextDecorator getContext() { return this.context; }
-	
+
 	/**
 	 * This class is returned by {@link HttpResponseDecorator#getHeaders()}.
-	 * It provides three "Groovy" ways to access headers: 
+	 * It provides three "Groovy" ways to access headers:
 	 * <dl>
-	 *   <dt>Bracket notation</dt><dd><code>resp.headers['Content-Type']</code> 
+	 *   <dt>Bracket notation</dt><dd><code>resp.headers['Content-Type']</code>
 	 *   	returns the {@link Header} instance</dd>
 	 *   <dt>Property notation</dt><dd><code>resp.headers.'Content-Type'</code>
 	 *   	returns the {@link Header#getValue() header value}</dd>
@@ -130,33 +130,33 @@ public class HttpResponseDecorator implements HttpResponse {
 	 * @since 0.5.0
 	 */
 	public final class HeadersDecorator implements Iterable<Header> {
-		
+
 		/**
 		 * Access the named header value, using bracket form.  For example,
 		 * <code>response.headers['Content-Encoding']</code>
 		 * @see HttpResponse#getFirstHeader(String)
 		 * @param name header name, e.g. <code>Content-Type<code>
 		 * @return the {@link Header}, or <code>null</code> if it does not exist
-		 *  in this response 
+		 *  in this response
 		 */
 		public Header getAt( String name ) {
 			return responseBase.getFirstHeader( name );
 		}
-		
+
 		/**
 		 * Allow property-style access to header values.  This is the same as
-		 * {@link #getAt(String)}, except it simply returns the header's String 
+		 * {@link #getAt(String)}, except it simply returns the header's String
 		 * value, instead of the Header object.
-		 * 
+		 *
 		 * @param name header name, e.g. <code>Content-Type<code>
 		 * @return the {@link Header}, or <code>null</code> if it does not exist
-		 *  in this response 
+		 *  in this response
 		 */
 		protected String propertyMissing( String name ) {
 			Header h = this.getAt( name );
 			return h != null ? h.getValue() : null;
-		}		
-		
+		}
+
 		/**
 		 * Used to allow Groovy iteration methods over the response headers.
 		 * For example:

@@ -1,5 +1,5 @@
-/* Example script that demonstrates use of the Twitter API.  
- * 
+/* Example script that demonstrates use of the Twitter API.
+ *
  */
 
 import groovyx.net.http.RESTClient
@@ -18,7 +18,7 @@ try { // expect an exception from a 404 response:
 	twitter.head path : 'public_timeline'
 	assert false, 'Expected exception'
 }
-/* The exception is used for flow control but can be used 
+/* The exception is used for flow control but can be used
    to read the response: */
 catch( ex ) { assert ex.response.status == 404 }
 
@@ -38,13 +38,13 @@ assert resp.data.status.size() > 0
 // POST a status update to twitter!
 
 def msg = "I'm using HTTPBuilder's RESTClient on ${new Date()}"
-	
-resp = twitter.post( path : 'update.xml', 
+
+resp = twitter.post( path : 'update.xml',
 		body : [ status:msg, source:'httpbuilder' ],
 		requestContentType : URLENC )
 
 assert resp.status == 200
-assert ( resp.data instanceof GPathResult ) // parsed using XmlSlurper 
+assert ( resp.data instanceof GPathResult ) // parsed using XmlSlurper
 assert resp.data.text == msg
 assert resp.data.user.screen_name == userName
 def postID = resp.data.id

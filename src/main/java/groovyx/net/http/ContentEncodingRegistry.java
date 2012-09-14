@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -36,11 +36,11 @@ import org.apache.http.impl.client.AbstractHttpClient;
 public class ContentEncodingRegistry {
 
 	protected Map<String,ContentEncoding> availableEncoders = getDefaultEncoders();
-	
+
 	/**
 	 * This implementation adds a {@link GZIPEncoding} and {@link DeflateEncoding}
-	 * handler to the registry.  Override this method to provide a different set 
-	 * of defaults. 
+	 * handler to the registry.  Override this method to provide a different set
+	 * of defaults.
 	 * @return a map to content-encoding strings to {@link ContentEncoding} handlers.
 	 */
 	protected Map<String,ContentEncoding> getDefaultEncoders() {
@@ -48,22 +48,22 @@ public class ContentEncodingRegistry {
 		map.put( Type.GZIP.toString(), new GZIPEncoding() );
 		map.put( Type.DEFLATE.toString(), new DeflateEncoding() );
 		return map;
-	}	
+	}
 
 	/**
-	 * Add the request and response interceptors to the {@link HttpClient}, 
-	 * which will provide transparent decoding of the given content-encoding 
-	 * types.  This method is called by HTTPBuilder and probably should not need 
+	 * Add the request and response interceptors to the {@link HttpClient},
+	 * which will provide transparent decoding of the given content-encoding
+	 * types.  This method is called by HTTPBuilder and probably should not need
 	 * be modified by sub-classes.
 	 * @param client client on which to set the request and response interceptors
-	 * @param encodings encoding name (either a {@link ContentEncoding.Type} or 
+	 * @param encodings encoding name (either a {@link ContentEncoding.Type} or
 	 *   a <code>content-encoding</code> string.
 	 */
 	void setInterceptors( final AbstractHttpClient client, Object... encodings ) {
 		// remove any encoding interceptors that are already set
 		client.removeRequestInterceptorByClass( ContentEncoding.RequestInterceptor.class );
 		client.removeResponseInterceptorByClass( ContentEncoding.ResponseInterceptor.class );
-		
+
 		for ( Object encName : encodings ) {
 			ContentEncoding enc = availableEncoders.get( encName.toString() );
 			if ( enc == null ) continue;

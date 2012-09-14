@@ -5,52 +5,52 @@
                                     ------
 
 
-Simple POST 
+Simple POST
 
- HTTPBuilder defines a {{{../apidocs/groovyx/net/http/HTTPBuilder.html#post(java.util.Map,%20groovy.lang.Closure)}<<<post()>>> 
+ HTTPBuilder defines a {{{../apidocs/groovyx/net/http/HTTPBuilder.html#post(java.util.Map,%20groovy.lang.Closure)}<<<post()>>>
  convenience method}}, which allows for easily POSTing data as an HTML form:
- 
+
 %{code-snippet|id=post1|brush=groovy|file=src/site/examples.txt}
 
 
- <(Note that the above example excludes some authentication details needed by 
+ <(Note that the above example excludes some authentication details needed by
  the Twitter API; see the unit test for a working example.)>
- 
- Similar to the <<<get(...)>>> convenience method, <<<post(...)>>> accepts the 
- options as named parameters, and takes a closure that is called as the 
+
+ Similar to the <<<get(...)>>> convenience method, <<<post(...)>>> accepts the
+ options as named parameters, and takes a closure that is called as the
  'success' response handler.  There is also a <<<post>>> variant that does not
- require a response handler closure; in this case, the builder instance's 
- success handler is used, which by default will return the parsed response 
- data.   
- 
+ require a response handler closure; in this case, the builder instance's
+ success handler is used, which by default will return the parsed response
+ data.
+
  <<Note on the Content-Type of POSTed data:>>
- HTTPBuilder's <<<post>>> method is special in particular because it 
+ HTTPBuilder's <<<post>>> method is special in particular because it
  assumes the request body will be URL-encoded form data.  This is the only method
- that assumes a particular request content-type.  For all methods that send a 
- request body (including <<<post>>>,) a <<<requestContentType>>> parameter may be 
- set to explicitly define how the request data should be serialized.  In these 
- cases, if the request content-type is not specified, it will default to the 
- response <<<contentType>>>.  Supported request content-types are handled by the 
- <<<{{{../apidocs/index.html?groovyx/net/http/EncoderRegistry.html}EncoderRegistry}}>>> 
- class. 
-    
+ that assumes a particular request content-type.  For all methods that send a
+ request body (including <<<post>>>,) a <<<requestContentType>>> parameter may be
+ set to explicitly define how the request data should be serialized.  In these
+ cases, if the request content-type is not specified, it will default to the
+ response <<<contentType>>>.  Supported request content-types are handled by the
+ <<<{{{../apidocs/index.html?groovyx/net/http/EncoderRegistry.html}EncoderRegistry}}>>>
+ class.
 
 
-POSTing with the <<<request(...)>>> Method 
+
+POSTing with the <<<request(...)>>> Method
 
   This example is equivalent to the above, using the <<<request()>>> method:
 
 %{code-snippet|id=post2|brush=groovy|file=src/site/examples.txt}
 
   In the above example, <<<uri>>>, <<<body>>>, <<<requestContentType>>> and
-  <<<response>>> are properties of the 
+  <<<response>>> are properties of the
   {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}closure delegate}}
   so they are already defined.
 
-  For cases where the request content-type is necessarily different than the 
-  response, the request configuration delegate has a 
-  <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#send(java.lang.Object,%20java.lang.Object)}send()}}>>> 
+  For cases where the request content-type is necessarily different than the
+  response, the request configuration delegate has a
+  <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#send(java.lang.Object,%20java.lang.Object)}send()}}>>>
   method which can be used set the request content-type and data at the same time:
-  
+
 
 %{code-snippet|id=post3|brush=groovy|file=src/site/examples.txt}

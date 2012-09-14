@@ -30,11 +30,11 @@ import org.apache.http.conn.scheme.*;
 
 public class GAEConnectionManager
   implements ClientConnectionManager {
-  
+
   public GAEConnectionManager() {
     SocketFactory no_socket_factory = new SocketFactory() {
-	public Socket connectSocket(Socket sock, String host, int port, 
-				    InetAddress localAddress, int localPort, 
+	public Socket connectSocket(Socket sock, String host, int port,
+				    InetAddress localAddress, int localPort,
 				    HttpParams params) {
 	  return null;
 	}
@@ -58,7 +58,7 @@ public class GAEConnectionManager
     return schemeRegistry;
   }
 
-  public ClientConnectionRequest requestConnection(final HttpRoute route, 
+  public ClientConnectionRequest requestConnection(final HttpRoute route,
 							     final Object state) {
     return new ClientConnectionRequest() {
       public void abortRequest() {
@@ -71,7 +71,7 @@ public class GAEConnectionManager
     };
   }
 
-  public void releaseConnection(ManagedClientConnection conn, 
+  public void releaseConnection(ManagedClientConnection conn,
 					  long validDuration, TimeUnit timeUnit) {
   }
 

@@ -14,36 +14,36 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
 
 /**
- * Thrown when a response body is parsed unsuccessfully.  This most often 
- * occurs when a server returns an error status code and sends a different 
- * content-type body from what was expected.  You can inspect the response 
+ * Thrown when a response body is parsed unsuccessfully.  This most often
+ * occurs when a server returns an error status code and sends a different
+ * content-type body from what was expected.  You can inspect the response
  * content-type by calling <code>ex.response.contentType</code>.
- * 
+ *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5.0
  */
 public class ResponseParseException extends HttpResponseException {
-	
+
 	private static final long serialVersionUID = -1398234959324603287L;
 
 	/* TODO this is a bit wonky because org.apache.http...HttpResponseException
-	   does not have a constructor to pass the 'cause'.  But I want this to 
-	   extend HttpResponseException so that one exception type can catch 
+	   does not have a constructor to pass the 'cause'.  But I want this to
+	   extend HttpResponseException so that one exception type can catch
 	   everything thrown from HttpBuilder. */
 	private Throwable cause;
-	
+
 	public ResponseParseException( HttpResponseDecorator response, Throwable cause ) {
 		super( response );
 		this.cause = cause;
 	}
-	
+
 	@Override public Throwable getCause() { return this.cause; }
 }

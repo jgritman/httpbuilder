@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -51,7 +51,7 @@ import org.apache.http.protocol.HttpContext;
 /**
  * Encapsulates all configuration related to HTTP authentication methods.
  * @see HTTPBuilder#getAuth()
- * 
+ *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class AuthConfig {
@@ -59,11 +59,11 @@ public class AuthConfig {
 	public AuthConfig( HTTPBuilder builder ) {
 		this.builder = builder;
 	}
-	
+
 	/**
-	 * Set authentication credentials to be used for the current 
-	 * {@link HTTPBuilder#getUri() default host}.  This method name is a bit of 
-	 * a misnomer, since these credentials will actually work for "digest" 
+	 * Set authentication credentials to be used for the current
+	 * {@link HTTPBuilder#getUri() default host}.  This method name is a bit of
+	 * a misnomer, since these credentials will actually work for "digest"
 	 * authentication as well.
 	 * @param user
 	 * @param pass
@@ -73,31 +73,31 @@ public class AuthConfig {
 		if ( uri == null ) throw new IllegalStateException( "a default URI must be set" );
 		this.basic( uri.getHost(), uri.getPort(), user, pass );
 	}
-	
+
 	/**
-	 * Set authentication credentials to be used for the given host and port. 
+	 * Set authentication credentials to be used for the given host and port.
 	 * @param host
 	 * @param port
 	 * @param user
 	 * @param pass
 	 */
 	public void basic( String host, int port, String user, String pass ) {
-		builder.getClient().getCredentialsProvider().setCredentials( 
+		builder.getClient().getCredentialsProvider().setCredentials(
 			new AuthScope( host, port ),
 			new UsernamePasswordCredentials( user, pass )
 		);
 	}
-	
+
 	/**
-	 * Sets a certificate to be used for SSL authentication.  See 
-	 * {@link Class#getResource(String)} for how to get a URL from a resource 
+	 * Sets a certificate to be used for SSL authentication.  See
+	 * {@link Class#getResource(String)} for how to get a URL from a resource
 	 * on the classpath.
-	 * @param certURL URL to a JKS keystore where the certificate is stored.  
+	 * @param certURL URL to a JKS keystore where the certificate is stored.
 	 * @param password password to decrypt the keystore
 	 */
-	public void certificate( String certURL, String password ) 
+	public void certificate( String certURL, String password )
 			throws GeneralSecurityException, IOException {
-		
+
 		KeyStore keyStore = KeyStore.getInstance( KeyStore.getDefaultType() );
         InputStream jksStream = new URL(certURL).openStream();
         try {
@@ -106,20 +106,20 @@ public class AuthConfig {
 
         SSLSocketFactory ssl = new SSLSocketFactory(keyStore, password);
         ssl.setHostnameVerifier( SSLSocketFactory.STRICT_HOSTNAME_VERIFIER );
-        
+
         builder.getClient().getConnectionManager().getSchemeRegistry()
         	.register( new Scheme("https", ssl, 443) );
 	}
 
 	/**
 	 * </p>OAuth sign all requests.  Note that this currently does <strong>not</strong>
-	 * wait for a <code>WWW-Authenticate</code> challenge before sending the 
+	 * wait for a <code>WWW-Authenticate</code> challenge before sending the
 	 * the OAuth header.  All requests to all domains will be signed for this
 	 * instance.</p>
-	 * 
-	 * <p>This assumes you've already generated an <code>accessToken</code> and 
+	 *
+	 * <p>This assumes you've already generated an <code>accessToken</code> and
 	 * <code>secretToken</code> for the site you're targeting.  For More information
-	 * on how to achieve this, see the 
+	 * on how to achieve this, see the
 	 * <a href='http://code.google.com/p/oauth-signpost/wiki/GettingStarted#Using_Signpost'>Signpost documentation</a>.</p>
 	 * @since 0.5.1
 	 * @param consumerKey <code>null</code> if you want to <strong>unset</strong>
@@ -129,13 +129,13 @@ public class AuthConfig {
 	 * @param secretToken
 	 */
 	public void oauth( String consumerKey, String consumerSecret,
-			String accessToken, String secretToken ) {		
+			String accessToken, String secretToken ) {
 		this.builder.client.removeRequestInterceptorByClass( OAuthSigner.class );
 		if ( consumerKey != null )
 			this.builder.client.addRequestInterceptor( new OAuthSigner(
 				consumerKey, consumerSecret, accessToken, secretToken ) );
 	}
-	
+
 	/**
 	 * This class is used to sign all requests via an {@link HttpRequestInterceptor}
 	 * until the context-aware AuthScheme is released in HttpClient 4.1.
@@ -144,20 +144,20 @@ public class AuthConfig {
 	static class OAuthSigner implements HttpRequestInterceptor {
 		protected OAuthConsumer oauth;
 		public OAuthSigner( String consumerKey, String consumerSecret,
-			String accessToken, String secretToken ) {		
+			String accessToken, String secretToken ) {
 			this.oauth = new CommonsHttpOAuthConsumer( consumerKey, consumerSecret );
 			oauth.setTokenWithSecret( accessToken, secretToken );
 		}
-		
+
 		public void process(HttpRequest request, HttpContext ctx) throws HttpException, IOException {
-			/* The full request URI must be reconstructed between the context and the request URI.  
+			/* The full request URI must be reconstructed between the context and the request URI.
 			 * Best we can do until AuthScheme supports HttpContext.  See:
 			 * https://issues.apache.org/jira/browse/HTTPCLIENT-901 */
 			try {
 				HttpHost host = (HttpHost) ctx.getAttribute( ExecutionContext.HTTP_TARGET_HOST );
 				final URI requestURI = new URI( host.toURI() ).resolve( request.getRequestLine().getUri() );
-				
-				oauth.signpost.http.HttpRequest oAuthRequest = 
+
+				oauth.signpost.http.HttpRequest oAuthRequest =
 					new OAuthRequestAdapter(request, requestURI);
 				this.oauth.sign( oAuthRequest );
 			}
@@ -168,16 +168,16 @@ public class AuthConfig {
 				throw new HttpException( "OAuth signing error", e);
 			}
 		}
-		
+
 		static class OAuthRequestAdapter implements oauth.signpost.http.HttpRequest {
-			
+
 			final HttpRequest request;
 			final URI requestURI;
 			OAuthRequestAdapter( HttpRequest request, URI requestURI ) {
 				this.request = request;
 				this.requestURI = requestURI;
 			}
-			
+
 			public String getRequestUrl() { return requestURI.toString(); }
 			public void setRequestUrl(String url) {/*ignore*/}
 			public Map<String, String> getAllHeaders() {
@@ -185,7 +185,7 @@ public class AuthConfig {
 				// FIXME this doesn't account for repeated headers,
 				// which are allowed by the HTTP spec!!
 				for ( Header h : request.getAllHeaders() )
-					headers.put(h.getName(), h.getValue()); 
+					headers.put(h.getName(), h.getValue());
 				return headers;
 			}
 			public String getContentType() {

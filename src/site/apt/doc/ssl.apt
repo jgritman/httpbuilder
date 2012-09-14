@@ -6,27 +6,27 @@
 
 SSL Configuration
 
-  SSL should, for the most part, "just work."  There are a few situations where 
-  it is not completely intuitive.  You can follow the example below, or see HttpClient's 
+  SSL should, for the most part, "just work."  There are a few situations where
+  it is not completely intuitive.  You can follow the example below, or see HttpClient's
   {{{http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/conn/ssl/SSLSocketFactory.html}SSLSocketFactory documentation}}
   for more information.
- 
-  
+
+
 * SSLPeerUnverifiedException
 
-  If you can't connect to an SSL website, it is likely because the certificate 
+  If you can't connect to an SSL website, it is likely because the certificate
   chain is not trusted.  This is an Apache HttpClient issue, but explained here
-  for convenience.  To correct the untrusted certificate, you need to import a 
+  for convenience.  To correct the untrusted certificate, you need to import a
   certificate into an SSL truststore.
-  
-  First, export a certificate from the website using your browser.  For example, 
+
+  First, export a certificate from the website using your browser.  For example,
   if you go to <https://dev.java.net> in Firefox, you will probably get a warning
-  in your browser.  Choose "Add Exception," "Get Certificate," "View," 
+  in your browser.  Choose "Add Exception," "Get Certificate," "View,"
   "Details tab." Choose a certificate in the chain and export it as a PEM file.
   You can view the details of the exported certificate like so:
-  
+
 -----------------------
-$ keytool -printcert -file EquifaxSecureGlobaleBusinessCA-1.crt 
+$ keytool -printcert -file EquifaxSecureGlobaleBusinessCA-1.crt
 Owner: CN=Equifax Secure Global eBusiness CA-1, O=Equifax Secure Inc., C=US
 Issuer: CN=Equifax Secure Global eBusiness CA-1, O=Equifax Secure Inc., C=US
 Serial number: 1
@@ -40,7 +40,7 @@ Certificate fingerprints:
 -----------------------
 
   Now, import that into a Java keystore file:
-  
+
 -----------------------
 $ keytool -importcert -alias "equifax-ca" -file EquifaxSecureGlobaleBusinessCA-1.crt \
 > -keystore truststore.jks -storepass test1234
@@ -57,8 +57,8 @@ Certificate fingerprints:
 Trust this certificate? [no]:  yes
 Certificate was added to keystore
 -----------------------
-  
+
   Now you want to use this truststore in your client:
-  
+
 %{code-snippet|id=ssl1|brush=groovy|file=src/site/examples.txt}
-  
+

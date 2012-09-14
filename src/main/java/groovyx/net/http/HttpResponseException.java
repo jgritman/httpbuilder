@@ -14,33 +14,33 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
 
 /**
  * Wraps an error response in an exception for flow control purposes.  That is,
- * you can still inspect response headers, but in a 
- * <code>catch( HttpResponseException ex ) {  }</code> block. 
- * 
+ * you can still inspect response headers, but in a
+ * <code>catch( HttpResponseException ex ) {  }</code> block.
+ *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @since 0.5
  */
 public class HttpResponseException extends org.apache.http.client.HttpResponseException {
-	
+
 	private static final long serialVersionUID = -34809347677236L;
 
 	HttpResponseDecorator response;
-	
+
 	public HttpResponseException( HttpResponseDecorator resp ) {
-		super( resp.getStatusLine().getStatusCode(), 
+		super( resp.getStatusLine().getStatusCode(),
 				resp.getStatusLine().getReasonPhrase() );
 		this.response = resp;
 	}
-	
+
 	public HttpResponseDecorator getResponse() {
 		return response;
 	}

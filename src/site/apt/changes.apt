@@ -8,116 +8,116 @@
 Change Log
 
    See the {{{./jira-report.html}JIRA Report}} for a comprehensive change list.
-   
+
 * v0.5.2 - 26 Dec 2011
 
   * Support for escaped URI query parameters
-  
+
   * Fixes for AsyncHTTPBuilder
-  
+
   * AppEngine connection manager
-  
+
   * Ability to customize HttpClient construction e.g. with a connection manager
 
 * v0.5.1 - 30 Sept 2010
 
   * OAuth support via Signpost
-  
+
   * Access to the request context used in the response
-  
+
   * Updated HttpClient dependency to 4.0.3
-  
+
   * Fixed cookie expiry date parsing
-  
+
   * Fixed parsing URL-encoded response
-   
+
 * v0.5.0 - 03 May 2010
 
   * RESTClient for more REST-ful request API.
-  
+
   * HttpURLClient for a similar API that is compatible with Google App Engine.
-  
+
   * Added resolver catalog for (X)HTML DTDs
 
   * Improved header access API
-  
+
   * Moved project to GMOD Maven repo.  New groupId is <<<org.codehaus.groovy.modules.http-builder>>>
-  
-  * Changed "url" property names to "uri" (breaking change!)  
-  
-  * HTTPBuilder's "uri" property returns a URIBuilder, to make default 
+
+  * Changed "url" property names to "uri" (breaking change!)
+
+  * HTTPBuilder's "uri" property returns a URIBuilder, to make default
     URL manipulation easier.
-  
+
   * Renamed SendDelegate to RequestConfigDelegate (possibly breaking change)
-  
+
   * Fixed bug when assigning default URI via named argument
-  
+
   * Fixed default response handlers for AsyncHTTPBuilder
-  
+
   * Fixed illegal character encoding in <<<URIBuilder.setPath()>>>
-  
+
   * Fixed default response handlers in AsyncHTTPBuilder
-  
+
   * Changed request configuration closure resolution strategy to DELEGATE_FIRST
 
 * v0.4.1 - 04 Mar 2009
 
   * Fixed double-encoding of URI parameters
-  
+
   * Added proxy support
-  
+
   * Updated to HttpClient 4.0-beta2
 
 * v0.4.0 - 14 Jan 2009
 
-  * Updated default success handler to buffer and return parsed data outside of 
+  * Updated default success handler to buffer and return parsed data outside of
     request/response context
 
 * v0.3.1 - 5 Jan 2009
-  
+
   * Corrected <<<ContentType.BINARY>>> value
 
 * v0.3.0 - 24 Dec 2008
-  
-  * Added AsyncHTTPBuilder 
-  
+
+  * Added AsyncHTTPBuilder
+
   * Fixed bug in ParserRegistry.getCharset
-  
-  * Changed parser resolution to always use given charset unless 'ANY' is used 
-  
+
+  * Changed parser resolution to always use given charset unless 'ANY' is used
+
   * Added xref report to site documentation
-  
+
   * Improved header handling
-   
+
   * Fix for NPE when response has no entity (i.e. HEAD)
 
 * v0.2.2 - 18 Dec 2008
 
   * Fixed bug when 'path' named parameter is a GString
-  
+
   * Removed Java 1.6 dependencies
-  
-  * Documentation 
+
+  * Documentation
 
 * v0.2.1 - 16 Dec 2008
 
   * Changed package name & added to Groovy-contrib
 
   * Added support for GZIP and deflate response content-encoding
-  
+
   * Support for default request headers & changing headers via map access
-  
+
   * Fixed bug from json-lib
-  
+
   * Built-in HTML parsing support via Neko
-  
+
   * Support for multiple equivalent content-types
-  
+
   * Differing request and response content-types
-  
-  * Only attempt to parse response if the receiving response handler accepts 
+
+  * Only attempt to parse response if the receiving response handler accepts
     two parameters
-    
+
   * Added license to source code
 
 * v0.1 - 8 Dec 2008

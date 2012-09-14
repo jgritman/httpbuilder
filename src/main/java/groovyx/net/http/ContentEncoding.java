@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -34,7 +34,7 @@ import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.protocol.HttpContext;
 
 /**
- * Base class for handing content-encoding.  
+ * Base class for handing content-encoding.
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public abstract class ContentEncoding {
@@ -48,11 +48,11 @@ public abstract class ContentEncoding {
 	public HttpRequestInterceptor getRequestInterceptor() {
 		return new RequestInterceptor();
 	}
-	
+
 	public HttpResponseInterceptor getResponseInterceptor() {
 		return new ResponseInterceptor();
 	}
-	
+
 	/**
 	 * Enumeration of common content-encodings.
 	 */
@@ -66,7 +66,7 @@ public abstract class ContentEncoding {
 			return this.name().toLowerCase();
 		}
 	}
-	
+
 	/**
 	 * Request interceptor that adds the correct <code>Accept</code> header
 	 * to the outgoing request.
@@ -75,9 +75,9 @@ public abstract class ContentEncoding {
 	protected class RequestInterceptor implements HttpRequestInterceptor {
 		public void process( final HttpRequest req,
 				final HttpContext context ) throws HttpException, IOException {
-			
+
 			// set the Accept-Encoding header:
-			String encoding = getContentEncoding();			
+			String encoding = getContentEncoding();
 			if ( !req.containsHeader( ACCEPT_ENC_HDR ) )
 				req.addHeader( ACCEPT_ENC_HDR, encoding );
 
@@ -89,7 +89,7 @@ public abstract class ContentEncoding {
 				String encList = (!values.toString().contains( encoding )) ? values
 						.append( encoding ).toString()
 						: values.toString().substring( 0, values.lastIndexOf( "," ) );
-						
+
 				req.setHeader( ACCEPT_ENC_HDR, encList );
 			}
 
@@ -98,18 +98,18 @@ public abstract class ContentEncoding {
 	}
 
 	/**
-	 * Response interceptor that filters the response stream to decode the 
+	 * Response interceptor that filters the response stream to decode the
 	 * compressed content before it is passed on to the parser.
 	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
 	 */
 	protected class ResponseInterceptor implements HttpResponseInterceptor {
-		public void process( final HttpResponse response, final HttpContext context ) 
+		public void process( final HttpResponse response, final HttpContext context )
 				throws HttpException, IOException {
 
 			if ( hasEncoding( response, getContentEncoding() ) )
 				response.setEntity( wrapResponseEntity( response.getEntity() ) );
 		}
-		
+
 		protected boolean hasEncoding( final HttpResponse response, final String encoding ) {
 			HttpEntity entity = response.getEntity();
 			if ( entity == null ) return false;
@@ -120,7 +120,7 @@ public abstract class ContentEncoding {
 			for ( int i = 0; i < codecs.length; i++ )
 				if ( encoding.equalsIgnoreCase( codecs[i].getName() ) )
 					return true;
-			
+
 			return false;
 		}
 	}

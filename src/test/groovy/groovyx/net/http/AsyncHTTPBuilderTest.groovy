@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are asked (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are asked (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http
@@ -24,7 +24,9 @@ package groovyx.net.http
 import org.junit.Test
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-import java.util.concurrent.ExecutionExceptionimport org.apache.http.conn.ConnectTimeoutException
+import java.util.concurrent.ExecutionException
+import org.apache.http.conn.ConnectTimeoutException
+
 /**
  * @author tnichols
  */
@@ -34,9 +36,9 @@ public class AsyncHTTPBuilderTest {
 		def http = new AsyncHTTPBuilder( poolSize : 4,
 						uri : 'http://hc.apache.org',
 						contentType : ContentType.HTML )
-		
+
 		def done = []
-		
+
 		done << http.get(path:'/') { resp, html ->
 			println "${Thread.currentThread().name} response 1"
 			true
@@ -56,9 +58,9 @@ public class AsyncHTTPBuilderTest {
 			println "${Thread.currentThread().name} response 4"
 			true
 		}
-		
+
 		println done.size()
-		
+
 		def timeout = 30000
 		def time = 0
 		while ( true ) {
@@ -74,11 +76,11 @@ public class AsyncHTTPBuilderTest {
 
 	@Test public void testDefaultConstructor() {
 		def http = new AsyncHTTPBuilder()
-		def resp = http.get( uri:'http://ajax.googleapis.com', 
+		def resp = http.get( uri:'http://ajax.googleapis.com',
 					path : '/ajax/services/search/web',
 					query : [ v:'1.0', q: 'Calvin and Hobbes' ],
 					contentType: JSON )
-					
+
 		while ( ! resp.done  ) Thread.sleep 2000
 		assert resp.get().size()
 		assert resp.get().responseData.results
@@ -87,27 +89,27 @@ public class AsyncHTTPBuilderTest {
 
 	@Test public void testPostAndDelete() {
 		def http = new AsyncHTTPBuilder(uri:'http://api.twitter.com/1/statuses/')
-		
+
 		http.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
 				System.getProperty('twitter.oauth.consumerSecret'),
 				System.getProperty('twitter.oauth.accessToken'),
 				System.getProperty('twitter.oauth.secretToken')
-			   
+
 		http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
-		
+
 		def msg = "AsyncHTTPBuilder unit test was run on ${new Date()}"
-		
+
 		def resp = http.post( contentType:XML, path : 'update.xml',
 			body:[status:msg,source:'httpbuilder'] )
-			
-		while ( ! resp.done  ) Thread.sleep 2000 
+
+		while ( ! resp.done  ) Thread.sleep 2000
 		def postID = resp.get().id.text()
 		assert postID
-		
+
 		// delete the test message.
 		resp = http.request( DELETE, JSON ) { req ->
 			uri.path = "destroy/${postID}.json"
-			
+
 			response.success = { resp2, json ->
 				assert json.id != null
 				assert resp2.statusLine.statusCode == 200
@@ -115,20 +117,20 @@ public class AsyncHTTPBuilderTest {
 				return json
 			}
 		}
-		
+
 		while ( ! resp.done  ) Thread.sleep( 2000 )
 		assert resp.get().id.toString() == postID
 		http.shutdown()
 	}
-	
-	
+
+
 	@Test public void testTimeout() {
-		def http = new AsyncHTTPBuilder( uri:'http://ajax.googleapis.com', 
+		def http = new AsyncHTTPBuilder( uri:'http://ajax.googleapis.com',
 				contentType: JSON, timeout:2 ) // 2ms to force timeout
 
-		assert http.timeout == 2 
-		
-		def resp = http.get( path : '/ajax/services/search/web', 
+		assert http.timeout == 2
+
+		def resp = http.get( path : '/ajax/services/search/web',
 				query : [ v:'1.0', q: 'HTTPBuilder' ] )
 
 		Thread.sleep 100
@@ -140,18 +142,18 @@ public class AsyncHTTPBuilderTest {
 			assert ex.cause.getClass() == ConnectTimeoutException
 		}
 	}
-	
+
 	@Test public void testPoolsizeAndQueueing() {
 		def http = new AsyncHTTPBuilder( poolSize : 1 ,
 				uri : 'http://ajax.googleapis.com/ajax/services/search/web' )
-		
+
 		def responses = []
-		/* With one thread in the pool, responses will be sequential but should 
+		/* With one thread in the pool, responses will be sequential but should
 		 * queue up w/o being rejected. */
 		responses << http.get( query : [q:'Groovy', v:'1.0'] )
 		responses << http.get( query : [q:'Ruby', v:'1.0'] )
 		responses << http.get( query : [q:'Scala', v:'1.0'] )
-		
+
 		def timeout = 60000
 		def time = 0
 		while ( true ) {
@@ -164,7 +166,7 @@ public class AsyncHTTPBuilderTest {
 		println()
 		http.shutdown()
 	}
-	
+
 	@Test public void testInvalidNamedArg() {
 		try {
 			def http = new AsyncHTTPBuilder( poolsize : 1 ,

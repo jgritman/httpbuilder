@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -30,25 +30,25 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 
 /**
- * Enumeration of valid HTTP methods that may be used in a 
+ * Enumeration of valid HTTP methods that may be used in a
  * {@link HTTPBuilder#request(Method, groovy.lang.Closure) request} call.
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum Method {
-	GET( HttpGet.class ), 
-	PUT( HttpPut.class ), 
-	POST( HttpPost.class ), 
-	DELETE( HttpDelete.class ), 
+	GET( HttpGet.class ),
+	PUT( HttpPut.class ),
+	POST( HttpPost.class ),
+	DELETE( HttpDelete.class ),
 	HEAD( HttpHead.class );
-	
+
 	private final Class<? extends HttpRequestBase> requestType;
-	
+
 	/**
 	 * Get the HttpRequest class that represents this request type.
 	 * @return a non-abstract class that implements {@link HttpRequest}
 	 */
 	public Class<? extends HttpRequestBase> getRequestType() { return this.requestType; }
-	
+
 	private Method( Class<? extends HttpRequestBase> type ) {
 		this.requestType = type;
 	}

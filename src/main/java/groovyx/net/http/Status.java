@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -32,13 +32,13 @@ public enum Status {
 	FAILURE ( 400, 999 );
 
 	private final int min, max;
-	
+
 	@Override public String toString() {
 		return super.toString().toLowerCase();
 	}
-	
+
 	/**
-	 * Returns true if the numeric code matches the represented status (either 
+	 * Returns true if the numeric code matches the represented status (either
 	 * <code>success</code> or <code>failure</code>).  i.e.
 	 * <pre>
 	 * assert Status.SUCCESS.matches(200);
@@ -51,20 +51,20 @@ public enum Status {
 	public boolean matches( int code ) {
 		return min <= code && code <= max;
 	}
-	
+
 	/**
-	 * Find the Status value that matches the given status code. 
+	 * Find the Status value that matches the given status code.
 	 * @param code HTTP response code
 	 * @return a 'success' or 'failure' Status value
 	 * @throws IllegalArgumentException if the given code is not a valid HTTP
 	 *   status code.
 	 */
 	public static Status find( int code ) {
-		for ( Status s : Status.values() ) 
+		for ( Status s : Status.values() )
 			if ( s.matches( code ) ) return s;
 		throw new IllegalArgumentException( "Unknown status: " + code );
 	}
-	
+
 	private Status( int min, int max ) {
 		this.min = min; this.max = max;
 	}

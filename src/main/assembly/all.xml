@@ -1,6 +1,6 @@
 <assembly>
-	<!-- Assembles source, compiled JARs, and site documentation into a single 
-	     distributable package.  
+	<!-- Assembles source, compiled JARs, and site documentation into a single
+	     distributable package.
 	  -->
   <id>all</id>
   <formats>
@@ -26,7 +26,7 @@
     	</includes>
     </fileSet>
   </fileSets>
-  
+
   <dependencySets>
     <dependencySet>
     	<unpack>false</unpack>
@@ -36,5 +36,5 @@
     	<outputDirectory>dependencies</outputDirectory>
     </dependencySet>
   </dependencySets>
-  
+
 </assembly>

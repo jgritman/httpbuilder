@@ -13,14 +13,14 @@ http.request( GET, JSON ) {
     println resp.status
 
     // parse the JSON response object:
-    json.responseData.results.each { 
+    json.responseData.results.each {
       println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
     }
   }
 
   // handler for any failure status code:
   response.failure = { resp ->
-    println "Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}" 
+    println "Unexpected error: ${resp.status} : ${resp.statusLine.reasonPhrase}"
   }
 }
 END SNIPPET: overview1
@@ -36,16 +36,16 @@ def http = new HTTPBuilder( 'http://www.google.com/search' )
 http.request(GET,TEXT) { req ->
   uri.path = '/mail/help/tasks/' // overrides any path in the default URL
   headers.'User-Agent' = 'Mozilla/5.0'
-  
+
   response.success = { resp, reader ->
     assert resp.status == 200
     println "My response handler got response: ${resp.statusLine}"
-    println "Response length: ${resp.headers.'Content-Length'}" 
+    println "Response length: ${resp.headers.'Content-Length'}"
     System.out << reader // print response reader
   }
-  
+
   // called only for a 404 (not found) status code:
-  response.'404' = { resp ->  
+  response.'404' = { resp ->
     println 'Not found'
   }
 }
@@ -72,7 +72,7 @@ def http = new HTTPBuilder( 'http://ajax.googleapis.com' )
 http.request( GET, JSON ) {
   uri.path = '/ajax/services/search/web'
   uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
-  
+
   response.success = { resp, json ->
     assert json.size() == 3
     println "Query response: "
@@ -107,10 +107,10 @@ END SNIPPET: get1
 START SNIPPET: get2
 def http = new HTTPBuilder('http://www.google.com')
 
-http.get( path : '/search', 
+http.get( path : '/search',
           contentType : TEXT,
           query : [q:'Groovy'] ) { resp, reader ->
-          
+
   println "response status: ${resp.statusLine}"
   println 'Headers: -----------'
   resp.headers.each { h ->
@@ -125,7 +125,7 @@ END SNIPPET: get2
 
 START SNIPPET: get3
 def http = new HTTPBuilder()
- 
+
 http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
   uri.path = '/ajax/services/search/web'
   uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
@@ -138,7 +138,7 @@ http.request( 'http://ajax.googleapis.com', GET, TEXT ) { req ->
     println "Content-Type: ${resp.headers.'Content-Type'}"
     println reader.text
   }
-    
+
   response.'404' = {
     println 'Not found'
   }
@@ -154,7 +154,7 @@ def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 // auth omitted...
 def postBody = [status:'update!',source:'httpbuilder'] // will be url-encoded
 
-http.post( path: 'update.xml', body: postBody, 
+http.post( path: 'update.xml', body: postBody,
            requestContentType: URLENC ) { resp ->
 
   println "Tweet response status: ${resp.statusLine}"
@@ -168,10 +168,10 @@ import groovyx.net.http.HTTPBuilder
 
 def http = new HTTPBuilder('http://twitter.com/statuses/')
 // auth omitted...
-http.request( POST ) { 
+http.request( POST ) {
   uri.path = 'update.xml'
-  body =  [ status : 'update!' , source : 'httpbuilder' ] 
-  requestContentType = ContentType.URLENC 
+  body =  [ status : 'update!' , source : 'httpbuilder' ]
+  requestContentType = ContentType.URLENC
 
   response.success = { resp ->
     println "Tweet response status: ${resp.statusLine}"
@@ -186,10 +186,10 @@ import static groovyx.net.http.ContentType.URLENC
 
 def http = new HTTPBuilder('http://twitter.com/statuses/')
 // auth omitted...
-http.request( POST ) { 
+http.request( POST ) {
   uri.path = 'update.xml'
-  send URLENC, [ status : 'update!' , source : 'httpbuilder' ] 
-  
+  send URLENC, [ status : 'update!' , source : 'httpbuilder' ]
+
   response.success = { .... }
 }
 END SNIPPET: post3
@@ -197,7 +197,7 @@ END SNIPPET: post3
 
 START SNIPPET: xml1
 import groovyx.net.http.*
-@Grab(group='org.codehaus.groovy.modules.http-builder', 
+@Grab(group='org.codehaus.groovy.modules.http-builder',
     module='http-builder', version='0.5.2' )
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
@@ -213,7 +213,7 @@ END SNIPPET: xml1
 
 START SNIPPET: xml2
 http.request( POST, XML ) {
-  
+
   body = {
     auth {
       user 'Bob'
@@ -242,7 +242,7 @@ def twitter = new RESTClient( 'https://twitter.com/statuses/' )
 // set a default response content-type
 twitter.contentType = TEXT
 /* set default headers which will override what's automatically sent in the
-   request by the default contentType param */  
+   request by the default contentType param */
 twitter.headers = [ Accept : 'application/xml', ]
 
 def resp = twitter.get( path : 'friends_timeline.xml' )
@@ -250,16 +250,16 @@ END SNIPPET: xml4
 
 START SNIPPET: json1
 import groovyx.net.http.*
-@Grab(group='org.codehaus.groovy.modules.http-builder', 
+@Grab(group='org.codehaus.groovy.modules.http-builder',
     module='http-builder', version='0.5.2' )
 
 def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
 
-http.get( path: 'user_timeline.json', 
+http.get( path: 'user_timeline.json',
         query: [id:'httpbuilder', count:5] ) { resp, json ->
-        
+
     println resp.status
-    
+
     json.each {  // iterate over JSON 'status' object in the response:
         println it.created_at
         println '  ' + it.text
@@ -270,7 +270,7 @@ END SNIPPET: json1
 START SNIPPET: json2
 http.request( POST, JSON ) { req ->
     body = [name:'bob', title:'construction worker']
-   
+
      response.success = { resp, json ->
         // response handling here
     }
@@ -289,7 +289,7 @@ START SNIPPET: json3
       	  zip : 12345
       	]
       ]
-     
+
       response.success = { resp, json ->
           // response handling here
       }
@@ -322,7 +322,7 @@ assert ( resp.data instanceof net.sf.json.JSON )
 assert resp.data.status.size() > 0
 END SNIPPET: rest2
 
-START SNIPPET: rest3 
+START SNIPPET: rest3
 def msg = "I'm using HTTPBuilder's RESTClient on ${new Date()}"
 
 resp = twitter.post( path : 'update.xml',
@@ -336,7 +336,7 @@ assert resp.data.user.screen_name == userName
 def postID = resp.data.id.toInteger()
 END SNIPPET: rest3
 
-START SNIPPET: rest4 
+START SNIPPET: rest4
 resp = twitter.delete( path : "destroy/${postID}.json" )
 assert resp.status == 200
 assert resp.data.id == postID
@@ -350,7 +350,7 @@ def uri = new URIBuilder( 'http://www.google.com/one/two?a=1#frag' )
 
 uri.scheme = 'https'
 assert uri.toString() == 'https://www.google.com:80/one/two?a=1#frag'
-		
+
 uri.host = 'localhost'
 assert uri.toString() == 'https://localhost:80/one/two?a=1#frag'
 
@@ -385,7 +385,7 @@ assert uri.toString() == 'http://localhost?d=4&a=1'
 
 uri.query = [z:0,y:9,x:8]
 assert uri.toString() == 'http://localhost?z=0&y=9&x=8'
-		
+
 uri.query = null
 assert uri.toString() == 'http://localhost'
 
@@ -407,12 +407,12 @@ START SNIPPET: async1
 import groovyx.net.http.AsyncHTTPBuilder
 import static groovyx.net.http.ContentType.HTML
 
-def http = new AsyncHTTPBuilder( 
+def http = new AsyncHTTPBuilder(
                 poolSize : 4,
                 uri : 'http://hc.apache.org',
                 contentType : HTML )
-        
-        
+
+
 def result = http.get(path:'/') { resp, html ->
     println ' got async response!'
     return html
@@ -425,7 +425,7 @@ while ( ! result.done ) {
     Thread.sleep(2000)
 }
 
-/* The Future instance contains whatever is returned from the response 
+/* The Future instance contains whatever is returned from the response
    closure above; in this case the parsed HTML data: */
 def html = result.get()
 assert html instanceof groovy.util.slurpersupport.GPathResult
@@ -437,7 +437,7 @@ import groovyx.net.http.*
 def http = new HttpURLClient( url: 'http://twitter.com/statuses/' )
 
 // JSON request:
-def resp = http.request( path: 'user_timeline.json', 
+def resp = http.request( path: 'user_timeline.json',
         query: [id:'httpbuilder', count:5] )
 
 println "JSON response: ${resp.status}"
@@ -447,11 +447,11 @@ resp.data.each {  // iterate over each JSON object in the response array:
     println '  ' + it.text
 }
 
-/* Slightly different request that returns XML; note that Twitter uses the path 
+/* Slightly different request that returns XML; note that Twitter uses the path
    to determine if you want a response as XML or JSON: */
-   
+
 // JSON request:
-def resp = http.request( path: 'user_timeline.xml', 
+def resp = http.request( path: 'user_timeline.xml',
         query: [id:'httpbuilder', count:5] )
 
 println "\n\nXML response: ${resp.status}"
@@ -478,9 +478,9 @@ getClass().getResource( "/truststore.jks" ).withInputStream {
    keyStore.load( it, "test1234".toCharArray() )
 }
 
-http.client.connectionManager.schemeRegistry.register( 
+http.client.connectionManager.schemeRegistry.register(
 		new Scheme("https", new SSLSocketFactory(keyStore), 443) )
-		
+
 def status = http.request( HEAD ) {
 	response.success = { it.status }
 }
@@ -497,9 +497,9 @@ http.parser.'text/csv' = { resp ->
 END SNIPPET: contenttype1
 
 START SNIPPET: contenttype2
-http.get( uri : 'http://somehost.com/contacts.csv', 
+http.get( uri : 'http://somehost.com/contacts.csv',
 					contentType : 'text/csv' ) { resp, csv ->
-		
+
 		assert csv instanceof CSVReader
 		// parse the csv stream here.
 }
@@ -513,7 +513,7 @@ http.request( Method.GET, ContentType.TEXT ) { req ->
   uri.path = '/ajax/services/search/web'
   uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
   headers.Accept = 'application/json'
- 
+
   response.success = { resp, reader ->
     println "Got response: ${resp.statusLine}"
     println "Content-Type: ${resp.headers.'Content-Type'}"
@@ -534,12 +534,12 @@ import static groovyx.net.http.Method.GET
 import static groovyx.net.http.ContentType.TEXT
 
 new HTTPBuilder('http://www.google.com/').request(GET) { req ->
-  
+
   response.success = { resp ->
     println 'request was successful'
     assert resp.status < 400
   }
-  
+
   response.failure = { resp ->
     println 'request failed'
     assert resp.status >= 400
@@ -581,7 +581,7 @@ http.handler.failure = { resp ->
 	"Unexpected failure: ${resp.statusLine}"
 }
 
-// we can set code-specific default handlers as well:  
+// we can set code-specific default handlers as well:
 http.handler.'404 = { 'Not Found' }
 
 def result = http.get( uri:'http://www.google.com/asdfg' )
@@ -620,7 +620,7 @@ assert twitter.get( path : 'public_timeline.json' ).status == 200
 // in HttpURLClient:
 def twitter = new HttpURLClient(url:'https://twitter.com/statuses/')
 
-http.setOAuth consumerKey, consumerSecret, accessToken, secretToken 
+http.setOAuth consumerKey, consumerSecret, accessToken, secretToken
 assert twitter.request( path : 'public_timeline.json' ).status == 200
 END SNIPPET: auth2
 

@@ -16,7 +16,7 @@
      existing ISO 8879 entity names. ISO 10646 character numbers
      are given for each character, in hex. CDATA values are decimal
      conversions of the ISO 10646 values and refer to the document
-     character set. Names are ISO 10646 names. 
+     character set. Names are ISO 10646 names.
 
 -->
 
@@ -143,7 +143,7 @@
 <!ENTITY uArr     CDATA "&#8657;" -- upwards double arrow, U+21D1 ISOamsa -->
 <!ENTITY rArr     CDATA "&#8658;" -- rightwards double arrow,
                                      U+21D2 ISOtech -->
-<!-- ISO 10646 does not say this is the 'implies' character but does not have 
+<!-- ISO 10646 does not say this is the 'implies' character but does not have
      another character with this function so ?
      rArr can be used for 'implies' as ISOtech suggests -->
 <!ENTITY dArr     CDATA "&#8659;" -- downwards double arrow, U+21D3 ISOamsa -->
@@ -196,9 +196,9 @@
                                      U+2265 ISOtech -->
 <!ENTITY sub      CDATA "&#8834;" -- subset of, U+2282 ISOtech -->
 <!ENTITY sup      CDATA "&#8835;" -- superset of, U+2283 ISOtech -->
-<!-- note that nsup, 'not a superset of, U+2283' is not covered by the Symbol 
+<!-- note that nsup, 'not a superset of, U+2283' is not covered by the Symbol
      font encoding and is not included. Should it be, for symmetry?
-     It is in ISOamsn  --> 
+     It is in ISOamsn  -->
 <!ENTITY nsub     CDATA "&#8836;" -- not a subset of, U+2284 ISOamsn -->
 <!ENTITY sube     CDATA "&#8838;" -- subset of or equal to, U+2286 ISOtech -->
 <!ENTITY supe     CDATA "&#8839;" -- superset of or equal to,
@@ -221,11 +221,11 @@
 <!ENTITY rfloor   CDATA "&#8971;" -- right floor, U+230B ISOamsc  -->
 <!ENTITY lang     CDATA "&#9001;" -- left-pointing angle bracket = bra,
                                      U+2329 ISOtech -->
-<!-- lang is NOT the same character as U+003C 'less than' 
+<!-- lang is NOT the same character as U+003C 'less than'
      or U+2039 'single left-pointing angle quotation mark' -->
 <!ENTITY rang     CDATA "&#9002;" -- right-pointing angle bracket = ket,
                                      U+232A ISOtech -->
-<!-- rang is NOT the same character as U+003E 'greater than' 
+<!-- rang is NOT the same character as U+003E 'greater than'
      or U+203A 'single right-pointing angle quotation mark' -->
 
 <!-- Geometric Shapes -->

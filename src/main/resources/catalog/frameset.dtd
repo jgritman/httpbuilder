@@ -2,8 +2,8 @@
     This is the HTML 4.01 Frameset DTD, which should be
     used for documents with frames. This DTD is identical
     to the HTML 4.01 Transitional DTD except for the
-    content model of the "HTML" element: in frameset 
-    documents, the "FRAMESET" element replaces the "BODY" 
+    content model of the "HTML" element: in frameset
+    documents, the "FRAMESET" element replaces the "BODY"
     element.
 
           Draft: $Date: 1999/12/24 23:37:45 $

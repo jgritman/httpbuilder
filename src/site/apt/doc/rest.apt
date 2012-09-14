@@ -8,71 +8,71 @@
 
 RESTClient
 
-  RESTClient is an extension of HTTPBuilder, which makes a few concessions in 
-  HTTPBuilder's flexibility in order to make REST operations as simple as 
-  possible.  
-  
-  RESTClient makes great use of the automatic content-type parsing 
-  and encoding which makes working with XML and JSON extremely easy, both in the 
-  request and response side.  It also adds some additional convenience methods 
-  for response header parsing.  
-  
+  RESTClient is an extension of HTTPBuilder, which makes a few concessions in
+  HTTPBuilder's flexibility in order to make REST operations as simple as
+  possible.
+
+  RESTClient makes great use of the automatic content-type parsing
+  and encoding which makes working with XML and JSON extremely easy, both in the
+  request and response side.  It also adds some additional convenience methods
+  for response header parsing.
+
   The main advantages of RESTClient are:
-  
-  [[]] RESTClient has convenience methods for <<<get>>>, <<<put>>> <<<post>>> 
+
+  [[]] RESTClient has convenience methods for <<<get>>>, <<<put>>> <<<post>>>
        <<<delete>>>, <<<head>>>
-  
+
   [[]] The response data is always parsed and buffered in-memory
-  
+
   [[]] The returned <<<{{{../apidocs/groovyx/net/http/HttpResponseDecorator.html}HttpResponseDecorator}}>>>
        instance gives convenient access to headers and the parsed response data
-       
+
   [[]] No user-defined closure is needed
-  
-  
+
+
 * Examples
 
-  All of these examples use the {{{http://apiwiki.twitter.com/Twitter-API-Documentation}Twitter REST API.}}   
+  All of these examples use the {{{http://apiwiki.twitter.com/Twitter-API-Documentation}Twitter REST API.}}
 
-**  Test a URL using the <<<HEAD>>> method 
+**  Test a URL using the <<<HEAD>>> method
 
 %{code-snippet|id=rest1|brush=groovy|file=src/site/examples.txt}
 
   The above example takes advantage of HTTPBuilder's default failure handler,
   which will cause an exception to be thrown for any 'failed' response.  That
-  exception will still allow access to details of the response (e.g. the 
-  response status or message).  
+  exception will still allow access to details of the response (e.g. the
+  response status or message).
 
 
 **  <<<GET>>> our friends' timeline
 
 %{code-snippet|id=rest2|brush=groovy|file=src/site/examples.txt}
 
-  All request parameters are defined 
+  All request parameters are defined
   {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html#setPropertiesFromMap(java.util.Map)}here}}.
 
-  The <<<resp>>> field in the above example is an instance of <<<HttpResponseDecorator>>>.  
+  The <<<resp>>> field in the above example is an instance of <<<HttpResponseDecorator>>>.
   Calling <<<resp.getData()>>> returns the parsed response content.  This is the
-  same parsed response that you would get passed to HTTPBuilder's response 
+  same parsed response that you would get passed to HTTPBuilder's response
   handler closure, but it is always buffered in-memory and the response stream
-  is automatically closed.   
+  is automatically closed.
 
 
 ** <<<POST>>> a status update to Twitter!
 
 %{code-snippet|id=rest3|brush=groovy|file=src/site/examples.txt}
 
-  Note that the above example is posting the request data as 
-  <<<application/x-www-form-urlencoded>>>.  (The twitter API doesn't support XML or 
-  JSON POST requests.)  For this reason, a <<<requestContentType>>> parameter must 
-  be specified in order to identify how the request body should be serialized.  
-  
+  Note that the above example is posting the request data as
+  <<<application/x-www-form-urlencoded>>>.  (The twitter API doesn't support XML or
+  JSON POST requests.)  For this reason, a <<<requestContentType>>> parameter must
+  be specified in order to identify how the request body should be serialized.
+
   Also note that we're requesting <<<update.xml>>>, not <<<update.json>>>.  Since
-  we never set a default content-type on the RESTClient instance or pass a 
+  we never set a default content-type on the RESTClient instance or pass a
   <<<contentType>>> argument in this request, RESTClient will put <<<Accept: */*>>>
-  in the request header, and parse the response based on whatever is given in 
-  the response content-type header.  So because Twitter correctly identifies its 
-  response as <<<application/xml>>>, it will automatically be parsed by the 
+  in the request header, and parse the response based on whatever is given in
+  the response content-type header.  So because Twitter correctly identifies its
+  response as <<<application/xml>>>, it will automatically be parsed by the
   default {{{../apidocs/groovyx/net/http/ParserRegistry.html#parseXML(org.apache.http.HttpResponse)}XML parser}}.
 
 

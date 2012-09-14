@@ -5,61 +5,61 @@
                           ------
 
 
-  A 'Response Handler' is the closure that is executed to parse the HTTP 
-  response that is returned from the server.  Multiple handlers are usually 
-  defined, and correct handler is chosen based on the HTTP status 
+  A 'Response Handler' is the closure that is executed to parse the HTTP
+  response that is returned from the server.  Multiple handlers are usually
+  defined, and correct handler is chosen based on the HTTP status
   code in the response.
-  
-  
+
+
 Success vs Failure
 
-  Generally, status codes may be grouped into two categories - 'success' (any 
-  status less than 400) or 'failure' (400 or greater).  Within the request 
+  Generally, status codes may be grouped into two categories - 'success' (any
+  status less than 400) or 'failure' (400 or greater).  Within the request
   configuration closure, handlers may be defined through the <<<response>>>
-  property, which returns a map of response closures.  This map may then be used 
+  property, which returns a map of response closures.  This map may then be used
   to add response handlers for this request:
-  
+
 %{code-snippet|id=handler1|brush=groovy|file=src/site/examples.txt}
 
   These status handlers may be combined with more specific handlers that only
   handle a specific response code:
-  
+
 %{code-snippet|id=handler2|brush=groovy|file=src/site/examples.txt}
-  
-  In all cases, a handler will first be retrieved by the exact status code, and 
-  if none is found, it will fall back to a generic 'success' or 'failure' 
+
+  In all cases, a handler will first be retrieved by the exact status code, and
+  if none is found, it will fall back to a generic 'success' or 'failure'
   handler.
-  
+
 *A Note on 'Intermediate' Status Codes
 
-  In cases where a response sends a redirect status code, this is 
-  handled internally by Apache HttpClient, which by default will simply follow 
-  the redirect by re-sending the request to the new URL.  You do not need to 
-  do anything special in order to follow 302 responses.  
-  
-  Similarly, a 401 status code can be handled transparently by HttpClient when 
-  authorization has been configured.  In most cases, you (the user) are not 
+  In cases where a response sends a redirect status code, this is
+  handled internally by Apache HttpClient, which by default will simply follow
+  the redirect by re-sending the request to the new URL.  You do not need to
+  do anything special in order to follow 302 responses.
+
+  Similarly, a 401 status code can be handled transparently by HttpClient when
+  authorization has been configured.  In most cases, you (the user) are not
   interested in these 'intermediate' responses, so they are handled internally
   by the framework.  If you <want> to handle these responses directly, it can
-  be configured through the underlying HttpClient instance. 
-  
-  Similarly, HttpURLClient has a 
-  <<<{{{../apidocs/groovyx/net/http/HttpURLClient.html#setFollowRedirects(boolean)}followRedirects}}>>> 
+  be configured through the underlying HttpClient instance.
+
+  Similarly, HttpURLClient has a
+  <<<{{{../apidocs/groovyx/net/http/HttpURLClient.html#setFollowRedirects(boolean)}followRedirects}}>>>
   property to configure redirect behavior.
-  
+
 Default Handlers
 
-  The default handlers are good for cases where the user is not interested in 
-  dealing with streaming responses.  In this case, the response data is simply 
-  parsed (or buffered in the case of a binary or text response) and returned 
+  The default handlers are good for cases where the user is not interested in
+  dealing with streaming responses.  In this case, the response data is simply
+  parsed (or buffered in the case of a binary or text response) and returned
   from the request method:
-  
+
 %{code-snippet|id=handler3|brush=groovy|file=src/site/examples.txt}
 
 	The default failure handler will throw an exception.
 
   This behavior can also be customized by setting your own default handlers on
   the HTTPBuilder instance like so:
-  
+
 %{code-snippet|id=handler4|brush=groovy|file=src/site/examples.txt}
-  
+

@@ -5,81 +5,81 @@
                                     ------
 
 Introduction
-  
+
   HTTPBuilder is optimized for three tasks:
-  
+
   [[]]  Streaming response handling,
-  
+
   [[]]  Automatic response parsing based on content-type
-   
+
   [[]]  Sucess & failure handling based on the response status code
-  
+
   []
-  
+
   To achieve this, HTTPBuilder exposes convenience methods for common request types,
   (i.e. GET and POST) and a more complex <<<request>>> method that allows fine-grained
   configuration of each request and response.
-  
-  The following example shows most of the <<<request>>> method's features. 
-  
+
+  The following example shows most of the <<<request>>> method's features.
+
 %{code-snippet|id=doc1|brush=groovy|file=src/site/examples.txt}
 
-  
-  If you are familiar with the HTTP protocol, most of the above should be 
-  self-explanatory.  The 
+
+  If you are familiar with the HTTP protocol, most of the above should be
+  self-explanatory.  The
   <<<{{{../apidocs/groovyx/net/http/HTTPBuilder.html#request(groovyx.net.http.Method,%20java.lang.Object,%20groovy.lang.Closure)}request()}}>>>
-   method accepts three parameters: a <method>, 
-  <content-type>, and a <request configuration closure>.  Within the 
-  configuration closure, we can fine-tune the parameters for this request, 
-  including manipulating portions of the URL, and adding request headers.  A 
+   method accepts three parameters: a <method>,
+  <content-type>, and a <request configuration closure>.  Within the
+  configuration closure, we can fine-tune the parameters for this request,
+  including manipulating portions of the URL, and adding request headers.  A
   full list of properties that can be manipulated during request configuration
-  can be found in the 
-  {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}RequestConfigDelegate}} 
-  class. 
-  
-  The <<<req>>> parameter passed to the closure is an 
+  can be found in the
+  {{{../apidocs/groovyx/net/http/HTTPBuilder.RequestConfigDelegate.html}RequestConfigDelegate}}
+  class.
+
+  The <<<req>>> parameter passed to the closure is an
   {{{http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/org/apache/http/message/BasicHttpRequest.html}HttpRequest}}
-  instance, which can be used to configure additional aspects of the request 
-  for which HTTPBuilder does not provide a wrapper. 
-  
-  The remaining 'response' definitions in the above example configure how the 
+  instance, which can be used to configure additional aspects of the request
+  for which HTTPBuilder does not provide a wrapper.
+
+  The remaining 'response' definitions in the above example configure how the
   response is handled based on the HTTP status code returned by the server.  In
-  general, a "success" and "failure" response handler may be defined, or a 
-  response handler may be defined for a specific response code.  
-  
-  In the simplest case, no 'failure' handler needs to be defined; the default 
+  general, a "success" and "failure" response handler may be defined, or a
+  response handler may be defined for a specific response code.
+
+  In the simplest case, no 'failure' handler needs to be defined; the default
   failure handler will throw an exception, which is triggered for any response
-  code > 399.  You can also customize default response handlers that will be 
+  code > 399.  You can also customize default response handlers that will be
   in effect for all requests made by the <<<HTTPBuilder>>> instance:
-	
+
 %{code-snippet|id=doc2|brush=groovy|file=src/site/examples.txt}
 
-  
+
 The Magic: Built-in Content-Type Parsing
 
-	HTTPBuilder is also able to intelligently handle different response 
-	content-types.  In this example, the response data is automatically parsed 
-	into a <<<JSON>>> object, which is then passed to the 'success' response 
+	HTTPBuilder is also able to intelligently handle different response
+	content-types.  In this example, the response data is automatically parsed
+	into a <<<JSON>>> object, which is then passed to the 'success' response
 	handler.
 
 %{code-snippet|id=doc3|brush=groovy|file=src/site/examples.txt}
 
 
-  You can try the above example by adding the <<<@Grab>>> macro (as demonstrated 
-  on the {{{../download.html}download page}}) with Groovy 1.6. 
+  You can try the above example by adding the <<<@Grab>>> macro (as demonstrated
+  on the {{{../download.html}download page}}) with Groovy 1.6.
 
 
 *Parser Resolution
 
-  By default, new HTTPBuilder instances use <<<ContentType.ANY>>> as the initial 
-  content-type.  This means every request has an <<<Accept: */*>>> header, and 
-  it is up to the server to decide what appropriate content-type to return.  
-  HTTPBuilder then chooses the appropriate parser from its <<<ParserRegistry>>> 
+  By default, new HTTPBuilder instances use <<<ContentType.ANY>>> as the initial
+  content-type.  This means every request has an <<<Accept: */*>>> header, and
+  it is up to the server to decide what appropriate content-type to return.
+  HTTPBuilder then chooses the appropriate parser from its <<<ParserRegistry>>>
   based on the response <<<Content-Type>>> header value.
-  
-  <If> a <<<contentType>>> is set (either in 
+
+  <If> a <<<contentType>>> is set (either in
   <<<HTTPBuilder.setContentType(...)>>> or as a <<<request>>> method parameter),
-  HTTPBuilder will attempt to parse the response using that content-type, 
+  HTTPBuilder will attempt to parse the response using that content-type,
   regardless of what the server actually responds with.   The first example on
   this page actually uses that strategy to parse an HTML document as plain text
   (i.e. by creating a <<<Reader>>>) rather than detecting an HTML content-type
@@ -90,13 +90,13 @@ The Magic: Built-in Content-Type Parsing
 
 {Logging and Debugging}
 
-  Probably the quickest way to debug is to turn on logging for HTTPBuilder and 
-  Apache HttpClient.  An example 
+  Probably the quickest way to debug is to turn on logging for HTTPBuilder and
+  Apache HttpClient.  An example
   {{{https://svn.codehaus.org/gmod/httpbuilder/trunk/src/test/resources/log4j.xml}
-  log4j configuration}} can be used to output headers and request/response 
-  content, as well as additional information on what HTTPBuilder is doing with 
+  log4j configuration}} can be used to output headers and request/response
+  content, as well as additional information on what HTTPBuilder is doing with
   the request and response.
-  
+
   To see the raw request and response output, change the Apache HttpClient
   logging parameters to <<<DEBUG>>> like so:
 

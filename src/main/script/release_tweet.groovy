@@ -19,7 +19,7 @@ println "Tweeting release for v${pom.version}..."
 http.request( POST, XML ) { req ->
 	uri.path = 'update.xml'
 	send URLENC, [status:msg, source:'httpbuilder']
-	
+
 	response.success = { resp, xml ->
 		println "Tweet response status: ${resp.statusLine}"
 		assert resp.statusLine.statusCode == 200

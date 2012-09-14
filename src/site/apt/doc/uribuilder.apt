@@ -4,33 +4,33 @@
                                     ------
                                     ------
 
-  The {{{../apidocs/groovyx/net/http/URIBuilder.html}URIBuilder}} class is 
-  extremely useful for URI and URL construction and manipulation.  It is used 
+  The {{{../apidocs/groovyx/net/http/URIBuilder.html}URIBuilder}} class is
+  extremely useful for URI and URL construction and manipulation.  It is used
   within HTTPBuilder, but it is also useful even from plain Java code.
-  
-  If you've ever attempted to change a URL relative to its current path, 
-  you've probably noticed that using <<<URI.resolvePath(..)>>> strips off everything 
-  after the last '/' of the URI, including any 'document,' query string and 
-  fragment.  URIBuilder aims to make URI manipulation a <lot> easier and 
+
+  If you've ever attempted to change a URL relative to its current path,
+  you've probably noticed that using <<<URI.resolvePath(..)>>> strips off everything
+  after the last '/' of the URI, including any 'document,' query string and
+  fragment.  URIBuilder aims to make URI manipulation a <lot> easier and
   allows you to manipulate aspects of the URL while maintaining the other pieces:
-   
-      
+
+
 %{code-snippet|id=uri1|brush=groovy|file=src/site/examples.txt}
 
-  
+
   Query parameters can also be easily manipulated as a map:
-  
+
 %{code-snippet|id=uri2|brush=groovy|file=src/site/examples.txt}
 
 
   As mentioned above, URIBuilder is also useful from Java.  This is because
   URIBuilder's setter methods return the modified builder instance, to allow
-  for the 'fluent interface' pattern.  The above example could be written 
+  for the 'fluent interface' pattern.  The above example could be written
   in Java as follows:
-  
+
 %{code-snippet|id=uri3|brush=groovy|file=src/site/examples.txt}
-  
-  URIBuilder also has methods for coercion to a URI or URL instance.  Since 
-  URIBuilder is mutable, it generally should <<not>> be used for things like 
-  map keys.  In this case, the builder's current state should be frozen by 
-  coercing it to a URI or URL. 
+
+  URIBuilder also has methods for coercion to a URI or URL instance.  Since
+  URIBuilder is mutable, it generally should <<not>> be used for things like
+  map keys.  In this case, the builder's current state should be frozen by
+  coercing it to a URI or URL.

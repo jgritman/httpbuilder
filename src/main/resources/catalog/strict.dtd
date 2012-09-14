@@ -1,10 +1,10 @@
 <!--
-    This is HTML 4.01 Strict DTD, which excludes the presentation 
-    attributes and elements that W3C expects to phase out as 
+    This is HTML 4.01 Strict DTD, which excludes the presentation
+    attributes and elements that W3C expects to phase out as
     support for style sheets matures. Authors should use the Strict
     DTD when possible, but may use the Transitional DTD when support
     for presentation attribute and elements is required.
-    
+
     HTML 4 includes mechanisms for style sheets, scripting,
     embedding objects, improved support for right to left and mixed
     direction text, and enhancements to forms for improved
@@ -52,7 +52,7 @@
 
         http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd
 
-    If you are writing a document that includes frames, use 
+    If you are writing a document that includes frames, use
     the following FPI:
 
         "-//W3C//DTD HTML 4.01 Frameset//EN"
@@ -61,7 +61,7 @@
 
         http://www.w3.org/TR/1999/REC-html401-19991224/frameset.dtd
 
-    Use the following (relative) URIs to refer to 
+    Use the following (relative) URIs to refer to
     the DTDs and entity definitions of this specification:
 
     "strict.dtd"
@@ -98,7 +98,7 @@
     -->
 
 <!ENTITY % Character "CDATA"
-    -- a single character from [ISO10646] 
+    -- a single character from [ISO10646]
     -->
 
 <!ENTITY % LinkTypes "CDATA"
@@ -367,8 +367,8 @@
 <!ENTITY % Pixels "CDATA" -- integer representing length in pixels -->
 
 
-<!-- To avoid problems with text-only UAs as well as 
-   to make image content understandable and navigable 
+<!-- To avoid problems with text-only UAs as well as
+   to make image content understandable and navigable
    to users of non-visual UAs, you need to provide
    a description with ALT, and avoid server-side image maps -->
 <!ELEMENT IMG - O EMPTY                -- Embedded image -->
@@ -390,7 +390,7 @@
 
 <!--==================== OBJECT ======================================-->
 <!--
-  OBJECT is used to embed objects as part of HTML pages 
+  OBJECT is used to embed objects as part of HTML pages
   PARAM elements should precede other content. SGML mixed content
   model technicality precludes specifying this formally ...
 -->
@@ -686,7 +686,7 @@
 -->
 
 <!ENTITY % TRules "(none | groups | rows | cols | all)">
-  
+
 <!-- horizontal placement of table relative to document -->
 <!ENTITY % TAlign "(left|center|right)">
 

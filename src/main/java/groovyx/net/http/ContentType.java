@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -27,28 +27,28 @@ import org.apache.commons.collections.iterators.ArrayIterator;
 
 /**
  * Enumeration of common <a href="http://www.iana.org/assignments/media-types/">IANA</a>
- * content-types.  This may be used to specify a request or response 
+ * content-types.  This may be used to specify a request or response
  * content-type more easily than specifying the full string each time.  i.e.
  * <pre>
  * http.request( GET, JSON ) {...}</pre>
- * 
+ *
  * Is roughly equivalent to:
  * <pre>
  * http.request( GET, 'application/json' )</pre>
- * 
- * The only difference being, equivalent content-types (i.e. 
- * <code>application/xml</code> and <code>text/xml</code> are all added to the 
+ *
+ * The only difference being, equivalent content-types (i.e.
+ * <code>application/xml</code> and <code>text/xml</code> are all added to the
  * request's <code>Accept</code> header.  By default, all equivalent content-types
  * are handled the same by the {@link EncoderRegistry} and {@link ParserRegistry}
- * as well. 
+ * as well.
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum ContentType {
 	/** <code>&#42;/*</code> */
 	ANY("*/*"),
 	/** <code>text/plain</code> */
-	TEXT("text/plain"), 
-	/** 
+	TEXT("text/plain"),
+	/**
 	 * <ul>
 	 *  <li><code>application/json</code></li>
 	 *  <li><code>application/javascript</code></li>
@@ -56,7 +56,7 @@ public enum ContentType {
 	 * </ul>
 	 */
 	JSON("application/json","application/javascript","text/javascript"),
-	/** 
+	/**
 	 * <ul>
 	 *  <li><code>application/xml</code></li>
 	 *  <li><code>text/xml</code></li>
@@ -71,13 +71,13 @@ public enum ContentType {
 	URLENC("application/x-www-form-urlencoded"),
 	/** <code>application/octet-stream</code> */
 	BINARY("application/octet-stream");
-	
+
 	private final String[] ctStrings;
-	public String[] getContentTypeStrings() { return ctStrings; } 
+	public String[] getContentTypeStrings() { return ctStrings; }
 	@Override public String toString() { return ctStrings[0]; }
-	
+
 	/**
-	 * Builds a string to be used as an HTTP <code>Accept</code> header 
+	 * Builds a string to be used as an HTTP <code>Accept</code> header
 	 * value, i.e. "application/xml, text/xml"
 	 * @return
 	 */
@@ -91,8 +91,8 @@ public enum ContentType {
 		}
 		return sb.toString();
 	}
-	
+
 	private ContentType( String... contentTypes ) {
 		this.ctStrings = contentTypes;
 	}
-}	
+}

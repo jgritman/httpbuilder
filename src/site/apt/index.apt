@@ -4,7 +4,7 @@
                                     ------
                                     ------
 
-  <New to HTTPBuilder?  See the {{{./home.html}Overview}} page.>  
+  <New to HTTPBuilder?  See the {{{./home.html}Overview}} page.>
 
 News
 
@@ -15,184 +15,184 @@ News
   With so many other projects, HTTPBuilder has taken a back seat, to say the least.
   Well, I've finally made 0.5.2 official, so folks relying on snapshots can now
   use a release version.  I hope to turn around 0.5.3 quickly to address a couple
-  important issues like the Groovy range dependency, SSL host verification, 
-  preemptive auth and maybe whitespace URI parameter encoding.  
-  
-  Stay tuned and watch for snapshots! 
-  
+  important issues like the Groovy range dependency, SSL host verification,
+  preemptive auth and maybe whitespace URI parameter encoding.
+
+  Stay tuned and watch for snapshots!
+
 * 30 Sept 2010 - 0.5.1 with OAuth Support!
 
   I've been meaning to implement this for a while now, especially since Twitter
   made the switch, and I use the Twitter API for a lot of unit tests.  Now,
-  {{{http://oauth.net}OAuth}} is supported in HTTPBuilder 0.5.1 thanks to the 
-  {{{http://code.google.com/p/oauth-signpost/}Signpost framework}}.  The 
-  implementation isn't perfect due to 
-  {{{http://issues.apache.org/jira/browse/HTTPCLIENT-901}a limitation}} in 
-  HttpClient 4.0.  However, once HttpClient 4.1 is released, I expect to update 
+  {{{http://oauth.net}OAuth}} is supported in HTTPBuilder 0.5.1 thanks to the
+  {{{http://code.google.com/p/oauth-signpost/}Signpost framework}}.  The
+  implementation isn't perfect due to
+  {{{http://issues.apache.org/jira/browse/HTTPCLIENT-901}a limitation}} in
+  HttpClient 4.0.  However, once HttpClient 4.1 is released, I expect to update
   the implementation which should be transparent to most users.
-  
+
   I did my best to ensure this release is binary compatible with version 0.5.0.
-  While 0.5.1 has an <optional> dependency on Signpost, if you are not using 
-  OAuth to sign your requests, you should not need the Signpost JARs on your 
-  classpath.  No Signpost classes are loaded until you indicate that you want to 
+  While 0.5.1 has an <optional> dependency on Signpost, if you are not using
+  OAuth to sign your requests, you should not need the Signpost JARs on your
+  classpath.  No Signpost classes are loaded until you indicate that you want to
   OAuth sign your requests.
-  
-  Want to see the API changes?  
-  <<<{{{./apidocs/groovyx/net/http/AuthConfig.html#oauth(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String)}HTTPBuilder.auth.oauth()}}>>> 
-  and  
+
+  Want to see the API changes?
+  <<<{{{./apidocs/groovyx/net/http/AuthConfig.html#oauth(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String)}HTTPBuilder.auth.oauth()}}>>>
+  and
   <<<{{{./apidocs/groovyx/net/http/HttpURLClient.html#setOAuth(java.lang.Object,%20java.lang.Object,%20java.lang.Object,%20java.lang.Object)}HttpURLClient.setOAuth()}}>>>.
-  
+
 * 3 May 2010 - 0.5.0 Released (finally!)
 
   I've pushed 0.5.0 out the door!  It's the same as RC3, so if you've been using
-  that you should be able to just change the version number and you're good to 
+  that you should be able to just change the version number and you're good to
   go.  I'm already working on some minor improvements for a minor release (0.5.1)
   but they didn't merit being squeezed into the 0.5.0 release since it's already
   been delayed so long.  Enjoy!
-  
+
 * 31 Mar 2010 - Problems with Grape/ Grab
 
-  So I had a couple people mention that they had trouble using <<<Grape>>> to 
-  download RC3 due to a bad checksum on the POM file.  I tried re-deploying it, 
+  So I had a couple people mention that they had trouble using <<<Grape>>> to
+  download RC3 due to a bad checksum on the POM file.  I tried re-deploying it,
   (thinking it was a bad upload) and now I'm getting a _bunch_ of people saying
   they can't download it!
-  
+
   As a work-around, please add the following line to <<<~/.groovy/grapeConfig.xml>>>:
-  <<<<property name="ivy.checksums" value=""/>>>>.  This should allow Grape to 
+  <<<<property name="ivy.checksums" value=""/>>>>.  This should allow Grape to
   ignore the checksum and download the file, until I've got the checksum problem
   resolved.  Stay tuned!
-  
+
 * 17 Feb 2010 - 0.5.0-RC3 Released
 
-  I've been extremely lax in getting 0.5.0 out the door, but a couple minor 
-  bugs have been uncovered in the mean time.  All known defects are fixed at 
+  I've been extremely lax in getting 0.5.0 out the door, but a couple minor
+  bugs have been uncovered in the mean time.  All known defects are fixed at
   this point, and I'm planning on releasing 0.5.0 final in the next week or so,
-  provided no new defects are uncovered!  
-  
-  Please test out RC3 and stay tuned! 
-  
+  provided no new defects are uncovered!
+
+  Please test out RC3 and stay tuned!
+
 * 16 Oct 2009 - Added Ohloh Stats
 
-  So I added this project to Ohloh, which found HTTPBuilder to be "Extremely 
-  well commented," :) but also a "small development team." :(  The stats are a 
-  little off too, since it has included the HTML and XHTML DTDs which are in 
+  So I added this project to Ohloh, which found HTTPBuilder to be "Extremely
+  well commented," :) but also a "small development team." :(  The stats are a
+  little off too, since it has included the HTML and XHTML DTDs which are in
   source control, but I obviously did not write them...
-  
-  On a related note, if the Ohloh animated GIF on the sidebar 
-  particularly annoys anyone, just complain and I can remove it.  Although I do 
-  like how it brags about the project :)   
-  
+
+  On a related note, if the Ohloh animated GIF on the sidebar
+  particularly annoys anyone, just complain and I can remove it.  Although I do
+  like how it brags about the project :)
+
 
 * 06 Oct 2009 - More Snapshots & important changes...
 
-  So no matter how hard I try, I can't seem to release 0.5.0.  More accurately, 
-  a few important issues came up that I didn't want to fix in a 0.6 branch 
+  So no matter how hard I try, I can't seem to release 0.5.0.  More accurately,
+  a few important issues came up that I didn't want to fix in a 0.6 branch
   immediately after a 0.5.0 release.  So my solution instead is to introduce some
-  late changes...  
-  
+  late changes...
+
   Probably the most important change is URIBuilder's handling of query parameters.
-  Previously, URIBuilder only allowed a single value per-parameter.  That is, 
+  Previously, URIBuilder only allowed a single value per-parameter.  That is,
   it was impossible to do <<<?one=1&two=2&one=3>>> because the Map literal does
   not allow duplicate keys.  Well, now you can pass a list of values like so:
-  <<<uri.query = [ one: ['1','3'] , two: 2 ]>>> which will add two values for 
-  <<<one>>>.  Of course, this behavior merits a change to the <<<addQueryParam>>> 
-  method as well.  
-  
+  <<<uri.query = [ one: ['1','3'] , two: 2 ]>>> which will add two values for
+  <<<one>>>.  Of course, this behavior merits a change to the <<<addQueryParam>>>
+  method as well.
+
   As a result, <<<URIBuilder.addQueryParam>>> and <<<addQueryParams>>>
-  will not replace any existing parameters with the same name; instead it will 
-  add to a multi-valued list for the given parameter.  Parameters with single 
-  values will remain as strings, not lists. 
+  will not replace any existing parameters with the same name; instead it will
+  add to a multi-valued list for the given parameter.  Parameters with single
+  values will remain as strings, not lists.
 
 * 16 June 2009 - 0.5.0 RC1!
-  
+
   RC1 is released!  Go {{{./download.html}download it}}!
-  
-  Keep in mind there are a few breaking changes from 0.4.1.  See the 
-  {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA report}} 
+
+  Keep in mind there are a few breaking changes from 0.4.1.  See the
+  {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA report}}
   for a full list of changes.  Some breaking changes include:
-  
+
   [[]] New Maven group - <<<org.codehaus.groovy.modules.http-builder>>>
-  
+
   [[]] HTTPBuilder.(get|post) named arguments - <<<params>>> is now <<<query>>>
-  
-  [[]] The HTTPBuilder class' <<<URL>>> property has been renamed to <<<uri>>> 
+
+  [[]] The HTTPBuilder class' <<<URL>>> property has been renamed to <<<uri>>>
 
 	[]
-	
-  Of course the 0.5.0 release has a ton of more <interesting> changes; read below 
+
+  Of course the 0.5.0 release has a ton of more <interesting> changes; read below
   for most of them...
-    
+
 
 * 13 June 2009 - Release Candidate (almost...)
 
   I was just about to release version 0.5.0-RC1 and announce it on the mailing
   list, when suddenly my unit tests started failing!  <<<HTTP response code: 503
-  - http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd>>> ...  What?  
+  - http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd>>> ...  What?
   Turns out, I got bit by the {{{http://www.w3.org/blog/systeam/2008/02/08/w3c_s_excessive_dtd_traffic}
   W3C trying frantically to conserve their bandwidth}}.
-  
+
   So realizing this is something that should really be built in, I added the capability via Apache's {{{http://xml.apache.org/commons/components/resolver/}
-  XML Resolver}}.  All HTML4 and XHTML DTDs are now cached in a 
+  XML Resolver}}.  All HTML4 and XHTML DTDs are now cached in a
   {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/resources/catalog/html.xml?r=root:}
-  default catalog}}, so parsing any sites that reference those DTDs should see a 
+  default catalog}}, so parsing any sites that reference those DTDs should see a
   significant performance improvement now.
-  
-      
+
+
 
 * 29 May 2009
-  
-  The 0.5.0 release is almost feature complete; see 
-  {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA}} for a list 
-  of issues that have been gone into this version.  One of the major changes in 
-  today's snaphot release is deprecation of the 'params' named parameter.  
-  
-  For HTTPBuilder operations that take name parameters, <<<params>>> has been 
-  replaced by <<<query>>> to set URL query parameters.  This is to more clearly 
-  differentiate between URL and form POST parameters, and to avoid possible 
-  collision with future convenience methods for Apache HttpClient 'params' 
+
+  The 0.5.0 release is almost feature complete; see
+  {{{http://jira.codehaus.org/browse/GMOD/fixforversion/15065}JIRA}} for a list
+  of issues that have been gone into this version.  One of the major changes in
+  today's snaphot release is deprecation of the 'params' named parameter.
+
+  For HTTPBuilder operations that take name parameters, <<<params>>> has been
+  replaced by <<<query>>> to set URL query parameters.  This is to more clearly
+  differentiate between URL and form POST parameters, and to avoid possible
+  collision with future convenience methods for Apache HttpClient 'params'
   configuration.
-  
-  Please test out the latest snapshot; if I don't hear any bug reports in a week 
+
+  Please test out the latest snapshot; if I don't hear any bug reports in a week
   or two, I'll release v0.5.0.
 
 * 27 Apr 2009
 
-  <<Note to Maven users:>>  The project's group ID has changed to conform with 
-  the standard for Groovy projects hosted on Codehaus.  The new group ID is 
-  <<org.codehaus.groovy.modules.http-builder>>. 
+  <<Note to Maven users:>>  The project's group ID has changed to conform with
+  the standard for Groovy projects hosted on Codehaus.  The new group ID is
+  <<org.codehaus.groovy.modules.http-builder>>.
 
-  The 0.5 release is still pending, but I have an exciting new feature - 
-  <<HttpURLClient>>.  This may seem redundant, since its features are almost 
+  The 0.5 release is still pending, but I have an exciting new feature -
+  <<HttpURLClient>>.  This may seem redundant, since its features are almost
   identical to HTTPBuilder and RESTClient.  The kicker though is that this class
-  works with Google App Engine!  
-  
-  GAE's Java sandbox doesn't allow socket usage, which totally kills Apache 
-  HttpClient (and hence, HB).  This class uses HttpURLConnection for all I/O, 
-  enabling most of the conveniences of HTTPBuilder within GAE.  Try it out 
+  works with Google App Engine!
+
+  GAE's Java sandbox doesn't allow socket usage, which totally kills Apache
+  HttpClient (and hence, HB).  This class uses HttpURLConnection for all I/O,
+  enabling most of the conveniences of HTTPBuilder within GAE.  Try it out
   in the latest HTTPBuilder snapshot.
-  
+
 * 30 Mar 2009
-  
-  Documentation is in the process of being overhauled to provide more 
-  comprehensive API examples.  I've published a version that is still in 
-  progress, but certainly better than the single document that I had previously.   
+
+  Documentation is in the process of being overhauled to provide more
+  comprehensive API examples.  I've published a version that is still in
+  progress, but certainly better than the single document that I had previously.
 
 * 11 Mar 2009
 
-  The latest 0.5 version now includes a new RESTClient class for even easier 
-  REST-style operations without a user-defined closure!  See 
+  The latest 0.5 version now includes a new RESTClient class for even easier
+  REST-style operations without a user-defined closure!  See
   {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/script/twitter_restbuilder.groovy?r=root:}
   the Twitter example}}, and the updated {{{./apidocs/groovyx/net/http/RESTClient.html}JavaDoc}}.
 
 * 04 Mar 2009
 
-  Now you can follow us on {{{http://twitter.com/httpbuilder}Twitter!}}  
-  HTTPBuilder now 'tweets' its releases as an automated part of the build 
-  process.  This is a neat proof-of-concept that could easily be added to any 
-  Maven build thanks to 
-  {{{http://groovy.codehaus.org/GMaven+-+Executing+Groovy+Code#GMaven-ExecutingGroovyCode-ExecuteaLocalGroovyScript}GMaven.}}  
-  See the 
+  Now you can follow us on {{{http://twitter.com/httpbuilder}Twitter!}}
+  HTTPBuilder now 'tweets' its releases as an automated part of the build
+  process.  This is a neat proof-of-concept that could easily be added to any
+  Maven build thanks to
+  {{{http://groovy.codehaus.org/GMaven+-+Executing+Groovy+Code#GMaven-ExecutingGroovyCode-ExecuteaLocalGroovyScript}GMaven.}}
+  See the
   {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/pom.xml?r=root:#l122}POM}}
-   and 
+   and
   {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/src/main/script/release_tweet.groovy?r=root:}tweet script}}
    for details.

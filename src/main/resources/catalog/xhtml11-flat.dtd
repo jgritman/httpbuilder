@@ -13,10 +13,10 @@
          Recherche en Informatique et en Automatique, Keio University).
          All Rights Reserved.
 
-     Permission to use, copy, modify and distribute the XHTML DTD and its 
-     accompanying documentation for any purpose and without fee is hereby 
-     granted in perpetuity, provided that the above copyright notice and 
-     this paragraph appear in all copies.  The copyright holders make no 
+     Permission to use, copy, modify and distribute the XHTML DTD and its
+     accompanying documentation for any purpose and without fee is hereby
+     granted in perpetuity, provided that the above copyright notice and
+     this paragraph appear in all copies.  The copyright holders make no
      representation about the suitability of the DTD for any purpose.
 
      It is provided "as is" without expressed or implied warranty.
@@ -1397,7 +1397,7 @@
      existing ISO 8879 entity names. ISO 10646 character numbers
      are given for each character, in hex. values are decimal
      conversions of the ISO 10646 values and refer to the document
-     character set. Names are Unicode names. 
+     character set. Names are Unicode names.
 -->
 
 <!-- Latin Extended-B -->
@@ -1523,7 +1523,7 @@
 <!ENTITY uArr     "&#8657;"> <!-- upwards double arrow, U+21D1 ISOamsa -->
 <!ENTITY rArr     "&#8658;"> <!-- rightwards double arrow,
                                      U+21D2 ISOtech -->
-<!-- Unicode does not say this is the 'implies' character but does not have 
+<!-- Unicode does not say this is the 'implies' character but does not have
      another character with this function so ?
      rArr can be used for 'implies' as ISOtech suggests -->
 <!ENTITY dArr     "&#8659;"> <!-- downwards double arrow, U+21D3 ISOamsa -->
@@ -1576,9 +1576,9 @@
                                      U+2265 ISOtech -->
 <!ENTITY sub      "&#8834;"> <!-- subset of, U+2282 ISOtech -->
 <!ENTITY sup      "&#8835;"> <!-- superset of, U+2283 ISOtech -->
-<!-- note that nsup, 'not a superset of, U+2283' is not covered by the Symbol 
+<!-- note that nsup, 'not a superset of, U+2283' is not covered by the Symbol
      font encoding and is not included. Should it be, for symmetry?
-     It is in ISOamsn  --> 
+     It is in ISOamsn  -->
 <!ENTITY nsub     "&#8836;"> <!-- not a subset of, U+2284 ISOamsn -->
 <!ENTITY sube     "&#8838;"> <!-- subset of or equal to, U+2286 ISOtech -->
 <!ENTITY supe     "&#8839;"> <!-- superset of or equal to,
@@ -1601,11 +1601,11 @@
 <!ENTITY rfloor   "&#8971;"> <!-- right floor, U+230B ISOamsc  -->
 <!ENTITY lang     "&#9001;"> <!-- left-pointing angle bracket = bra,
                                      U+2329 ISOtech -->
-<!-- lang is NOT the same character as U+003C 'less than' 
+<!-- lang is NOT the same character as U+003C 'less than'
      or U+2039 'single left-pointing angle quotation mark' -->
 <!ENTITY rang     "&#9002;"> <!-- right-pointing angle bracket = ket,
                                      U+232A ISOtech -->
-<!-- rang is NOT the same character as U+003E 'greater than' 
+<!-- rang is NOT the same character as U+003E 'greater than'
      or U+203A 'single right-pointing angle quotation mark' -->
 
 <!-- Geometric Shapes -->
@@ -1644,7 +1644,7 @@
      existing ISO 8879 entity names. ISO 10646 character numbers
      are given for each character, in hex. values are decimal
      conversions of the ISO 10646 values and refer to the document
-     character set. Names are Unicode names. 
+     character set. Names are Unicode names.
 -->
 
 <!-- C0 Controls and Basic Latin -->
@@ -2645,7 +2645,7 @@
 <!ENTITY % Ruby.fallback "INCLUDE" >
 <!ENTITY % Ruby.fallback.mandatory "IGNORE" >
 
-<!-- Complex ruby is included by default; it may be 
+<!-- Complex ruby is included by default; it may be
      overridden by other modules to ignore it.
 -->
 <!ENTITY % Ruby.complex "INCLUDE" >
@@ -2653,18 +2653,18 @@
 <!-- Fragments for the content model of the ruby element -->
 <![%Ruby.fallback;[
 <![%Ruby.fallback.mandatory;[
-<!ENTITY % Ruby.content.simple 
+<!ENTITY % Ruby.content.simple
      "( %rb.qname;, %rp.qname;, %rt.qname;, %rp.qname; )"
 >
 ]]>
-<!ENTITY % Ruby.content.simple 
+<!ENTITY % Ruby.content.simple
      "( %rb.qname;, ( %rt.qname; | ( %rp.qname;, %rt.qname;, %rp.qname; ) ) )"
 >
 ]]>
 <!ENTITY % Ruby.content.simple "( %rb.qname;, %rt.qname; )" >
 
 <![%Ruby.complex;[
-<!ENTITY % Ruby.content.complex 
+<!ENTITY % Ruby.content.complex
      "| ( %rbc.qname;, %rtc.qname;, %rtc.qname;? )"
 >
 ]]>

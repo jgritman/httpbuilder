@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  * You are receiving this code free of charge, which represents many hours of
- * effort from other individuals and corporations.  As a responsible member 
- * of the community, you are encouraged (but not required) to donate any 
- * enhancements or improvements back to the community under a similar open 
+ * effort from other individuals and corporations.  As a responsible member
+ * of the community, you are encouraged (but not required) to donate any
+ * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
 package groovyx.net.http;
@@ -35,17 +35,17 @@ import org.apache.http.entity.HttpEntityWrapper;
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class DeflateEncoding extends ContentEncoding {
-	
+
 	/**
-	 * Returns the {@link ContentEncoding.Type#DEFLATE} encoding string which is 
+	 * Returns the {@link ContentEncoding.Type#DEFLATE} encoding string which is
 	 * added to the <code>Accept-Encoding</code> header by the base class.
 	 */
 	@Override
 	public String getContentEncoding() {
 		return DEFLATE.toString();
 	}
-	
-	
+
+
 	/**
 	 * Wraps the raw entity in a {@link InflaterEntity}.
 	 */
@@ -63,7 +63,7 @@ public class DeflateEncoding extends ContentEncoding {
         public InflaterEntity(final HttpEntity entity) {
             super(entity);
         }
-    
+
         /**
          * returns a {@link InflaterInputStream} which wraps the original entity's
          * content stream
