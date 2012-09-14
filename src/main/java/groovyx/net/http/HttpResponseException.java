@@ -31,17 +31,17 @@ package groovyx.net.http;
  */
 public class HttpResponseException extends org.apache.http.client.HttpResponseException {
 
-	private static final long serialVersionUID = -34809347677236L;
+    private static final long serialVersionUID = -34809347677236L;
 
-	HttpResponseDecorator response;
+    HttpResponseDecorator response;
 
-	public HttpResponseException( HttpResponseDecorator resp ) {
-		super( resp.getStatusLine().getStatusCode(),
-				resp.getStatusLine().getReasonPhrase() );
-		this.response = resp;
-	}
+    public HttpResponseException( HttpResponseDecorator resp ) {
+        super( resp.getStatusLine().getStatusCode(),
+                resp.getStatusLine().getReasonPhrase() );
+        this.response = resp;
+    }
 
-	public HttpResponseDecorator getResponse() {
-		return response;
-	}
+    public HttpResponseDecorator getResponse() {
+        return response;
+    }
 }

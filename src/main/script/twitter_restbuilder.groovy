@@ -8,15 +8,15 @@ import static groovyx.net.http.ContentType.URLENC
 
 twitter = new RESTClient( 'https://twitter.com/statuses/' )
 twitter.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
-		System.getProperty('twitter.oauth.consumerSecret'),
-		System.getProperty('twitter.oauth.accessToken'),
-		System.getProperty('twitter.oauth.secretToken')
+        System.getProperty('twitter.oauth.consumerSecret'),
+        System.getProperty('twitter.oauth.accessToken'),
+        System.getProperty('twitter.oauth.secretToken')
 
 // Test a URL using the HEAD method:
 
 try { // expect an exception from a 404 response:
-	twitter.head path : 'public_timeline'
-	assert false, 'Expected exception'
+    twitter.head path : 'public_timeline'
+    assert false, 'Expected exception'
 }
 /* The exception is used for flow control but can be used
    to read the response: */
@@ -40,8 +40,8 @@ assert resp.data.status.size() > 0
 def msg = "I'm using HTTPBuilder's RESTClient on ${new Date()}"
 
 resp = twitter.post( path : 'update.xml',
-		body : [ status:msg, source:'httpbuilder' ],
-		requestContentType : URLENC )
+        body : [ status:msg, source:'httpbuilder' ],
+        requestContentType : URLENC )
 
 assert resp.status == 200
 assert ( resp.data instanceof GPathResult ) // parsed using XmlSlurper

@@ -36,27 +36,27 @@ import org.apache.http.entity.HttpEntityWrapper;
  */
 public class GZIPEncoding extends ContentEncoding {
 
-	/**
-	 * Returns the {@link ContentEncoding.Type#GZIP} encoding string which is
-	 * added to the <code>Accept-Encoding</code> header by the base class.
-	 */
-	@Override
-	public String getContentEncoding() {
-		return GZIP.toString();
-	}
+    /**
+     * Returns the {@link ContentEncoding.Type#GZIP} encoding string which is
+     * added to the <code>Accept-Encoding</code> header by the base class.
+     */
+    @Override
+    public String getContentEncoding() {
+        return GZIP.toString();
+    }
 
-	/**
-	 * Wraps the raw entity in a {@link GZIPDecompressingEntity}.
-	 */
-	@Override
-	public HttpEntity wrapResponseEntity( HttpEntity raw ) {
-		return new GZIPDecompressingEntity( raw );
-	}
+    /**
+     * Wraps the raw entity in a {@link GZIPDecompressingEntity}.
+     */
+    @Override
+    public HttpEntity wrapResponseEntity( HttpEntity raw ) {
+        return new GZIPDecompressingEntity( raw );
+    }
 
-	/**
-	 * Entity used to interpret a GZIP-encoded response
-	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
-	 */
+    /**
+     * Entity used to interpret a GZIP-encoded response
+     * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
+     */
     protected static class GZIPDecompressingEntity extends HttpEntityWrapper {
 
         public GZIPDecompressingEntity(final HttpEntity entity) {

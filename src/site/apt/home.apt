@@ -6,7 +6,7 @@
 
 HTTPBuilder {Overview}
 
-	HTTPBuilder is the easiest way to manipulate HTTP-based resources from the JVM.
+    HTTPBuilder is the easiest way to manipulate HTTP-based resources from the JVM.
 
   In a nutshell, HTTPBuilder is a wrapper for Apache's
   {{{http://hc.apache.org/httpcomponents-client-ga/}HttpClient}}, with some (actually,

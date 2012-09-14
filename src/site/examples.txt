@@ -84,12 +84,12 @@ http.request( GET, JSON ) {
 END SNIPPET: doc3
 
 START SNIPPET: doc4
-	<category name="org.apache.http.headers">
-		<priority value="DEBUG" />
-	</category>
-	<category name="org.apache.http.wire">
-		<priority value="DEBUG" />
-	</category>
+    <category name="org.apache.http.headers">
+        <priority value="DEBUG" />
+    </category>
+    <category name="org.apache.http.wire">
+        <priority value="DEBUG" />
+    </category>
 END SNIPPET: doc4
 
 
@@ -114,7 +114,7 @@ http.get( path : '/search',
   println "response status: ${resp.statusLine}"
   println 'Headers: -----------'
   resp.headers.each { h ->
-  	println " ${h.name} : ${h.value}"
+    println " ${h.name} : ${h.value}"
   }
   println 'Response data: -----'
   System.out << reader
@@ -280,14 +280,14 @@ END SNIPPET: json2
 START SNIPPET: json3
   http.request( POST, JSON ) { req ->
       body = [
-      	first : 'Bob',
-      	last : 'Builder',
-      	address : [
-      	  street : '123 Some St',
-      	  town : 'Boston',
-      	  state : 'MA',
-      	  zip : 12345
-      	]
+        first : 'Bob',
+        last : 'Builder',
+        address : [
+          street : '123 Some St',
+          town : 'Boston',
+          state : 'MA',
+          zip : 12345
+        ]
       ]
 
       response.success = { resp, json ->
@@ -479,10 +479,10 @@ getClass().getResource( "/truststore.jks" ).withInputStream {
 }
 
 http.client.connectionManager.schemeRegistry.register(
-		new Scheme("https", new SSLSocketFactory(keyStore), 443) )
+        new Scheme("https", new SSLSocketFactory(keyStore), 443) )
 
 def status = http.request( HEAD ) {
-	response.success = { it.status }
+    response.success = { it.status }
 }
 END SNIPPET: ssl1
 
@@ -498,10 +498,10 @@ END SNIPPET: contenttype1
 
 START SNIPPET: contenttype2
 http.get( uri : 'http://somehost.com/contacts.csv',
-					contentType : 'text/csv' ) { resp, csv ->
+                    contentType : 'text/csv' ) { resp, csv ->
 
-		assert csv instanceof CSVReader
-		// parse the csv stream here.
+        assert csv instanceof CSVReader
+        // parse the csv stream here.
 }
 END SNIPPET: contenttype2
 
@@ -549,26 +549,26 @@ END SNIPPET: handler1
 
 START SNIPPET: handler2
 http.request(...) {
-	// success handler
-	// ...
+    // success handler
+    // ...
 
-	// only called for an HTTP 401 response code:
-	response.'401' = { resp ->
-		println 'access denied'
-	}
+    // only called for an HTTP 401 response code:
+    response.'401' = { resp ->
+        println 'access denied'
+    }
 }
 END SNIPPET: handler2
 
 START SNIPPET: handler3
 try {
-	def response = new HTTPBuilder('http://www.google.com').request(GET,TEXT) {}
+    def response = new HTTPBuilder('http://www.google.com').request(GET,TEXT) {}
 
-	assert response instanceof Reader // response data is buffered in-memory
-	println response.text()
+    assert response instanceof Reader // response data is buffered in-memory
+    println response.text()
 }
 catch ( HttpResponseException ex ) {
-	// default failure handler throws an exception:
-	println "Unexpected response error: ${ex.statusCode}"
+    // default failure handler throws an exception:
+    println "Unexpected response error: ${ex.statusCode}"
 }
 END SNIPPET: handler3
 
@@ -578,7 +578,7 @@ def http = new HTTPBuilder()
 http.handler.success = { "Success!" }
 
 http.handler.failure = { resp ->
-	"Unexpected failure: ${resp.statusLine}"
+    "Unexpected failure: ${resp.statusLine}"
 }
 
 // we can set code-specific default handlers as well:

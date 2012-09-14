@@ -198,7 +198,7 @@
    "object | applet | img | map | iframe">
 
 <!ENTITY % special.basic
-	"br | span | bdo">
+    "br | span | bdo">
 
 <!ENTITY % special
    "%special.basic; | %special.extra;">
@@ -253,7 +253,7 @@
 
 <!ENTITY % pre.content
    "(#PCDATA | a | %special.basic; | %fontstyle.basic; | %phrase.basic; |
-	   %inline.forms; | %misc.inline;)*">
+       %inline.forms; | %misc.inline;)*">
 
 <!-- form uses %Flow; excluding form -->
 

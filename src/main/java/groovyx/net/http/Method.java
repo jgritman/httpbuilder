@@ -35,21 +35,21 @@ import org.apache.http.client.methods.HttpRequestBase;
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum Method {
-	GET( HttpGet.class ),
-	PUT( HttpPut.class ),
-	POST( HttpPost.class ),
-	DELETE( HttpDelete.class ),
-	HEAD( HttpHead.class );
+    GET( HttpGet.class ),
+    PUT( HttpPut.class ),
+    POST( HttpPost.class ),
+    DELETE( HttpDelete.class ),
+    HEAD( HttpHead.class );
 
-	private final Class<? extends HttpRequestBase> requestType;
+    private final Class<? extends HttpRequestBase> requestType;
 
-	/**
-	 * Get the HttpRequest class that represents this request type.
-	 * @return a non-abstract class that implements {@link HttpRequest}
-	 */
-	public Class<? extends HttpRequestBase> getRequestType() { return this.requestType; }
+    /**
+     * Get the HttpRequest class that represents this request type.
+     * @return a non-abstract class that implements {@link HttpRequest}
+     */
+    public Class<? extends HttpRequestBase> getRequestType() { return this.requestType; }
 
-	private Method( Class<? extends HttpRequestBase> type ) {
-		this.requestType = type;
-	}
+    private Method( Class<? extends HttpRequestBase> type ) {
+        this.requestType = type;
+    }
 }

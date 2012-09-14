@@ -256,7 +256,7 @@
 <!ELEMENT SPAN - - (%inline;)*         -- generic language/style container -->
 <!ATTLIST SPAN
   %attrs;                              -- %coreattrs, %i18n, %events --
-  %reserved;			       -- reserved for possible future use --
+  %reserved;                   -- reserved for possible future use --
   >
 
 <!ELEMENT BDO - - (%inline;)*          -- I18N BiDi over-ride -->
@@ -277,7 +277,7 @@
 <!ELEMENT FONT - - (%inline;)*         -- local change to font -->
 <!ATTLIST FONT
   %coreattrs;                          -- id, class, style, title --
-  %i18n;		               -- lang, dir --
+  %i18n;                       -- lang, dir --
   size        CDATA          #IMPLIED  -- [+|-]nn e.g. size="+1", size="4" --
   color       %Color;        #IMPLIED  -- text color --
   face        CDATA          #IMPLIED  -- comma-separated list of font names --

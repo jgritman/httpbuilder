@@ -44,55 +44,55 @@ import org.apache.commons.collections.iterators.ArrayIterator;
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public enum ContentType {
-	/** <code>&#42;/*</code> */
-	ANY("*/*"),
-	/** <code>text/plain</code> */
-	TEXT("text/plain"),
-	/**
-	 * <ul>
-	 *  <li><code>application/json</code></li>
-	 *  <li><code>application/javascript</code></li>
-	 *  <li><code>text/javascript</code></li>
-	 * </ul>
-	 */
-	JSON("application/json","application/javascript","text/javascript"),
-	/**
-	 * <ul>
-	 *  <li><code>application/xml</code></li>
-	 *  <li><code>text/xml</code></li>
-	 *  <li><code>application/xhtml+xml</code></li>
-	 *  <li><code>application/atom+xml</code></li>
-	 * </ul>
-	 */
-	XML("application/xml","text/xml","application/xhtml+xml","application/atom+xml"),
-	/** <code>text/html</code> */
-	HTML("text/html"),
-	/** <code>application/x-www-form-urlencoded</code> */
-	URLENC("application/x-www-form-urlencoded"),
-	/** <code>application/octet-stream</code> */
-	BINARY("application/octet-stream");
+    /** <code>&#42;/*</code> */
+    ANY("*/*"),
+    /** <code>text/plain</code> */
+    TEXT("text/plain"),
+    /**
+     * <ul>
+     *  <li><code>application/json</code></li>
+     *  <li><code>application/javascript</code></li>
+     *  <li><code>text/javascript</code></li>
+     * </ul>
+     */
+    JSON("application/json","application/javascript","text/javascript"),
+    /**
+     * <ul>
+     *  <li><code>application/xml</code></li>
+     *  <li><code>text/xml</code></li>
+     *  <li><code>application/xhtml+xml</code></li>
+     *  <li><code>application/atom+xml</code></li>
+     * </ul>
+     */
+    XML("application/xml","text/xml","application/xhtml+xml","application/atom+xml"),
+    /** <code>text/html</code> */
+    HTML("text/html"),
+    /** <code>application/x-www-form-urlencoded</code> */
+    URLENC("application/x-www-form-urlencoded"),
+    /** <code>application/octet-stream</code> */
+    BINARY("application/octet-stream");
 
-	private final String[] ctStrings;
-	public String[] getContentTypeStrings() { return ctStrings; }
-	@Override public String toString() { return ctStrings[0]; }
+    private final String[] ctStrings;
+    public String[] getContentTypeStrings() { return ctStrings; }
+    @Override public String toString() { return ctStrings[0]; }
 
-	/**
-	 * Builds a string to be used as an HTTP <code>Accept</code> header
-	 * value, i.e. "application/xml, text/xml"
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public String getAcceptHeader() {
-		Iterator<String> iter = new ArrayIterator(ctStrings);
-		StringBuilder sb = new StringBuilder();
-		while ( iter.hasNext() ) {
-			sb.append( iter.next() );
-			if ( iter.hasNext() ) sb.append( ", " );
-		}
-		return sb.toString();
-	}
+    /**
+     * Builds a string to be used as an HTTP <code>Accept</code> header
+     * value, i.e. "application/xml, text/xml"
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public String getAcceptHeader() {
+        Iterator<String> iter = new ArrayIterator(ctStrings);
+        StringBuilder sb = new StringBuilder();
+        while ( iter.hasNext() ) {
+            sb.append( iter.next() );
+            if ( iter.hasNext() ) sb.append( ", " );
+        }
+        return sb.toString();
+    }
 
-	private ContentType( String... contentTypes ) {
-		this.ctStrings = contentTypes;
-	}
+    private ContentType( String... contentTypes ) {
+        this.ctStrings = contentTypes;
+    }
 }

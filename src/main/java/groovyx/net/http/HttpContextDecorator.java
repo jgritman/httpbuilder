@@ -37,52 +37,52 @@ import org.apache.http.protocol.HttpContext;
  */
 public class HttpContextDecorator implements HttpContext {
 
-	protected HttpContext delegate;
+    protected HttpContext delegate;
 
-	public HttpContextDecorator() {
-		this.delegate = new BasicHttpContext();
-	}
+    public HttpContextDecorator() {
+        this.delegate = new BasicHttpContext();
+    }
 
-	public HttpContextDecorator( HttpContext delegate ) {
-		this.delegate = new BasicHttpContext(delegate);
-	}
+    public HttpContextDecorator( HttpContext delegate ) {
+        this.delegate = new BasicHttpContext(delegate);
+    }
 
-	/**
-	 * Groovy support for the index [] operator
-	 * @param name
-	 * @return
-	 */
-	public Object getAt( String name ) {
-		return this.getAttribute(name);
-	}
+    /**
+     * Groovy support for the index [] operator
+     * @param name
+     * @return
+     */
+    public Object getAt( String name ) {
+        return this.getAttribute(name);
+    }
 
-	/**
-	 * Groovy support for the index [] operator
-	 * @param name
-	 * @param val
-	 */
-	public void setAt( String name, Object val ) {
-		this.setAttribute(name, val);
-	}
+    /**
+     * Groovy support for the index [] operator
+     * @param name
+     * @param val
+     */
+    public void setAt( String name, Object val ) {
+        this.setAttribute(name, val);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.http.protocol.HttpContext#getAttribute(java.lang.String)
-	 */
-	public Object getAttribute(String name) {
-		return this.delegate.getAttribute(name);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.http.protocol.HttpContext#getAttribute(java.lang.String)
+     */
+    public Object getAttribute(String name) {
+        return this.delegate.getAttribute(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.http.protocol.HttpContext#removeAttribute(java.lang.String)
-	 */
-	public Object removeAttribute(String name) {
-		return this.delegate.removeAttribute(name);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.http.protocol.HttpContext#removeAttribute(java.lang.String)
+     */
+    public Object removeAttribute(String name) {
+        return this.delegate.removeAttribute(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.http.protocol.HttpContext#setAttribute(java.lang.String, java.lang.Object)
-	 */
-	public void setAttribute(String name, Object val) {
-		this.delegate.setAttribute(name, val);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.http.protocol.HttpContext#setAttribute(java.lang.String, java.lang.Object)
+     */
+    public void setAttribute(String name, Object val) {
+        this.delegate.setAttribute(name, val);
+    }
 }

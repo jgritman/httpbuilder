@@ -45,237 +45,237 @@ import org.apache.http.protocol.HttpContext;
  */
 public class HttpResponseDecorator implements HttpResponse {
 
-	HeadersDecorator headers = null;
-	HttpResponse responseBase;
-	HttpContextDecorator context;
-	Object responseData;
+    HeadersDecorator headers = null;
+    HttpResponse responseBase;
+    HttpContextDecorator context;
+    Object responseData;
 
-	public HttpResponseDecorator( HttpResponse base, Object parsedResponse ) {
-		this( base, null, parsedResponse );
-	}
+    public HttpResponseDecorator( HttpResponse base, Object parsedResponse ) {
+        this( base, null, parsedResponse );
+    }
 
-	public HttpResponseDecorator( HttpResponse base, HttpContextDecorator context, Object parsedResponse ) {
-		this.responseBase = base;
-		this.context = context;
-		this.responseData = parsedResponse;
-	}
+    public HttpResponseDecorator( HttpResponse base, HttpContextDecorator context, Object parsedResponse ) {
+        this.responseBase = base;
+        this.context = context;
+        this.responseData = parsedResponse;
+    }
 
-	/**
-	 * Return a {@link HeadersDecorator}, which provides a more Groovy API for
-	 * accessing response headers.
-	 * @return the headers for this response
-	 */
-	public HeadersDecorator getHeaders() {
-		if ( headers == null ) headers = new HeadersDecorator();
-		return headers;
-	}
+    /**
+     * Return a {@link HeadersDecorator}, which provides a more Groovy API for
+     * accessing response headers.
+     * @return the headers for this response
+     */
+    public HeadersDecorator getHeaders() {
+        if ( headers == null ) headers = new HeadersDecorator();
+        return headers;
+    }
 
-	/**
-	 * Quickly determine if the request resulted in an error code.
-	 * @return true if the response code is within the range of
-	 *   {@link Status#SUCCESS}
-	 */
-	public boolean isSuccess() {
-		return Status.find( getStatus() ) == Status.SUCCESS;
-	}
+    /**
+     * Quickly determine if the request resulted in an error code.
+     * @return true if the response code is within the range of
+     *   {@link Status#SUCCESS}
+     */
+    public boolean isSuccess() {
+        return Status.find( getStatus() ) == Status.SUCCESS;
+    }
 
-	/**
-	 * Get the response status code.
-	 * @see StatusLine#getStatusCode()
-	 * @return the HTTP response code.
-	 */
-	public int getStatus() {
-		return responseBase.getStatusLine().getStatusCode();
-	}
+    /**
+     * Get the response status code.
+     * @see StatusLine#getStatusCode()
+     * @return the HTTP response code.
+     */
+    public int getStatus() {
+        return responseBase.getStatusLine().getStatusCode();
+    }
 
-	/**
-	 * Get the content-type for this response.
-	 * @see ParserRegistry#getContentType(HttpResponse)
-	 * @return the content-type string, without any charset information.
-	 */
-	public String getContentType() {
-		return ParserRegistry.getContentType( responseBase );
-	}
+    /**
+     * Get the content-type for this response.
+     * @see ParserRegistry#getContentType(HttpResponse)
+     * @return the content-type string, without any charset information.
+     */
+    public String getContentType() {
+        return ParserRegistry.getContentType( responseBase );
+    }
 
-	/**
-	 * Return the parsed data from this response body.
-	 * @return the parsed response object, or <code>null</code> if the response
-	 * does not contain any data.
-	 */
-	public Object getData() { return this.responseData; }
+    /**
+     * Return the parsed data from this response body.
+     * @return the parsed response object, or <code>null</code> if the response
+     * does not contain any data.
+     */
+    public Object getData() { return this.responseData; }
 
-	void setData( Object responseData ) { this.responseData = responseData; }
+    void setData( Object responseData ) { this.responseData = responseData; }
 
-	/**
-	 * Get the execution context used during this request
-	 * @see ExecutionContext
-	 * @return the {@link HttpContext}
-	 */
-	public HttpContextDecorator getContext() { return this.context; }
+    /**
+     * Get the execution context used during this request
+     * @see ExecutionContext
+     * @return the {@link HttpContext}
+     */
+    public HttpContextDecorator getContext() { return this.context; }
 
-	/**
-	 * This class is returned by {@link HttpResponseDecorator#getHeaders()}.
-	 * It provides three "Groovy" ways to access headers:
-	 * <dl>
-	 *   <dt>Bracket notation</dt><dd><code>resp.headers['Content-Type']</code>
-	 *   	returns the {@link Header} instance</dd>
-	 *   <dt>Property notation</dt><dd><code>resp.headers.'Content-Type'</code>
-	 *   	returns the {@link Header#getValue() header value}</dd>
-	 *   <dt>Iterator methods</dt><dd>Iterates over each Header:
-	 * <pre>resp.headers.each {
-	 *   println "${it.name} : ${it.value}"
-	 * }</pre></dd>
-	 * </dl>
-	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
-	 * @since 0.5.0
-	 */
-	public final class HeadersDecorator implements Iterable<Header> {
+    /**
+     * This class is returned by {@link HttpResponseDecorator#getHeaders()}.
+     * It provides three "Groovy" ways to access headers:
+     * <dl>
+     *   <dt>Bracket notation</dt><dd><code>resp.headers['Content-Type']</code>
+     *      returns the {@link Header} instance</dd>
+     *   <dt>Property notation</dt><dd><code>resp.headers.'Content-Type'</code>
+     *      returns the {@link Header#getValue() header value}</dd>
+     *   <dt>Iterator methods</dt><dd>Iterates over each Header:
+     * <pre>resp.headers.each {
+     *   println "${it.name} : ${it.value}"
+     * }</pre></dd>
+     * </dl>
+     * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
+     * @since 0.5.0
+     */
+    public final class HeadersDecorator implements Iterable<Header> {
 
-		/**
-		 * Access the named header value, using bracket form.  For example,
-		 * <code>response.headers['Content-Encoding']</code>
-		 * @see HttpResponse#getFirstHeader(String)
-		 * @param name header name, e.g. <code>Content-Type<code>
-		 * @return the {@link Header}, or <code>null</code> if it does not exist
-		 *  in this response
-		 */
-		public Header getAt( String name ) {
-			return responseBase.getFirstHeader( name );
-		}
+        /**
+         * Access the named header value, using bracket form.  For example,
+         * <code>response.headers['Content-Encoding']</code>
+         * @see HttpResponse#getFirstHeader(String)
+         * @param name header name, e.g. <code>Content-Type<code>
+         * @return the {@link Header}, or <code>null</code> if it does not exist
+         *  in this response
+         */
+        public Header getAt( String name ) {
+            return responseBase.getFirstHeader( name );
+        }
 
-		/**
-		 * Allow property-style access to header values.  This is the same as
-		 * {@link #getAt(String)}, except it simply returns the header's String
-		 * value, instead of the Header object.
-		 *
-		 * @param name header name, e.g. <code>Content-Type<code>
-		 * @return the {@link Header}, or <code>null</code> if it does not exist
-		 *  in this response
-		 */
-		protected String propertyMissing( String name ) {
-			Header h = this.getAt( name );
-			return h != null ? h.getValue() : null;
-		}
+        /**
+         * Allow property-style access to header values.  This is the same as
+         * {@link #getAt(String)}, except it simply returns the header's String
+         * value, instead of the Header object.
+         *
+         * @param name header name, e.g. <code>Content-Type<code>
+         * @return the {@link Header}, or <code>null</code> if it does not exist
+         *  in this response
+         */
+        protected String propertyMissing( String name ) {
+            Header h = this.getAt( name );
+            return h != null ? h.getValue() : null;
+        }
 
-		/**
-		 * Used to allow Groovy iteration methods over the response headers.
-		 * For example:
-		 * <pre>response.headers.each {
-		 *   println "${it.name} : ${it.value}"
-		 * }</pre>
-		 */
-		@SuppressWarnings("unchecked")
-		public Iterator<Header> iterator() {
-			return responseBase.headerIterator();
-		}
-	}
+        /**
+         * Used to allow Groovy iteration methods over the response headers.
+         * For example:
+         * <pre>response.headers.each {
+         *   println "${it.name} : ${it.value}"
+         * }</pre>
+         */
+        @SuppressWarnings("unchecked")
+        public Iterator<Header> iterator() {
+            return responseBase.headerIterator();
+        }
+    }
 
 
-	public HttpEntity getEntity() {
-		return responseBase.getEntity();
-	}
+    public HttpEntity getEntity() {
+        return responseBase.getEntity();
+    }
 
-	public Locale getLocale() {
-		return responseBase.getLocale();
-	}
+    public Locale getLocale() {
+        return responseBase.getLocale();
+    }
 
-	public StatusLine getStatusLine() {
-		return responseBase.getStatusLine();
-	}
+    public StatusLine getStatusLine() {
+        return responseBase.getStatusLine();
+    }
 
-	public void setEntity( HttpEntity arg0 ) {
-		responseBase.setEntity( arg0 );
-	}
+    public void setEntity( HttpEntity arg0 ) {
+        responseBase.setEntity( arg0 );
+    }
 
-	public void setLocale( Locale arg0 ) {
-		responseBase.setLocale( arg0 );
-	}
+    public void setLocale( Locale arg0 ) {
+        responseBase.setLocale( arg0 );
+    }
 
-	public void setReasonPhrase( String arg0 ) throws IllegalStateException {
-		responseBase.setReasonPhrase( arg0 );
-	}
+    public void setReasonPhrase( String arg0 ) throws IllegalStateException {
+        responseBase.setReasonPhrase( arg0 );
+    }
 
-	public void setStatusCode( int arg0 ) throws IllegalStateException {
-		responseBase.setStatusCode( arg0 );
-	}
+    public void setStatusCode( int arg0 ) throws IllegalStateException {
+        responseBase.setStatusCode( arg0 );
+    }
 
-	public void setStatusLine( StatusLine arg0 ) {
-		responseBase.setStatusLine( arg0 );
-	}
+    public void setStatusLine( StatusLine arg0 ) {
+        responseBase.setStatusLine( arg0 );
+    }
 
-	public void setStatusLine( ProtocolVersion arg0, int arg1 ) {
-		responseBase.setStatusLine( arg0, arg1 );
-	}
+    public void setStatusLine( ProtocolVersion arg0, int arg1 ) {
+        responseBase.setStatusLine( arg0, arg1 );
+    }
 
-	public void setStatusLine( ProtocolVersion arg0, int arg1, String arg2 ) {
-		responseBase.setStatusLine( arg0, arg1, arg2 );
-	}
+    public void setStatusLine( ProtocolVersion arg0, int arg1, String arg2 ) {
+        responseBase.setStatusLine( arg0, arg1, arg2 );
+    }
 
-	public void addHeader( Header arg0 ) {
-		responseBase.addHeader( arg0 );
-	}
+    public void addHeader( Header arg0 ) {
+        responseBase.addHeader( arg0 );
+    }
 
-	public void addHeader( String arg0, String arg1 ) {
-		responseBase.addHeader( arg0, arg1 );
-	}
+    public void addHeader( String arg0, String arg1 ) {
+        responseBase.addHeader( arg0, arg1 );
+    }
 
-	public boolean containsHeader( String arg0 ) {
-		return responseBase.containsHeader( arg0 );
-	}
+    public boolean containsHeader( String arg0 ) {
+        return responseBase.containsHeader( arg0 );
+    }
 
-	public Header[] getAllHeaders() {
-		return responseBase.getAllHeaders();
-	}
+    public Header[] getAllHeaders() {
+        return responseBase.getAllHeaders();
+    }
 
-	public Header getFirstHeader( String arg0 ) {
-		return responseBase.getFirstHeader( arg0 );
-	}
+    public Header getFirstHeader( String arg0 ) {
+        return responseBase.getFirstHeader( arg0 );
+    }
 
-	public Header[] getHeaders( String arg0 ) {
-		return responseBase.getHeaders( arg0 );
-	}
+    public Header[] getHeaders( String arg0 ) {
+        return responseBase.getHeaders( arg0 );
+    }
 
-	public Header getLastHeader( String arg0 ) {
-		return responseBase.getLastHeader( arg0 );
-	}
+    public Header getLastHeader( String arg0 ) {
+        return responseBase.getLastHeader( arg0 );
+    }
 
-	public HttpParams getParams() {
-		return responseBase.getParams();
-	}
+    public HttpParams getParams() {
+        return responseBase.getParams();
+    }
 
-	public ProtocolVersion getProtocolVersion() {
-		return responseBase.getProtocolVersion();
-	}
+    public ProtocolVersion getProtocolVersion() {
+        return responseBase.getProtocolVersion();
+    }
 
-	public HeaderIterator headerIterator() {
-		return responseBase.headerIterator();
-	}
+    public HeaderIterator headerIterator() {
+        return responseBase.headerIterator();
+    }
 
-	public HeaderIterator headerIterator( String arg0 ) {
-		return responseBase.headerIterator( arg0 );
-	}
+    public HeaderIterator headerIterator( String arg0 ) {
+        return responseBase.headerIterator( arg0 );
+    }
 
-	public void removeHeader( Header arg0 ) {
-		responseBase.removeHeader( arg0 );
-	}
+    public void removeHeader( Header arg0 ) {
+        responseBase.removeHeader( arg0 );
+    }
 
-	public void removeHeaders( String arg0 ) {
-		responseBase.removeHeaders( arg0 );
-	}
+    public void removeHeaders( String arg0 ) {
+        responseBase.removeHeaders( arg0 );
+    }
 
-	public void setHeader( Header arg0 ) {
-		responseBase.setHeader( arg0 );
-	}
+    public void setHeader( Header arg0 ) {
+        responseBase.setHeader( arg0 );
+    }
 
-	public void setHeader( String arg0, String arg1 ) {
-		responseBase.setHeader( arg0, arg1 );
-	}
+    public void setHeader( String arg0, String arg1 ) {
+        responseBase.setHeader( arg0, arg1 );
+    }
 
-	public void setHeaders( Header[] arg0 ) {
-		responseBase.setHeaders( arg0 );
-	}
+    public void setHeaders( Header[] arg0 ) {
+        responseBase.setHeaders( arg0 );
+    }
 
-	public void setParams( HttpParams arg0 ) {
-		responseBase.setParams( arg0 );
-	}
+    public void setParams( HttpParams arg0 ) {
+        responseBase.setParams( arg0 );
+    }
 }

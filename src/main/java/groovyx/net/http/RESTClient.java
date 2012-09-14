@@ -64,179 +64,179 @@ import org.apache.http.client.methods.HttpPut;
 public class RESTClient extends HTTPBuilder {
 
 
-	/**
-	 * Constructor.
-	 * @see HTTPBuilder#HTTPBuilder()
-	 */
-	public RESTClient() { super(); }
+    /**
+     * Constructor.
+     * @see HTTPBuilder#HTTPBuilder()
+     */
+    public RESTClient() { super(); }
 
-	/**
-	 * See {@link HTTPBuilder#HTTPBuilder(Object)}
-	 * @param defaultURI default request URI (String, URI, URL or {@link URIBuilder})
-	 * @throws URISyntaxException
-	 */
-	public RESTClient( Object defaultURI ) throws URISyntaxException {
-		super( defaultURI );
-	}
+    /**
+     * See {@link HTTPBuilder#HTTPBuilder(Object)}
+     * @param defaultURI default request URI (String, URI, URL or {@link URIBuilder})
+     * @throws URISyntaxException
+     */
+    public RESTClient( Object defaultURI ) throws URISyntaxException {
+        super( defaultURI );
+    }
 
-	/**
-	 * See {@link HTTPBuilder#HTTPBuilder(Object, Object)}
-	 * @param defaultURI default request URI (String, URI, URL or {@link URIBuilder})
-	 * @param defaultContentType default content-type (String or {@link ContentType})
-	 * @throws URISyntaxException
-	 */
-	public RESTClient( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
-		super( defaultURI, defaultContentType );
-	}
+    /**
+     * See {@link HTTPBuilder#HTTPBuilder(Object, Object)}
+     * @param defaultURI default request URI (String, URI, URL or {@link URIBuilder})
+     * @param defaultContentType default content-type (String or {@link ContentType})
+     * @throws URISyntaxException
+     */
+    public RESTClient( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
+        super( defaultURI, defaultContentType );
+    }
 
 
-	/**
-	 * <p>Convenience method to perform an HTTP GET request.  It will use the HTTPBuilder's
-	 * {@link #getHandler() registered response handlers} to handle success or
-	 * failure status codes.  By default, the
-	 * {@link #defaultSuccessHandler(HttpResponseDecorator, Object)}
-	 * <code>success</code> response handler will return a decorated response
-	 * object that can be used to read response headers and data.</p>
-	 *
-	 * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled
-	 * by the registered 'failure' handler.
-	 * The {@link #defaultFailureHandler(HttpResponseDecorator, Object)
-	 * default failure handler} throws a {@link HttpResponseException}.</p>
-	 *
-	 * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
-	 * @see #defaultFailureHandler(HttpResponseDecorator, Object)
-	 * @param args named parameters - see
-	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link HttpResponseDecorator}, unless the default success
-	 * 		handler is overridden.
-	 * @throws URISyntaxException
-	 * @throws IOException
-	 * @throws ClientProtocolException
-	 */
-	public Object get( Map<String,?> args ) throws ClientProtocolException,
-			IOException, URISyntaxException {
-		return super.doRequest( new RequestConfigDelegate( args, new HttpGet(), null ) );
-	}
+    /**
+     * <p>Convenience method to perform an HTTP GET request.  It will use the HTTPBuilder's
+     * {@link #getHandler() registered response handlers} to handle success or
+     * failure status codes.  By default, the
+     * {@link #defaultSuccessHandler(HttpResponseDecorator, Object)}
+     * <code>success</code> response handler will return a decorated response
+     * object that can be used to read response headers and data.</p>
+     *
+     * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled
+     * by the registered 'failure' handler.
+     * The {@link #defaultFailureHandler(HttpResponseDecorator, Object)
+     * default failure handler} throws a {@link HttpResponseException}.</p>
+     *
+     * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
+     * @see #defaultFailureHandler(HttpResponseDecorator, Object)
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws ClientProtocolException
+     */
+    public Object get( Map<String,?> args ) throws ClientProtocolException,
+            IOException, URISyntaxException {
+        return super.doRequest( new RequestConfigDelegate( args, new HttpGet(), null ) );
+    }
 
-	/**
-	 * <p>Convenience method to perform a POST request.</p>
-	 *
-	 * <p>The request body (specified by a <code>body</code> named parameter)
-	 * will be encoded based on the <code>requestContentType</code> named
-	 * parameter, or if none is given, the default
-	 * {@link HTTPBuilder#setContentType(Object) content-type} for this instance.
-	 * </p>
-	 *
-	 * @param args named parameters - see
-	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link HttpResponseDecorator}, unless the default success
-	 * 		handler is overridden.
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Override public Object post( Map<String,?> args )
-			throws URISyntaxException, ClientProtocolException, IOException {
-		return super.doRequest( new RequestConfigDelegate( args, new HttpPost(), null ) );
-	}
+    /**
+     * <p>Convenience method to perform a POST request.</p>
+     *
+     * <p>The request body (specified by a <code>body</code> named parameter)
+     * will be encoded based on the <code>requestContentType</code> named
+     * parameter, or if none is given, the default
+     * {@link HTTPBuilder#setContentType(Object) content-type} for this instance.
+     * </p>
+     *
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    @Override public Object post( Map<String,?> args )
+            throws URISyntaxException, ClientProtocolException, IOException {
+        return super.doRequest( new RequestConfigDelegate( args, new HttpPost(), null ) );
+    }
 
-	/**
-	 * <p> Convenience method to perform a PUT request.</p>
-	 *
-	 * <p>The request body (specified by a <code>body</code> named parameter)
-	 * will be encoded based on the <code>requestContentType</code> named
-	 * parameter, or if none is given, the default
-	 * {@link HTTPBuilder#setContentType(Object) content-type} for this instance.
-	 * </p>
-	 *
-	 * @param args named parameters - see
-	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link HttpResponseDecorator}, unless the default success
-	 * 		handler is overridden.
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	public Object put( Map<String,?> args ) throws URISyntaxException,
-			ClientProtocolException, IOException {
-		return this.doRequest( new RequestConfigDelegate( args, new HttpPut(), null ) );
-	}
+    /**
+     * <p> Convenience method to perform a PUT request.</p>
+     *
+     * <p>The request body (specified by a <code>body</code> named parameter)
+     * will be encoded based on the <code>requestContentType</code> named
+     * parameter, or if none is given, the default
+     * {@link HTTPBuilder#setContentType(Object) content-type} for this instance.
+     * </p>
+     *
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public Object put( Map<String,?> args ) throws URISyntaxException,
+            ClientProtocolException, IOException {
+        return this.doRequest( new RequestConfigDelegate( args, new HttpPut(), null ) );
+    }
 
-	/**
-	 * <p>Perform a HEAD request, often used to check preconditions before
-	 * sending a large PUT or POST request.</p>
-	 *
-	 * @param args named parameters - see
-	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link HttpResponseDecorator}, unless the default success
-	 * 		handler is overridden.
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	public Object head( Map<String,?> args ) throws URISyntaxException,
-			ClientProtocolException, IOException {
-		return this.doRequest( new RequestConfigDelegate( args, new HttpHead(), null ) );
-	}
+    /**
+     * <p>Perform a HEAD request, often used to check preconditions before
+     * sending a large PUT or POST request.</p>
+     *
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public Object head( Map<String,?> args ) throws URISyntaxException,
+            ClientProtocolException, IOException {
+        return this.doRequest( new RequestConfigDelegate( args, new HttpHead(), null ) );
+    }
 
-	/**
-	 * <p>Perform a DELETE request.  This method does not accept a
-	 * <code>body</code> argument.</p>
-	 *
-	 * @param args named parameters - see
-	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link HttpResponseDecorator}, unless the default success
-	 * 		handler is overridden.
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	public Object delete( Map<String,?> args ) throws URISyntaxException,
-			ClientProtocolException, IOException {
-		return this.doRequest( new RequestConfigDelegate( args, new HttpDelete(), null ) );
-	}
+    /**
+     * <p>Perform a DELETE request.  This method does not accept a
+     * <code>body</code> argument.</p>
+     *
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public Object delete( Map<String,?> args ) throws URISyntaxException,
+            ClientProtocolException, IOException {
+        return this.doRequest( new RequestConfigDelegate( args, new HttpDelete(), null ) );
+    }
 
-	/**
-	 * <p>Perform an OPTIONS request.</p>
-	 *
-	 * @param args named parameters - see
-	 * 	{@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
-	 * @return a {@link HttpResponseDecorator}, unless the default success
-	 * 		handler is overridden.
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	public Object options( Map<String,?> args ) throws ClientProtocolException,
-			IOException, URISyntaxException {
-		return this.doRequest( new RequestConfigDelegate( args, new HttpOptions(), null ) );
-	}
+    /**
+     * <p>Perform an OPTIONS request.</p>
+     *
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public Object options( Map<String,?> args ) throws ClientProtocolException,
+            IOException, URISyntaxException {
+        return this.doRequest( new RequestConfigDelegate( args, new HttpOptions(), null ) );
+    }
 
-	/**
-	 * Returns an {@link HttpResponseDecorator}, which provides simplified
-	 * access to headers, response code, and parsed response body, as well as
-	 * the underlying {@link HttpResponse} instance.
-	 */
-	@Override
-	protected HttpResponseDecorator defaultSuccessHandler( HttpResponseDecorator resp, Object data )
-			throws ResponseParseException {
-		resp.setData( super.defaultSuccessHandler( resp, data ) );
-		return resp;
-	}
+    /**
+     * Returns an {@link HttpResponseDecorator}, which provides simplified
+     * access to headers, response code, and parsed response body, as well as
+     * the underlying {@link HttpResponse} instance.
+     */
+    @Override
+    protected HttpResponseDecorator defaultSuccessHandler( HttpResponseDecorator resp, Object data )
+            throws ResponseParseException {
+        resp.setData( super.defaultSuccessHandler( resp, data ) );
+        return resp;
+    }
 
-	/**
-	 * Throws an exception for non-successful HTTP response codes.  The
-	 * exception instance will have a reference to the response object, in
-	 * order to inspect status code and headers within the <code>catch</code>
-	 * block.
-	 * @param resp response object
-	 * @param data parsed response data
-	 * @throws HttpResponseException exception which can access the response
-	 *   object.
-	 */
-	protected void defaultFailureHandler( HttpResponseDecorator resp, Object data )
-			throws HttpResponseException {
-		resp.setData( super.defaultSuccessHandler( resp, data ) );
-		throw new HttpResponseException( resp );
-	}
+    /**
+     * Throws an exception for non-successful HTTP response codes.  The
+     * exception instance will have a reference to the response object, in
+     * order to inspect status code and headers within the <code>catch</code>
+     * block.
+     * @param resp response object
+     * @param data parsed response data
+     * @throws HttpResponseException exception which can access the response
+     *   object.
+     */
+    protected void defaultFailureHandler( HttpResponseDecorator resp, Object data )
+            throws HttpResponseException {
+        resp.setData( super.defaultSuccessHandler( resp, data ) );
+        throw new HttpResponseException( resp );
+    }
 }

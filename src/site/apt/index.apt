@@ -117,7 +117,7 @@ News
 
   [[]] The HTTPBuilder class' <<<URL>>> property has been renamed to <<<uri>>>
 
-	[]
+    []
 
   Of course the 0.5.0 release has a ton of more <interesting> changes; read below
   for most of them...

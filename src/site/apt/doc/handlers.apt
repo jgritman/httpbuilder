@@ -56,7 +56,7 @@ Default Handlers
 
 %{code-snippet|id=handler3|brush=groovy|file=src/site/examples.txt}
 
-	The default failure handler will throw an exception.
+    The default failure handler will throw an exception.
 
   This behavior can also be customized by setting your own default handlers on
   the HTTPBuilder instance like so:

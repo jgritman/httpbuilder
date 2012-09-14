@@ -36,28 +36,28 @@ import org.apache.http.entity.HttpEntityWrapper;
  */
 public class DeflateEncoding extends ContentEncoding {
 
-	/**
-	 * Returns the {@link ContentEncoding.Type#DEFLATE} encoding string which is
-	 * added to the <code>Accept-Encoding</code> header by the base class.
-	 */
-	@Override
-	public String getContentEncoding() {
-		return DEFLATE.toString();
-	}
+    /**
+     * Returns the {@link ContentEncoding.Type#DEFLATE} encoding string which is
+     * added to the <code>Accept-Encoding</code> header by the base class.
+     */
+    @Override
+    public String getContentEncoding() {
+        return DEFLATE.toString();
+    }
 
 
-	/**
-	 * Wraps the raw entity in a {@link InflaterEntity}.
-	 */
-	@Override
-	public HttpEntity wrapResponseEntity( HttpEntity raw ) {
-		return new InflaterEntity( raw );
-	}
+    /**
+     * Wraps the raw entity in a {@link InflaterEntity}.
+     */
+    @Override
+    public HttpEntity wrapResponseEntity( HttpEntity raw ) {
+        return new InflaterEntity( raw );
+    }
 
-	/**
-	 * Entity used to interpret a Deflate-encoded response
-	 * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
-	 */
+    /**
+     * Entity used to interpret a Deflate-encoded response
+     * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
+     */
     public static class InflaterEntity extends HttpEntityWrapper {
 
         public InflaterEntity(final HttpEntity entity) {

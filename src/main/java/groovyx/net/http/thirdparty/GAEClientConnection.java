@@ -119,14 +119,14 @@ class GAEClientConnection
       HttpHost host = route.getTargetHost();
 
       URI uri = new URI(host.getSchemeName()
-			+ "://"
-			+ host.getHostName()
-			+ ((host.getPort() == -1) ? "" : (":" + host.getPort()))
-			+ request.getRequestLine().getUri());
+            + "://"
+            + host.getHostName()
+            + ((host.getPort() == -1) ? "" : (":" + host.getPort()))
+            + request.getRequestLine().getUri());
 
       this.request = new HTTPRequest(uri.toURL(),
-				     HTTPMethod.valueOf(request.getRequestLine().getMethod()),
-				     FetchOptions.Builder.disallowTruncate().doNotFollowRedirects());
+                     HTTPMethod.valueOf(request.getRequestLine().getMethod()),
+                     FetchOptions.Builder.disallowTruncate().doNotFollowRedirects());
     }
     catch (URISyntaxException ex) {
       throw new IOException("Malformed request URI: " + ex.getMessage(), ex);
@@ -161,8 +161,8 @@ class GAEClientConnection
     }
 
     HttpResponse response = new BasicHttpResponse(new ProtocolVersion("HTTP", 1, 1),
-						  this.response.getResponseCode(),
-						  null);
+                          this.response.getResponseCode(),
+                          null);
 //     System.err.println("RECV: " + response.getStatusLine());
 
     for (HTTPHeader h : this.response.getHeaders()) {
@@ -191,12 +191,12 @@ class GAEClientConnection
     throws IOException {
     if (request != null) {
       try {
-// 	System.err.println("----");
-	response = urlFS.fetch(request);
-	request = null;
+//  System.err.println("----");
+    response = urlFS.fetch(request);
+    request = null;
       }catch (IOException ex) {
-	ex.printStackTrace();
-	throw ex;
+    ex.printStackTrace();
+    throw ex;
       }
     }
     else {

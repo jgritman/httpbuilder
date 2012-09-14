@@ -226,7 +226,7 @@
 <!ELEMENT SPAN - - (%inline;)*         -- generic language/style container -->
 <!ATTLIST SPAN
   %attrs;                              -- %coreattrs, %i18n, %events --
-  %reserved;			       -- reserved for possible future use --
+  %reserved;                   -- reserved for possible future use --
   >
 
 <!ELEMENT BDO - - (%inline;)*          -- I18N BiDi over-ride -->

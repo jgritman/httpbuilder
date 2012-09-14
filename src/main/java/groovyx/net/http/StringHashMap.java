@@ -36,39 +36,39 @@ import java.util.Map;
  */
 class StringHashMap<V> extends HashMap<Object,V> {
 
-	private static final long serialVersionUID = -92935672093270924L;
+    private static final long serialVersionUID = -92935672093270924L;
 
-	public StringHashMap() { super(); }
+    public StringHashMap() { super(); }
 
-	public StringHashMap( Map<?,? extends V> contents ) {
-		super();
-		this.putAll( contents );
-	}
+    public StringHashMap( Map<?,? extends V> contents ) {
+        super();
+        this.putAll( contents );
+    }
 
-	@Override
-	public boolean containsKey( Object key ) {
-		if ( key == null ) return false;
-		return super.containsKey( key.toString() );
-	}
+    @Override
+    public boolean containsKey( Object key ) {
+        if ( key == null ) return false;
+        return super.containsKey( key.toString() );
+    }
 
-	@Override
-	public V get( Object key ) {
-		if ( key == null ) return null;
-		return super.get( key.toString() );
-	}
+    @Override
+    public V get( Object key ) {
+        if ( key == null ) return null;
+        return super.get( key.toString() );
+    }
 
-	public V put(Object key, V value) {
-		return key != null ? super.put( key.toString(), value ) : value;
-	}
+    public V put(Object key, V value) {
+        return key != null ? super.put( key.toString(), value ) : value;
+    }
 
-	@Override
-	public void putAll( Map<?, ? extends V> m ) {
-		for ( Object key : m.keySet() ) this.put(  key, m.get( key ) );
-	}
+    @Override
+    public void putAll( Map<?, ? extends V> m ) {
+        for ( Object key : m.keySet() ) this.put(  key, m.get( key ) );
+    }
 
-	@Override
-	public V remove( Object key ) {
-		if ( key == null ) return null;
-		return super.remove( key.toString() );
-	}
+    @Override
+    public V remove( Object key ) {
+        if ( key == null ) return null;
+        return super.remove( key.toString() );
+    }
 }

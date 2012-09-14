@@ -57,10 +57,10 @@ Introduction
 
 The Magic: Built-in Content-Type Parsing
 
-	HTTPBuilder is also able to intelligently handle different response
-	content-types.  In this example, the response data is automatically parsed
-	into a <<<JSON>>> object, which is then passed to the 'success' response
-	handler.
+    HTTPBuilder is also able to intelligently handle different response
+    content-types.  In this example, the response data is automatically parsed
+    into a <<<JSON>>> object, which is then passed to the 'success' response
+    handler.
 
 %{code-snippet|id=doc3|brush=groovy|file=src/site/examples.txt}
 

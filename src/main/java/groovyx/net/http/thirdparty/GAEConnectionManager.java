@@ -33,19 +33,19 @@ public class GAEConnectionManager
 
   public GAEConnectionManager() {
     SocketFactory no_socket_factory = new SocketFactory() {
-	public Socket connectSocket(Socket sock, String host, int port,
-				    InetAddress localAddress, int localPort,
-				    HttpParams params) {
-	  return null;
-	}
+    public Socket connectSocket(Socket sock, String host, int port,
+                    InetAddress localAddress, int localPort,
+                    HttpParams params) {
+      return null;
+    }
 
-	public Socket createSocket() {
-	  return null;
-	}
+    public Socket createSocket() {
+      return null;
+    }
 
-	public boolean isSecure(Socket s) {
-	  return false;
-	}
+    public boolean isSecure(Socket s) {
+      return false;
+    }
       };
 
     schemeRegistry = new SchemeRegistry();
@@ -59,20 +59,20 @@ public class GAEConnectionManager
   }
 
   public ClientConnectionRequest requestConnection(final HttpRoute route,
-							     final Object state) {
+                                 final Object state) {
     return new ClientConnectionRequest() {
       public void abortRequest() {
-	// Nothing to do
+    // Nothing to do
       }
 
       public ManagedClientConnection getConnection(long timeout, TimeUnit tunit) {
-	return GAEConnectionManager.this.getConnection(route, state);
+    return GAEConnectionManager.this.getConnection(route, state);
       }
     };
   }
 
   public void releaseConnection(ManagedClientConnection conn,
-					  long validDuration, TimeUnit timeUnit) {
+                      long validDuration, TimeUnit timeUnit) {
   }
 
   public void closeIdleConnections(long idletime, TimeUnit tunit) {
