@@ -18,8 +18,6 @@
     <properties>
         <!-- Needed because this value is used in Site filtering and Velocity doesn't like the dot. -->
         <project-version>${project.version}</project-version>
-        <twitter.user>jgritman</twitter.user>
-        <!-- twitter.passwd> stored in settings.xml for security </twitter.passwd -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <m2st.version>2.0</m2st.version>
         <m2st-gatc-id>UA-11299971-1</m2st-gatc-id>
