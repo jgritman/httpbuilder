@@ -60,6 +60,7 @@ import org.apache.http.message.BasicHeaderIterator;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.params.HttpParams;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 
 /**
  * <p>This class provides a simplified API similar to {@link HTTPBuilder}, but
@@ -276,7 +277,7 @@ public class HttpURLClient {
     }
 
     private String getBasicAuthHeader( String user, String pass ) throws UnsupportedEncodingException {
-      return "Basic " + DefaultGroovyMethods.encodeBase64(
+      return "Basic " + EncodingGroovyMethods.encodeBase64(
               (user + ":" + pass).getBytes("ISO-8859-1") ).toString();
     }
 
