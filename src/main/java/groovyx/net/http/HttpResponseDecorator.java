@@ -165,7 +165,7 @@ public class HttpResponseDecorator implements HttpResponse {
          * }</pre>
          */
         @SuppressWarnings("unchecked")
-        public Iterator<Header> iterator() {
+        public Iterator iterator() {
             return responseBase.headerIterator();
         }
     }
