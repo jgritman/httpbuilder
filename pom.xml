@@ -76,7 +76,7 @@
             <!-- Only needed for HTML parsing -->
             <groupId>net.sourceforge.nekohtml</groupId>
             <artifactId>nekohtml</artifactId>
-            <version>1.9.9</version>
+            <version>1.9.16</version>
         </dependency>
         <dependency>
             <!-- (Usually) only needed for HTML parsing -->
