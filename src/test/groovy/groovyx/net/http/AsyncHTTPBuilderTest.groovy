@@ -125,8 +125,8 @@ public class AsyncHTTPBuilderTest {
 
 
     @Test public void testTimeout() {
-        def http = new AsyncHTTPBuilder( uri:'http://ajax.googleapis.com',
-                contentType: JSON, timeout:2 ) // 2ms to force timeout
+        def http = new AsyncHTTPBuilder( uri:'http://netflix.com',
+                contentType: HTML, timeout:2 ) // 2ms to force timeout
 
         assert http.timeout == 2
 
