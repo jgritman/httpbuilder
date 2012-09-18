@@ -18,23 +18,23 @@ import org.apache.xml.resolver.tools.CatalogResolver
 import org.junit.Test
 
 class HTTPBuilderTest {
-    
+
     def twitter = [ user: System.getProperty('twitter.user'),
                     consumerKey: System.getProperty('twitter.oauth.consumerKey'),
                     consumerSecret: System.getProperty('twitter.oauth.consumerSecret'),
                     accessToken: System.getProperty('twitter.oauth.accessToken'),
                     secretToken: System.getProperty('twitter.oauth.secretToken') ]
-                   
+
     /**
      * This method will parse the content based on the response content-type
      */
     @Test public void testGET() {
         def http = new HTTPBuilder('http://www.google.com')
-        http.get( path:'/search', query:[q:'Groovy'], 
+        http.get( path:'/search', query:[q:'Groovy'],
                 headers:['User-Agent':"Firefox"] ) { resp, html ->
             println "response status: ${resp.statusLine}"
             println "Content Type: ${resp.headers.'Content-Type'}"
-            
+
             assert html
             assert html.HEAD.size() == 1
             assert html.HEAD.TITLE.size() == 1
@@ -42,11 +42,11 @@ class HTTPBuilderTest {
             assert html.BODY.size() == 1
         }
     }
-    
+
     @Test public void testDefaultSuccessHandler() {
         def http = new HTTPBuilder('http://www.google.com')
         def html = http.request( GET ) {
-            headers = ['User-Agent':"Firefox"] 
+            headers = ['User-Agent':"Firefox"]
             uri.path = '/search'
             uri.query = [q:'Groovy']
         }
@@ -60,7 +60,7 @@ class HTTPBuilderTest {
         assert html.HEAD.size() == 1
         assert html.BODY.size() == 1
     }
-    
+
     @Test public void testSetHeaders() {
         def http = new HTTPBuilder('http://www.google.com')
         def val = '1'
@@ -70,7 +70,7 @@ class HTTPBuilderTest {
         http.headers = [one:"v$val", "$v2" : 2]
         http.headers.three = 'not Three'
         http.headers."$h3" = 'three'
-        
+
         def request
         def html = http.request( GET ) { req ->
             assert headers.one == 'v1'
@@ -79,7 +79,7 @@ class HTTPBuilderTest {
             headers."$h4" = "$val"
             request = req
         }
-        
+
         assert html
         def headers = request.allHeaders
         assert headers.find { it.name == 'one' && it.value == 'v1' }
@@ -87,20 +87,20 @@ class HTTPBuilderTest {
         assert headers.find { it.name == 'three' && it.value == 'three' }
         assert headers.find { it.name == 'four' && it.value == '1' }
     }
-    
-    /* This tests a potential bug -- the reader is being accessed after the 
-     * request/response sequence has finished and response.consumeContent() 
-     * has already been called internally.  In practice, it appears that the 
+
+    /* This tests a potential bug -- the reader is being accessed after the
+     * request/response sequence has finished and response.consumeContent()
+     * has already been called internally.  In practice, it appears that the
      * response data is being buffered, probably for any non-chunked responses.
-     * A warning should probably be added, however, that the default response 
-     * handler will not work well with a chunked response if it is parsed as 
+     * A warning should probably be added, however, that the default response
+     * handler will not work well with a chunked response if it is parsed as
      * TEXT or BINARY.
      */
     @Test public void testReaderWithDefaultResponseHandler() {
         def http = new HTTPBuilder('http://validator.w3.org/about.html')
-        
+
         def reader = http.get( contentType:TEXT )
-        
+
         assert reader instanceof Reader
         def out = new ByteArrayOutputStream()
         out << reader
@@ -108,13 +108,13 @@ class HTTPBuilderTest {
 //      println out.toString()
         assert out.toString().trim().endsWith( '</html>' )
     }
-    
+
     @Test public void testDefaultFailureHandler() {
         def http = new HTTPBuilder('http://www.google.com')
 
         try {
             http.get( path:'/adsasf/kjsslkd' ) {
-                assert false 
+                assert false
             }
         }
         catch( HttpResponseException ex ) {
@@ -122,48 +122,48 @@ class HTTPBuilderTest {
             assert ex.response.status == 404
             assert ex.response.headers
         }
-        
-    }   
-    
+
+    }
+
     /**
-     * This method is similar to the above, but it will will parse the content 
-     * based on the given content-type, i.e. TEXT (text/plain).  
+     * This method is similar to the above, but it will will parse the content
+     * based on the given content-type, i.e. TEXT (text/plain).
      */
     @Test public void testReader() {
         def http = new HTTPBuilder('http://w3c.org')
-        http.get( uri:'http://validator.w3.org/about.html', 
+        http.get( uri:'http://validator.w3.org/about.html',
                   contentType: TEXT, headers: [Accept:'*/*'] ) { resp, reader ->
             println "response status: ${resp.statusLine}"
             println 'Headers:'
-            resp.headers.each { 
+            resp.headers.each {
                 println "  ${it.name} : ${it.value}"
                 assert it.name && it.value
             }
             println '------------------'
-            
+
             assert reader instanceof Reader
-            
+
             // we'll validate the reader by passing it to an XmlSlurper manually.
-            
-            def resolver = ParserRegistry.catalogResolver       
+
+            def resolver = ParserRegistry.catalogResolver
             def parsedData = new XmlSlurper( entityResolver : resolver ).parse(reader)
             assert parsedData.children().size() > 0
         }
     }
-    
+
     /* REST testing with Twitter!
      * Tests POST with XML response, and DELETE with a JSON response.
      */
 
     @Test public void testPOSTwithXML() {
         def http = new HTTPBuilder('http://api.twitter.com/1/statuses/')
-        
+
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
-        
+
         def msg = "HTTPBuilder unit test was run on ${new Date()}"
-        
-        
+
+
         def postID = http.request( POST, XML ) { req ->
             uri.path = 'update.xml'
             send URLENC, [status:msg,source:'httpbuilder']
@@ -172,19 +172,19 @@ class HTTPBuilderTest {
                 println "Tweet response status: ${resp.statusLine}"
                 assert resp.statusLine.statusCode == 200
                 println "Content Length: ${resp.headers['Content-Length']?.value}"
-                assert xml instanceof GPathResult 
-                
+                assert xml instanceof GPathResult
+
                 assert xml.text == msg
                 assert xml.user.screen_name == twitter.user
                 return xml.id.text()
             }
         }
-        
+
         // delete the test message.
         Thread.sleep 5000
         http.request( DELETE, JSON ) { req ->
             uri.path = "destroy/${postID}.json"
-            
+
             response.success = { resp, json ->
                 assert json.id != null
                 assert resp.statusLine.statusCode == 200
@@ -192,38 +192,38 @@ class HTTPBuilderTest {
             }
         }
     }
-    
+
     @Test public void testPlainURLEnc() {
         def http = new HTTPBuilder('http://api.twitter.com/1/statuses/')
-        
+
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
-        
+
         def msg = "HTTPBuilder's second unit test was run on ${new Date()}"
-            
+
         def resp = http.post( contentType:XML, path:'update.xml',
                 body:"status=$msg&source=httpbuilder" )
-        
+
         def postID = resp.id.text()
         assert postID
-        
+
         // delete the test message.
         Thread.sleep 5000
         http.request( DELETE, JSON ) {
             uri.path = "destroy/${postID}.json"
         }
     }
-    
-//  @Test 
+
+//  @Test
     public void testHeadMethod() {
         def http = new HTTPBuilder('http://api.twitter.com/1/statuses/')
-        
+
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
-        
+
         http.request( HEAD, XML ) {
-            uri.path = 'friends_timeline.xml' 
-            
+            uri.path = 'friends_timeline.xml'
+
             response.success = { resp ->
                 assert resp.getFirstHeader('Status').value == "200 OK"
                 assert resp.headers.Status == "200 OK"
@@ -231,7 +231,7 @@ class HTTPBuilderTest {
             }
         }
     }
-    
+
     @Test public void testRequestAndDefaultResponseHandlers() {
         def http = new HTTPBuilder()
 
@@ -245,7 +245,7 @@ class HTTPBuilderTest {
         }
 
 //       optional default URL for all actions:
-        http.uri = 'http://www.google.com' 
+        http.uri = 'http://www.google.com'
 
         http.request(GET,TEXT) { req ->
             response.success = { resp, stream ->
@@ -254,9 +254,9 @@ class HTTPBuilderTest {
                 println resp.statusLine
                 //System.out << stream // print response stream
             }
-        }   
+        }
     }
-    
+
     /**
      * Test a response handler that is assigned within a request config closure:
      */
@@ -276,11 +276,11 @@ class HTTPBuilderTest {
      * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
      */
     @Test public void testJSON() {
-        
+
         def builder = new HTTPBuilder()
-        
+
 //      builder.parser.'text/javascript' = builder.parsers."$JSON"
-        
+
         builder.request('http://ajax.googleapis.com',GET,JSON) {
             uri.path = '/ajax/services/search/web'
             uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
@@ -291,20 +291,20 @@ class HTTPBuilderTest {
                 assert json.size() == 3
                 //println json.responseData
                 println "Query response: "
-                json.responseData.results.each { 
+                json.responseData.results.each {
                     println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
                 }
                 null
             }
         }
     }
-    
+
     @Test public void testAuth() {
         def http = new HTTPBuilder( 'http://test.webdav.org' )
-        
+
         /* The path issues a 404, but it does an auth challenge first. */
         http.handler.'404' = { println 'Auth successful' }
-        
+
         http.request( GET, HTML ) {
             uri.path = '/auth-digest/'
             response.failure = { "expected failure" }
@@ -312,27 +312,27 @@ class HTTPBuilderTest {
                 throw new AssertionError("request should have failed.")
             }
         }
-        
+
         http.auth.basic( 'user2', 'user2' )
 
         http.request( GET, HTML ) {
             uri.path = '/auth-digest/'
         }
-        
+
         http.request( GET, HTML ) {
             uri.path = '/auth-basic/'
         }
     }
-    
+
     @Test public void testCatalog() {
         def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
-        
+
         http.parser.addCatalog getClass().getResource( '/rss-catalog.xml')
         def xml = http.get( query : [p:'02110',u:'f'] )
-        
-        
+
+
     }
-    
+
     @Test public void testInvalidNamedArg() {
         def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
         try {
@@ -349,7 +349,7 @@ class HTTPBuilderTest {
 
                  response.success = {resp, json ->
                          println "JSON POST Success: ${resp.statusLine}"
-                         assert json instanceof net.sf.json.JSONObject
+                         assert json instanceof Map
                          assert json.name == 'bob'
                          return json.name
                  }
