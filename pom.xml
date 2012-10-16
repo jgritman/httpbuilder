@@ -179,7 +179,7 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+                    <!--execution>
                         <id>release</id>
                         <phase>deploy</phase>
                         <goals>
@@ -188,7 +188,7 @@
                         <configuration>
                             <source>${pom.basedir}/src/main/script/release_tweet.groovy</source>
                         </configuration>
-                    </execution>
+                    </execution-->
                 </executions>
             </plugin>
             <plugin>
