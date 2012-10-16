@@ -405,10 +405,8 @@
     </pluginRepositories>
 
     <scm>
-        <developerConnection>scm:https://svn.codehaus.org/gmod/httpbuilder/</developerConnection>
-        <connection>scm:http://svn.codehaus.org/gmod/httpbuilder/</connection>
-        <tag>trunk</tag>
-        <url>http://fisheye.codehaus.org/browse/gmod/httpbuilder/</url>
+        <developerConnection>scm:git:git@github.com:jgritman/httpbuilder.git</developerConnection>
+        <url>http://github.com/jgritman/httpbuilder</url>
     </scm>
 
     <distributionManagement>
