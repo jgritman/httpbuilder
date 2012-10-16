@@ -292,6 +292,7 @@ class GAETest {
     /* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
      * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
      */
+    @Ignore
     @Test public void testJSON() {
 
         def builder = newBuilder()
