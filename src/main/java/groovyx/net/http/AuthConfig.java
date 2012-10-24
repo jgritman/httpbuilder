@@ -130,9 +130,9 @@ public class AuthConfig {
      */
     public void oauth( String consumerKey, String consumerSecret,
             String accessToken, String secretToken ) {
-        this.builder.client.removeRequestInterceptorByClass( OAuthSigner.class );
+        this.builder.getClient().removeRequestInterceptorByClass( OAuthSigner.class );
         if ( consumerKey != null )
-            this.builder.client.addRequestInterceptor( new OAuthSigner(
+            this.builder.getClient().addRequestInterceptor( new OAuthSigner(
                 consumerKey, consumerSecret, accessToken, secretToken ) );
     }
 
