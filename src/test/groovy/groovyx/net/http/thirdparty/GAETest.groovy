@@ -305,7 +305,7 @@ class GAETest {
             //UA header required to get Google to GZIP response:
             headers.'User-Agent' = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.4) Gecko/2008111319 Ubuntu/8.10 (intrepid) Firefox/3.0.4"
             response.success = { resp, json ->
-                assert resp.entity.contentEncoding.value == 'gzip'
+                assert resp.headers['Content-Encoding'].value == "gzip"
                 assert json.size() == 3
                 //println json.responseData
                 println "Query response: "

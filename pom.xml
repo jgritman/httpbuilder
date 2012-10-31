@@ -29,7 +29,7 @@
             <artifactId>httpclient</artifactId>
             <version>4.2.1</version>
         </dependency>
-        <dependency>
+		<dependency>
             <!-- Only needed for JSON parsing -->
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
@@ -49,7 +49,7 @@
                     <artifactId>xom</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
@@ -196,7 +196,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemProperties>
-                        <property>
+                    	<property>
                             <name>xml.catalog.verbosity</name>
                             <value>9</value>
                         </property>
