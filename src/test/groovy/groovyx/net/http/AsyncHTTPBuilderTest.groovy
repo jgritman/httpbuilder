@@ -21,6 +21,7 @@
  */
 package groovyx.net.http
 
+import org.junit.Ignore
 import org.junit.Test
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
@@ -74,6 +75,7 @@ public class AsyncHTTPBuilderTest {
         println 'done.'
     }
 
+    @Ignore
     @Test public void testDefaultConstructor() {
         def http = new AsyncHTTPBuilder()
         def resp = http.get( uri:'http://ajax.googleapis.com',

@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils
 import org.apache.http.client.HttpResponseException
 import org.apache.http.params.HttpConnectionParams
 import org.apache.xml.resolver.tools.CatalogResolver
+import org.junit.Ignore
 import org.junit.Test
 
 class HTTPBuilderTest {
@@ -275,6 +276,7 @@ class HTTPBuilderTest {
     /* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
      * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
      */
+    @Ignore
     @Test public void testJSON() {
 
         def builder = new HTTPBuilder()
@@ -283,7 +285,7 @@ class HTTPBuilderTest {
 
         builder.request('http://ajax.googleapis.com',GET,JSON) {
             uri.path = '/ajax/services/search/web'
-            uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
+            uri.query = [ v:'1.0', q: 'Earth Day' ]
             //UA header required to get Google to GZIP response:
             headers.'User-Agent' = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.4) Gecko/2008111319 Ubuntu/8.10 (intrepid) Firefox/3.0.4"
             response.success = { resp, json ->

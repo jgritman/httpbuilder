@@ -82,7 +82,6 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * </dl>
      */
     public AsyncHTTPBuilder( Map<String, ?> args ) throws URISyntaxException {
-        super();
         int poolSize = DEFAULT_POOL_SIZE;
         ExecutorService threadPool = null;
         if ( args != null ) {
@@ -154,8 +153,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     protected void initThreadPools( final int poolSize, final ExecutorService threadPool ) {
         if (poolSize < 1) throw new IllegalArgumentException("poolSize may not be < 1");
         // Create and initialize HTTP parameters
-        HttpParams params = client != null ? client.getParams()
-                : new BasicHttpParams();
+        HttpParams params = getClient().getParams();
         ConnManagerParams.setMaxTotalConnections(params, poolSize);
         ConnManagerParams.setMaxConnectionsPerRoute(params,
                 new ConnPerRouteBean(poolSize));
@@ -171,7 +169,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 
         ClientConnectionManager cm = new ThreadSafeClientConnManager(
                 params, schemeRegistry );
-        super.client = new DefaultHttpClient( cm, params );
+        setClient(new DefaultHttpClient( cm, params ));
 
         this.threadPool = threadPool != null ? threadPool :
             new ThreadPoolExecutor( poolSize, poolSize, 120, TimeUnit.SECONDS,

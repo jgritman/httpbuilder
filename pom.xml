@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>http-builder</artifactId>
     <groupId>org.codehaus.groovy.modules.http-builder</groupId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.7-SNAPSHOT</version>
     <name>HTTP client framework for Groovy</name>
     <url>http://groovy.codehaus.org/modules/http-builder/</url>
     <inceptionYear>2008</inceptionYear>
@@ -180,7 +179,7 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <execution>
+                    <!--execution>
                         <id>release</id>
                         <phase>deploy</phase>
                         <goals>
@@ -189,7 +188,7 @@
                         <configuration>
                             <source>${pom.basedir}/src/main/script/release_tweet.groovy</source>
                         </configuration>
-                    </execution>
+                    </execution-->
                 </executions>
             </plugin>
             <plugin>
@@ -333,12 +332,8 @@
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
-                <!--
-                <artifactId>wagon-http</artifactId>
-                <artifactId>wagon-webdav</artifactId>
-                 -->
-                <artifactId>wagon-http-lightweight</artifactId>
-                <version>1.0</version>
+                <artifactId>wagon-webdav-jackrabbit</artifactId>
+                <version>2.2</version>
             </extension>
         </extensions>
     </build>
@@ -409,10 +404,8 @@
     </pluginRepositories>
 
     <scm>
-        <developerConnection>scm:https://svn.codehaus.org/gmod/httpbuilder/</developerConnection>
-        <connection>scm:http://svn.codehaus.org/gmod/httpbuilder/</connection>
-        <tag>trunk</tag>
-        <url>http://fisheye.codehaus.org/browse/gmod/httpbuilder/</url>
+        <developerConnection>scm:git:git@github.com:jgritman/httpbuilder.git</developerConnection>
+        <url>http://github.com/jgritman/httpbuilder</url>
     </scm>
 
     <distributionManagement>

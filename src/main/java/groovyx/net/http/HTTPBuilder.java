@@ -164,7 +164,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  */
 public class HTTPBuilder {
 
-    protected AbstractHttpClient client;
+    private AbstractHttpClient client;
     protected URIBuilder defaultURI = null;
     protected AuthConfig auth = new AuthConfig( this );
 
@@ -186,24 +186,8 @@ public class HTTPBuilder {
      * Creates a new instance with a <code>null</code> default URI.
      */
     public HTTPBuilder() {
-        super();
-        HttpParams defaultParams = new BasicHttpParams();
-        defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
-                Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z",
-                        "EEE, dd MMM yyyy HH:mm:ss z") );
-        this.client = this.createClient(defaultParams);
-        this.setContentEncoding( ContentEncoding.Type.GZIP,
+        setContentEncoding( ContentEncoding.Type.GZIP,
                 ContentEncoding.Type.DEFLATE );
-    }
-
-    /**
-     * Override this method in a subclass to customize creation of the
-     * HttpClient instance.
-     * @param params
-     * @return
-     */
-    protected AbstractHttpClient createClient( HttpParams params ) {
-        return new DefaultHttpClient(params);
     }
 
     /**
@@ -215,8 +199,7 @@ public class HTTPBuilder {
      * @throws URISyntaxException if the given argument does not represent a valid URI
      */
     public HTTPBuilder( Object defaultURI ) throws URISyntaxException {
-        this();
-        this.setUri( defaultURI );
+        setUri( defaultURI );
     }
 
     /**
@@ -231,8 +214,7 @@ public class HTTPBuilder {
      * @throws URISyntaxException if the uri argument does not represent a valid URI
      */
     public HTTPBuilder( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
-        this();
-        this.setUri( defaultURI );
+        setUri( defaultURI );
         this.defaultContentType = defaultContentType;
     }
 
@@ -474,7 +456,7 @@ public class HTTPBuilder {
         }
 
         HttpResponseDecorator resp = new HttpResponseDecorator(
-                client.execute( reqMethod, delegate.getContext() ),
+                getClient().execute( reqMethod, delegate.getContext() ),
                 delegate.getContext(), null );
         try {
             int status = resp.getStatusLine().getStatusCode();
@@ -774,7 +756,7 @@ public class HTTPBuilder {
      * string that is known by the {@link ContentEncodingRegistry}
      */
     public void setContentEncoding( Object... encodings ) {
-        this.contentEncodingHandler.setInterceptors( client, encodings );
+        this.contentEncodingHandler.setInterceptors( getClient(), encodings );
     }
 
     /**
@@ -829,7 +811,29 @@ public class HTTPBuilder {
      * Return the underlying HTTPClient that is used to handle HTTP requests.
      * @return the client instance.
      */
-    public AbstractHttpClient getClient() { return this.client; }
+    public AbstractHttpClient getClient() {
+        if (client == null) {
+            HttpParams defaultParams = new BasicHttpParams();
+            defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
+                    Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z") );
+            client = createClient(defaultParams);
+        }
+        return client;
+    }
+
+    public void setClient(AbstractHttpClient client) {
+        this.client = client;
+    }
+
+    /**
+     * Override this method in a subclass to customize creation of the
+     * HttpClient instance.
+     * @param params
+     * @return
+     */
+    protected AbstractHttpClient createClient( HttpParams params ) {
+        return new DefaultHttpClient(params);
+    }
 
     /**
      * Used to access the {@link AuthConfig} handler used to configure common
@@ -893,7 +897,7 @@ public class HTTPBuilder {
      * @see ClientConnectionManager#shutdown()
      */
     public void shutdown() {
-        client.getConnectionManager().shutdown();
+        getClient().getConnectionManager().shutdown();
     }
 
 

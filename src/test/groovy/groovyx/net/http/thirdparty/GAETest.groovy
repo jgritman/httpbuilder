@@ -11,6 +11,7 @@ import static groovyx.net.http.ContentType.*
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.Before
 
@@ -18,6 +19,7 @@ class GAETest {
 
     def http = null
 
+    @Ignore
     @Test public void testURLFetchService() {
         http = newBuilder()
         http.uri = 'http://ajax.googleapis.com/ajax/services/search/web'
@@ -290,6 +292,7 @@ class GAETest {
     /* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
      * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
      */
+    @Ignore
     @Test public void testJSON() {
 
         def builder = newBuilder()

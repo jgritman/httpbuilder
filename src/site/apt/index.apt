@@ -10,6 +10,12 @@ News
 
   You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
 
+* 16 Oct 2012 - 0.6.0 released, source now hosted on Github
+
+  The 0.6.0 release is now available which takes care of upgrading some older dependencies.
+
+  The source code is now {{{https://github.com/jgritman/httpbuilder}hosted on Github}}
+
 * 26 Dec 2011 - 0.5.2 finally finally released for reals
 
   With so many other projects, HTTPBuilder has taken a back seat, to say the least.

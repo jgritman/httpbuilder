@@ -8,6 +8,14 @@
 Change Log
 
    See the {{{./jira-report.html}JIRA Report}} for a comprehensive change list.
+* v0.6.0 - Oct 16 2012
+  * Now requires Groovy 1.8
+
+  * Upgrade HttpClient dependency to 4.2.1
+
+  * Upgrade Nekohtml dependency to 1.9.16
+
+  * Changed to use Groovy's native JsonSlurper to consume JSON, rather than jsonlib
 
 * v0.5.2 - 26 Dec 2011
 

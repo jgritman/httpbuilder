@@ -1,5 +1,6 @@
 package groovyx.net.http
 
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.Before
 import junit.framework.Assert
@@ -117,6 +118,7 @@ public class RESTClientTest {
         println "Test tweet ID ${resp.data.id} was deleted."
     }
 
+    @Ignore
     @Test public void testOptions() {
         // get a message ID then test which ways I can delete it:
         def resp = twitter.get( uri: 'http://twitter.com/statuses/user_timeline/httpbuilder.json' )
