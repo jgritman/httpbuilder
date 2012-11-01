@@ -170,8 +170,8 @@ def http = new HTTPBuilder('http://twitter.com/statuses/')
 // auth omitted...
 http.request( POST ) {
   uri.path = 'update.xml'
-  body =  [ status : 'update!' , source : 'httpbuilder' ]
   requestContentType = ContentType.URLENC
+  body =  [ status : 'update!' , source : 'httpbuilder' ]
 
   response.success = { resp ->
     println "Tweet response status: ${resp.statusLine}"
