@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpPatch;
 
 /**
  * Extension to HTTPBuilder that basically attempts to provide a slightly more
@@ -160,6 +161,28 @@ public class RESTClient extends HTTPBuilder {
     public Object put( Map<String,?> args ) throws URISyntaxException,
             ClientProtocolException, IOException {
         return this.doRequest( new RequestConfigDelegate( args, new HttpPut(), null ) );
+    }
+
+   /**
+     * <p> Convenience method to perform a PATCH request.</p>
+     *
+     * <p>The request body (specified by a <code>body</code> named parameter)
+     * will be encoded based on the <code>requestContentType</code> named
+     * parameter, or if none is given, the default
+     * {@link HTTPBuilder#setContentType(Object) content-type} for this instance.
+     * </p>
+     *
+     * @param args named parameters - see
+     *  {@link HTTPBuilder.RequestConfigDelegate#setPropertiesFromMap(Map)}
+     * @return a {@link HttpResponseDecorator}, unless the default success
+     *      handler is overridden.
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public Object patch( Map<String,?> args ) throws URISyntaxException,
+            ClientProtocolException, IOException {
+        return this.doRequest( new RequestConfigDelegate( args, new HttpPatch(), null ) );
     }
 
     /**
