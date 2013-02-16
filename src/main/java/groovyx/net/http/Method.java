@@ -27,6 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpRequestBase;
 
 /**
@@ -39,7 +40,8 @@ public enum Method {
     PUT( HttpPut.class ),
     POST( HttpPost.class ),
     DELETE( HttpDelete.class ),
-    HEAD( HttpHead.class );
+    HEAD( HttpHead.class ),
+    PATCH( HttpPatch.class );
 
     private final Class<? extends HttpRequestBase> requestType;
 
