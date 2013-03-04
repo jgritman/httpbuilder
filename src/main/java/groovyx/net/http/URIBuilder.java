@@ -52,6 +52,7 @@ import org.apache.http.message.BasicNameValuePair;
  *    port = 443
  *    path = 'some/path'
  *    query = [p1:1, p2:'two']
+ *    return it
  * }.toString()
  * </pre>
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
