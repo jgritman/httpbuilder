@@ -1201,6 +1201,11 @@ public class HTTPBuilder {
                         "Cannot set a request body for a " + request.getMethod() + " method" );
             Closure encoder = encoders.getAt( this.getRequestContentType() );
 
+            // Either content type or encoder is empty.
+            if ( encoder == null )
+                throw new IllegalArgumentException(
+                        "Cannot set a request body without proper content type set" );
+
             HttpEntity entity = encoder.getMaximumNumberOfParameters() == 2
                     ? (HttpEntity)encoder.call( new Object[] { body, this.getRequestContentType() } )
                     : (HttpEntity)encoder.call( body );
