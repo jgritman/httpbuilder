@@ -43,8 +43,10 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
@@ -82,7 +84,11 @@ public class AuthConfig {
      * @param pass
      */
     public void basic( String host, int port, String user, String pass ) {
-        builder.getClient().getCredentialsProvider().setCredentials(
+	  final HttpClient client = builder.getClient();
+	  if ( !(client instanceof AbstractHttpClient )) {
+		throw new IllegalStateException("client is not an AbstractHttpClient");
+	  }
+      ((AbstractHttpClient)client).getCredentialsProvider().setCredentials(
             new AuthScope( host, port ),
             new UsernamePasswordCredentials( user, pass )
         );
@@ -130,9 +136,13 @@ public class AuthConfig {
      */
     public void oauth( String consumerKey, String consumerSecret,
             String accessToken, String secretToken ) {
-        this.builder.getClient().removeRequestInterceptorByClass( OAuthSigner.class );
+        	  final HttpClient client = builder.getClient();
+	    if ( !(client instanceof AbstractHttpClient )) {
+		  throw new IllegalStateException("client is not an AbstractHttpClient");
+	    }
+        ((AbstractHttpClient)client).removeRequestInterceptorByClass( OAuthSigner.class );
         if ( consumerKey != null )
-            this.builder.getClient().addRequestInterceptor( new OAuthSigner(
+            ((AbstractHttpClient)client).addRequestInterceptor( new OAuthSigner(
                 consumerKey, consumerSecret, accessToken, secretToken ) );
     }
 

@@ -53,6 +53,7 @@ import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.cookie.params.CookieSpecPNames;
+import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
@@ -164,7 +165,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  */
 public class HTTPBuilder {
 
-    private AbstractHttpClient client;
+    private HttpClient client;
     protected URIBuilder defaultURI = null;
     protected AuthConfig auth = new AuthConfig( this );
 
@@ -756,7 +757,13 @@ public class HTTPBuilder {
      * string that is known by the {@link ContentEncodingRegistry}
      */
     public void setContentEncoding( Object... encodings ) {
-        this.contentEncodingHandler.setInterceptors( getClient(), encodings );
+	  	HttpClient client = getClient();
+		if ( client instanceof AbstractHttpClient ) {
+          this.contentEncodingHandler.setInterceptors( (AbstractHttpClient)client, encodings );
+		} else {
+		  throw new IllegalStateException("The HttpClient is not an AbstractHttpClient!");
+		}
+
     }
 
     /**
@@ -811,7 +818,7 @@ public class HTTPBuilder {
      * Return the underlying HTTPClient that is used to handle HTTP requests.
      * @return the client instance.
      */
-    public AbstractHttpClient getClient() {
+    public HttpClient getClient() {
         if (client == null) {
             HttpParams defaultParams = new BasicHttpParams();
             defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
@@ -821,7 +828,7 @@ public class HTTPBuilder {
         return client;
     }
 
-    public void setClient(AbstractHttpClient client) {
+    public void setClient(HttpClient client) {
         this.client = client;
     }
 
@@ -831,7 +838,7 @@ public class HTTPBuilder {
      * @param params
      * @return
      */
-    protected AbstractHttpClient createClient( HttpParams params ) {
+    protected HttpClient createClient( HttpParams params ) {
         return new DefaultHttpClient(params);
     }
 
