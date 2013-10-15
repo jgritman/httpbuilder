@@ -46,6 +46,7 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -455,8 +456,16 @@ public class HTTPBuilder {
             else reqMethod.setHeader( key.toString(), val.toString() );
         }
 
+        // Response will be handled by the response closure (see below). Passing a dummy response handler here.
+        ResponseHandler<HttpResponse> dummyResponseHandler = new ResponseHandler<HttpResponse>() {
+            public HttpResponse handleResponse(HttpResponse response)
+                throws ClientProtocolException, IOException {
+                    return response;
+            }
+        };
+
         HttpResponseDecorator resp = new HttpResponseDecorator(
-                getClient().execute( reqMethod, delegate.getContext() ),
+                getClient().execute(reqMethod, dummyResponseHandler, delegate.getContext()),
                 delegate.getContext(), null );
         try {
             int status = resp.getStatusLine().getStatusCode();
