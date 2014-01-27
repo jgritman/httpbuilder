@@ -172,8 +172,8 @@ class GAETest {
      * Tests POST with XML response, and DELETE with a JSON response.
      */
 
-    @Test public void testPOSTwithXML() {
-        def http = newBuilder('http://api.twitter.com/1/statuses/')
+    @Test public void testPOST() {
+        def http = newBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
@@ -181,19 +181,18 @@ class GAETest {
         def msg = "HTTPBuilder unit test was run on ${new Date()}"
 
 
-        def postID = http.request( POST, XML ) { req ->
-            uri.path = 'update.xml'
+        def postID = http.request( POST, JSON) { req ->
+            uri.path = 'update.json'
             send URLENC, [status:msg,source:'httpbuilder']
 
-             response.success = { resp, xml ->
+             response.success = { resp, json ->
                 println "Tweet response status: ${resp.statusLine}"
                 assert resp.statusLine.statusCode == 200
                 println "Content Length: ${resp.headers['Content-Length']?.value}"
-                assert xml instanceof GPathResult
 
-                assert xml.text == msg
-                assert xml.user.screen_name == twitter.user
-                return xml.id.text()
+                assert json.text == msg
+                assert json.user.screen_name == twitter.user
+                return json.id
             }
         }
 
@@ -211,14 +210,14 @@ class GAETest {
     }
 
     @Test public void testPlainURLEnc() {
-        def http = newBuilder('http://api.twitter.com/1/statuses/')
+        def http = newBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
 
         def msg = "HTTPBuilder's second unit test was run on ${new Date()}"
 
-        def resp = http.post( contentType:XML, path:'update.xml',
+        def resp = http.post( contentType: JSON, path:'update.json',
                 body:"status=$msg&source=httpbuilder" )
 
         def postID = resp.id.text()
@@ -233,7 +232,7 @@ class GAETest {
 
 //  @Test
     public void testHeadMethod() {
-        def http = newBuilder('http://api.twitter.com/1/statuses/')
+        def http = newBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
