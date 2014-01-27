@@ -98,7 +98,7 @@ class HTTPBuilderTest {
      * TEXT or BINARY.
      */
     @Test public void testReaderWithDefaultResponseHandler() {
-        def http = new HTTPBuilder('http://validator.w3.org/about.html')
+        def http = new HTTPBuilder('http://www.google.com')
 
         def reader = http.get( contentType:TEXT )
 

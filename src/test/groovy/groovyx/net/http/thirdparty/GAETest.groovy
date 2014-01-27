@@ -114,7 +114,7 @@ class GAETest {
      * TEXT or BINARY.
      */
     @Test public void testReaderWithDefaultResponseHandler() {
-        def http = newBuilder('http://validator.w3.org/about.html')
+        def http = newBuilder('http://www.google.com')
 
         def reader = http.get( contentType:TEXT )
 
