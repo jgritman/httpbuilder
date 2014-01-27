@@ -147,8 +147,8 @@ class GAETest {
      * based on the given content-type, i.e. TEXT (text/plain).
      */
     @Test public void testReader() {
-        def http = newBuilder('http://w3c.org')
-        http.get( uri:'http://validator.w3.org/about.html',
+        def http = newBuilder('http://examples.oreilly.com')
+        http.get( uri:'http://examples.oreilly.com/9780596002527/examples/first.xml',
                   contentType: TEXT, headers: [Accept:'*/*'] ) { resp, reader ->
             println "response status: ${resp.statusLine}"
             println 'Headers:'
