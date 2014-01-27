@@ -19,7 +19,7 @@ public class RESTClientTest {
     def userID = System.getProperty('twitter.user')
 
     @Before public void setUp() {
-        twitter = new RESTClient( 'https://api.twitter.com/1/statuses/' )
+        twitter = new RESTClient( 'https://api.twitter.com/1.1/statuses/' )
         twitter.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
                 System.getProperty('twitter.oauth.consumerSecret'),
                 System.getProperty('twitter.oauth.accessToken'),
@@ -42,7 +42,7 @@ public class RESTClientTest {
             assert false : 'Expected exception'
         }
         // test the exception class:
-        catch( ex ) { assert ex.response.status == 401 }
+        catch( ex ) { assert ex.response.status == 404 }
 
 //      assert twitter.head( path : 'public_timeline.json' ).status == 200
     }
@@ -53,24 +53,12 @@ public class RESTClientTest {
            anyway, it wants you to put it in the URL, i.e. something.xml or
            something.json.  But we're still passing the content-type so that
            the parser knows how it should _attempt_ to parse the response.  */
-        def resp = twitter.get( path : 'friends_timeline.xml', contentType:XML )
-        assert resp.status == 200
-        assert resp.data?.status.size() > 0
-
-        resp = twitter.get( path : 'friends_timeline.json' )
+        def resp = twitter.get( path : 'home_timeline.json' )
         assert resp.status == 200
         assert resp.headers.Server == "tfe"
         assert resp.headers.Server == resp.headers['Server'].value
         assert resp.contentType == JSON.toString()
         assert ( resp.data instanceof List )
-        assert resp.data.status.size() > 0
-
-        // Now, set the default content-type back to "*/*" which will cause
-        // the client to parse based solely on the response content-type header.
-        twitter.contentType = '*/*'  //ANY
-        resp = twitter.get( path : 'friends_timeline.xml' )
-        assert resp.status == 200
-        assert ( resp.data instanceof GPathResult )
         assert resp.data.status.size() > 0
     }
 
@@ -78,33 +66,17 @@ public class RESTClientTest {
         def msg = "RESTClient unit test was run on ${new Date()}"
 
         def resp = twitter.post(
-                path : 'update.xml',
-                contentType : XML,
+                path : 'update.json',
                 body : [ status:msg, source:'httpbuilder' ],
                 requestContentType : URLENC )
 
         assert resp.status == 200
         assert resp.headers.Status
-        assert resp.data instanceof GPathResult // parsed using XmlSlurper
         assert resp.data.text == msg
         assert resp.data.user.screen_name == userID
 
-        RESTClientTest.postID = resp.data.id.text()
+        RESTClientTest.postID = resp.data.id
         println "Updated post; ID: ${postID}"
-    }
-
-//  @Test
-    public void testPut() {
-        try {
-            twitter.put( path : 'update.xml',
-                    contentType : XML,
-                    body : [ status:'test', source:'httpbuilder' ],
-                    requestContentType : URLENC )
-
-        } catch ( HttpResponseException ex ) {
-            assert ex.response.headers
-            assert ex.response.headers.Status =~ '400' //'405'
-        }
     }
 
     @Test public void testDelete() {
@@ -114,7 +86,7 @@ public class RESTClientTest {
         println "Deleting post ID : $postID"
         def resp = twitter.delete( path : "destroy/${postID}.json" )
         assert resp.status == 200
-        assert resp.data.id.toString() == postID
+        assert resp.data.id == postID
         println "Test tweet ID ${resp.data.id} was deleted."
     }
 
@@ -134,12 +106,9 @@ public class RESTClientTest {
     }
 
     @Test public void testDefaultHandlers() {
-        twitter.contentType = 'text/plain'
-        twitter.headers = [Accept:'text/xml']
-        def resp = twitter.get( path : 'user_timeline.xml',
+        def resp = twitter.get( path : 'user_timeline.json',
             query : [screen_name :'httpbuilder',count:2] )
-        def text = resp.data.text
-        assert text.endsWith( "</statuses>\n" )
+        assert resp.data.size() == 2
 
         try {
             resp = twitter.get([:])
@@ -147,9 +116,6 @@ public class RESTClientTest {
         }
         catch ( HttpResponseException ex ) {
             assert ex.response.status == 404
-            text = ex.response.data.text
-//          println text
-            assert text.endsWith('</hash>\n')
         }
     }
 

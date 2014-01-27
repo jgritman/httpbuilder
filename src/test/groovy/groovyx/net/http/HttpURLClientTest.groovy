@@ -129,33 +129,32 @@ class HttpURLClientTest {
      * Tests POST with XML response, and DELETE with a JSON response.
      */
 
-    @Test public void testPOSTwithXML() {
-        def http = new HttpURLClient(url:'http://api.twitter.com/1/statuses/')
+    @Test public void testPOST() {
+        def http = new HttpURLClient(url:'https://api.twitter.com/1.1/statuses/')
 
         http.setOAuth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
 
         def msg = "HTTPBuilder unit test was run on ${new Date()}"
 
-        def resp = http.request( method:POST, contentType:XML,
-                path:'update.xml', timeout: 30000,
+        def resp = http.request( method:POST, contentType:JSON,
+                path:'update.json', timeout: 30000,
                 requestContentType:URLENC,
                 body:[status:msg,source:'httpbuilder'] )
 
         println "Tweet response status: ${resp.statusLine}"
         assert resp.statusLine.statusCode == 200
-        def xml = resp.data
-        assert xml instanceof GPathResult
+        def json = resp.data
 
-        assert xml.text == msg
-        assert xml.user.screen_name == twitter.user
-        def postID = xml.id
+        assert json.text == msg
+        assert json.user.screen_name == twitter.user
+        def postID = json.id
 
         // delete the test message.
         resp = http.request( method:DELETE, contentType:JSON,
             path : "destroy/${postID}.json" )
 
-        def json = resp.data
+        json = resp.data
         assert json.id != null
         assert resp.statusLine.statusCode == 200
         println "Test tweet ID ${json.id} was deleted."
@@ -179,24 +178,24 @@ class HttpURLClientTest {
     @Test public void testParsers() {
         def parsers = new ParserRegistry()
         def done = false
-        parsers.'application/xml' = { done = true }
+        parsers.'application/json' = { done = true }
 
         def http = new HttpURLClient(
-                url:'http://api.twitter.com/1/statuses/',
+                url:'https://api.twitter.com/1.1/statuses/',
                 parsers : parsers )
 
         http.setOAuth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
 
-        def resp = http.request( path : 'friends_timeline.xml' )
+        def resp = http.request( contentType: JSON, path : 'home_timeline.json' )
         assert done
         assert resp.data
 
         done = false
         parsers.defaultParser = { done = true }
         // remove content-type-specific parser to force use of default parser.
-        parsers.'application/xml' = null
-        resp = http.request( path : 'friends_timeline.xml' )
+        parsers.'application/json' = null
+        resp = http.request( contentType: JSON, path : 'home_timeline.json' )
         assert done
         assert resp.data
     }

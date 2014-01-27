@@ -90,7 +90,7 @@ public class AsyncHTTPBuilderTest {
     }
 
     @Test public void testPostAndDelete() {
-        def http = new AsyncHTTPBuilder(uri:'http://api.twitter.com/1/statuses/')
+        def http = new AsyncHTTPBuilder(uri:'https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
                 System.getProperty('twitter.oauth.consumerSecret'),
@@ -101,11 +101,11 @@ public class AsyncHTTPBuilderTest {
 
         def msg = "AsyncHTTPBuilder unit test was run on ${new Date()}"
 
-        def resp = http.post( contentType:XML, path : 'update.xml',
-            body:[status:msg,source:'httpbuilder'] )
+        def resp = http.post(path : 'update.json',
+            body:[status:msg,source:'httpbuilder1'] )
 
         while ( ! resp.done  ) Thread.sleep 2000
-        def postID = resp.get().id.text()
+        def postID = resp.get().id
         assert postID
 
         // delete the test message.
@@ -121,7 +121,7 @@ public class AsyncHTTPBuilderTest {
         }
 
         while ( ! resp.done  ) Thread.sleep( 2000 )
-        assert resp.get().id.toString() == postID
+        assert resp.get().id == postID
         http.shutdown()
     }
 
