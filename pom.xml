@@ -68,6 +68,7 @@
                     <artifactId>jansi</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <!-- Only needed for HTML parsing -->
