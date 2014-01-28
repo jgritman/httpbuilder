@@ -46,6 +46,7 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -432,7 +433,7 @@ public class HTTPBuilder {
 
         final HttpRequestBase reqMethod = delegate.getRequest();
 
-        Object contentType = delegate.getContentType();
+        final Object contentType = delegate.getContentType();
 
         if ( this.autoAcceptHeader ) {
             String acceptContentTypes = contentType.toString();
@@ -456,47 +457,53 @@ public class HTTPBuilder {
             else reqMethod.setHeader( key.toString(), val.toString() );
         }
 
-        HttpResponseDecorator resp = new HttpResponseDecorator(
-                getClient().execute( reqMethod, delegate.getContext() ),
-                delegate.getContext(), null );
-        try {
-            int status = resp.getStatusLine().getStatusCode();
-            Closure responseClosure = delegate.findResponseHandler( status );
-            log.debug( "Response code: " + status + "; found handler: " + responseClosure );
-
-            Object[] closureArgs = null;
-            switch ( responseClosure.getMaximumNumberOfParameters() ) {
-            case 1 :
-                closureArgs = new Object[] { resp };
-                break;
-            case 2 : // parse the response entity if the response handler expects it:
-                HttpEntity entity = resp.getEntity();
+        ResponseHandler<Object> responseHandler = new ResponseHandler<Object>() {
+            public Object handleResponse(HttpResponse response)
+                throws ClientProtocolException, IOException {
+                HttpResponseDecorator resp = new HttpResponseDecorator(
+                        response, delegate.getContext(), null );
                 try {
-                    if ( entity == null || entity.getContentLength() == 0 )
-                        closureArgs = new Object[] { resp, null };
-                    else closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
+                    int status = resp.getStatusLine().getStatusCode();
+                    Closure responseClosure = delegate.findResponseHandler( status );
+                    log.debug( "Response code: " + status + "; found handler: " + responseClosure );
+
+                    Object[] closureArgs = null;
+                    switch ( responseClosure.getMaximumNumberOfParameters() ) {
+                    case 1 :
+                        closureArgs = new Object[] { resp };
+                        break;
+                    case 2 : // parse the response entity if the response handler expects it:
+                        HttpEntity entity = resp.getEntity();
+                        try {
+                            if ( entity == null || entity.getContentLength() == 0 )
+                                closureArgs = new Object[] { resp, null };
+                            else closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
+                        }
+                        catch ( Exception ex ) {
+                            Header h = entity.getContentType();
+                            String respContentType = h != null ? h.getValue() : null;
+                            log.warn( "Error parsing '" + respContentType + "' response", ex );
+                            throw new ResponseParseException( resp, ex );
+                        }
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                "Response closure must accept one or two parameters" );
+                    }
+
+                    Object returnVal = responseClosure.call( closureArgs );
+                    log.trace( "response handler result: " + returnVal );
+
+                    return returnVal;
                 }
-                catch ( Exception ex ) {
-                    Header h = entity.getContentType();
-                    String respContentType = h != null ? h.getValue() : null;
-                    log.warn( "Error parsing '" + respContentType + "' response", ex );
-                    throw new ResponseParseException( resp, ex );
+                finally {
+                    HttpEntity entity = resp.getEntity();
+                    if ( entity != null ) entity.consumeContent();
                 }
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Response closure must accept one or two parameters" );
             }
-
-            Object returnVal = responseClosure.call( closureArgs );
-            log.trace( "response handler result: " + returnVal );
-
-            return returnVal;
-        }
-        finally {
-            HttpEntity entity = resp.getEntity();
-            if ( entity != null ) entity.consumeContent();
-        }
+        };
+        
+        return getClient().execute(reqMethod, responseHandler, delegate.getContext());
     }
 
     /**
