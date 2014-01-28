@@ -1,22 +1,12 @@
 package groovyx.net.http
-
-import static groovyx.net.http.Method.*
-import static groovyx.net.http.ContentType.*
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader
-import java.io.ByteArrayOutputStream
-import java.lang.AssertionError
-import java.net.ServerSocket
-import groovy.util.XmlSlurper
 import groovy.util.slurpersupport.GPathResult
-import org.apache.commons.io.IOUtils
 import org.apache.http.client.HttpResponseException
-import org.apache.http.params.HttpConnectionParams
-import org.apache.xml.resolver.tools.CatalogResolver
 import org.junit.Ignore
 import org.junit.Test
+
+import static groovyx.net.http.ContentType.*
+import static groovyx.net.http.Method.*
+import static org.junit.Assert.fail
 
 class HTTPBuilderTest {
 
@@ -341,6 +331,14 @@ class HTTPBuilderTest {
             throw new AssertionError("request should have failed due to invalid kwarg.")
         }
         catch ( IllegalArgumentException ex ) { /* Expected result */ }
+    }
+
+    @Test(expected = IllegalArgumentException)
+    public void testShouldThrowExceptionIfContentTypeIsNotSet() {
+        new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' ).request(POST) { request ->
+            body = [p:'02110',u:'f']
+        }
+        fail("request should have failed due to unset content type.")
     }
 
     @Test public void testJSONPost() {
