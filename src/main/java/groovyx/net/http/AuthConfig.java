@@ -119,7 +119,11 @@ public class AuthConfig {
      * @param domain
      */
     public void ntlm( String host, int port, String user, String pass, String workstation, String domain ) {
-        builder.getClient().getCredentialsProvider().setCredentials(
+      final HttpClient client = builder.getClient();
+      if ( !(client instanceof AbstractHttpClient )) {
+        throw new IllegalStateException("client is not an AbstractHttpClient");
+      }
+      ((AbstractHttpClient)client).getCredentialsProvider().setCredentials(
             new AuthScope( host, port ),
             new NTCredentials( user, pass, workstation, domain )
         );

@@ -153,7 +153,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     protected void initThreadPools( final int poolSize, final ExecutorService threadPool ) {
         if (poolSize < 1) throw new IllegalArgumentException("poolSize may not be < 1");
         // Create and initialize HTTP parameters
-        HttpParams params = getClient().getParams();
+        HttpParams params = super.getClient().getParams();
         ConnManagerParams.setMaxTotalConnections(params, poolSize);
         ConnManagerParams.setMaxConnectionsPerRoute(params,
                 new ConnPerRouteBean(poolSize));
