@@ -12,10 +12,6 @@ Simple POST
 
 %{code-snippet|id=post1|brush=groovy|file=src/site/examples.txt}
 
-
- <(Note that the above example excludes some authentication details needed by
- the Twitter API; see the unit test for a working example.)>
-
  Similar to the <<<get(...)>>> convenience method, <<<post(...)>>> accepts the
  options as named parameters, and takes a closure that is called as the
  'success' response handler.  There is also a <<<post>>> variant that does not

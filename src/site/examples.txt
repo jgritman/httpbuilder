@@ -150,16 +150,16 @@ START SNIPPET: post1
 import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.ContentType.URLENC
 
-def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
-// auth omitted...
-def postBody = [status:'update!',source:'httpbuilder'] // will be url-encoded
+def http = new HTTPBuilder( 'http://restmirror.appspot.com/' )
+def postBody = [name: 'bob', title: 'construction worker'] // will be url-encoded
 
-http.post( path: 'update.xml', body: postBody,
+http.post( path: '/', body: postBody,
            requestContentType: URLENC ) { resp ->
 
-  println "Tweet response status: ${resp.statusLine}"
-  assert resp.statusLine.statusCode == 200
+  println "POST Success: ${resp.statusLine}"
+  assert resp.statusLine.statusCode == 201
 }
+
 END SNIPPET: post1
 
 
