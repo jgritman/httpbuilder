@@ -165,49 +165,51 @@ END SNIPPET: post1
 
 START SNIPPET: post2
 import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.ContentType.*
+import static groovyx.net.http.Method.*
 
-def http = new HTTPBuilder('http://twitter.com/statuses/')
-// auth omitted...
+def http = new HTTPBuilder('http://restmirror.appspot.com/')
 http.request( POST ) {
-  uri.path = 'update.xml'
-  body =  [ status : 'update!' , source : 'httpbuilder' ]
-  requestContentType = ContentType.URLENC
+    uri.path = '/'
+    requestContentType = URLENC
+    body =  [name: 'bob', title: 'construction worker']
 
-  response.success = { resp ->
-    println "Tweet response status: ${resp.statusLine}"
-    assert resp.statusLine.statusCode == 200
-  }
+    response.success = { resp ->
+        println "POST response status: ${resp.statusLine}"
+        assert resp.statusLine.statusCode == 201
+    }
 }
 END SNIPPET: post2
 
 START SNIPPET: post3
 import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.ContentType.URLENC
+import static groovyx.net.http.ContentType.*
+import static groovyx.net.http.Method.*
 
-def http = new HTTPBuilder('http://twitter.com/statuses/')
-// auth omitted...
+def http = new HTTPBuilder('http://restmirror.appspot.com/')
 http.request( POST ) {
-  uri.path = 'update.xml'
-  send URLENC, [ status : 'update!' , source : 'httpbuilder' ]
+    uri.path = '/'
+    send URLENC, [name: 'bob', title: 'construction worker']
 
-  response.success = { .... }
+    response.success = { resp ->
+        println "POST response status: ${resp.statusLine}"
+        assert resp.statusLine.statusCode == 201
+    }
 }
 END SNIPPET: post3
 
 
 START SNIPPET: xml1
-import groovyx.net.http.*
-@Grab(group='org.codehaus.groovy.modules.http-builder',
-    module='http-builder', version='0.5.2' )
+@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.7')
 
-def http = new HTTPBuilder( 'http://twitter.com/statuses/' )
+import groovyx.net.http.HTTPBuilder
 
-http.get( path: 'user_timeline.xml', query:[id:'httpbuilder'] ) { resp, xml ->
+def http = new HTTPBuilder( 'http://api.openweathermap.org/data/2.5/' )
+
+http.get( path: 'weather', query:[q: 'London', mode: 'xml'] ) { resp, xml ->
     println resp.status
-    xml.status.each {  // iterate over each XML 'status' element in the response:
-        println it.created_at.text()
-        println "  " + it.text.text()
-    }
+    println "It is currently ${xml.weather.@value.text()} in London."
+    println "The temperature is ${xml.temperature.@value.text()} degrees Kelvin"
 }
 END SNIPPET: xml1
 
@@ -224,28 +226,21 @@ http.request( POST, XML ) {
 END SNIPPET: xml2
 
 START SNIPPET: xml3
-import groovyx.net.http.*
+import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def twitter = new RESTClient( 'https://twitter.com/statuses/' )
-// ... auth & setup configuration omitted here ...
-
-def resp = twitter.get( path : 'friends_timeline.xml', contentType : TEXT,
-                        headers : [Accept : 'application/xml'] )
+def weather = new RESTClient( 'http://api.openweathermap.org/data/2.5/' )
+def resp = weather.get( path: 'weather', query:[q: 'London', mode: 'xml'], contentType: TEXT,
+  headers : [Accept : 'application/xml'] )
 
 println resp.data.text       // print the XML
 END SNIPPET: xml3
 
 START SNIPPET: xml4
-def twitter = new RESTClient( 'https://twitter.com/statuses/' )
-
-// set a default response content-type
-twitter.contentType = TEXT
-/* set default headers which will override what's automatically sent in the
-   request by the default contentType param */
-twitter.headers = [ Accept : 'application/xml', ]
-
-def resp = twitter.get( path : 'friends_timeline.xml' )
+def weather = new RESTClient( 'http://api.openweathermap.org/data/2.5/' )
+weather.contentType = TEXT
+weather.headers = [Accept : 'application/xml']
+def resp = weather.get( path: 'weather', query:[q: 'London', mode: 'xml'])
 END SNIPPET: xml4
 
 START SNIPPET: json1
