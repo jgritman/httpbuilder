@@ -600,16 +600,16 @@ groovy:000> println consumer.tokenSecret
 END SNIPPET: auth1
 
 START SNIPPET: auth2
-def twitter = new RESTClient( 'https://twitter.com/statuses/' )
+def twitter = new RESTClient( 'https://api.twitter.com/1.1/statuses/' )
 twitter.auth.oauth consumerKey, consumerSecret, accessToken, secretToken
 
-assert twitter.get( path : 'public_timeline.json' ).status == 200
+assert twitter.get( path : 'home_timeline.json' ).status == 200
 
 // in HttpURLClient:
-def twitter = new HttpURLClient(url:'https://twitter.com/statuses/')
+def twitter = new HttpURLClient(url:'https://api.twitter.com/1.1/statuses/')
 
 http.setOAuth consumerKey, consumerSecret, accessToken, secretToken
-assert twitter.request( path : 'public_timeline.json' ).status == 200
+assert twitter.request( path : 'home_timeline.json' ).status == 200
 END SNIPPET: auth2
 
 START SNIPPET: auth3
