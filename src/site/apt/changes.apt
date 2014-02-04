@@ -7,8 +7,24 @@
 
 Change Log
 
-   See the {{{./jira-report.html}JIRA Report}} for a comprehensive change list.
-* v0.6.0 - Oct 16 2012
+* v0.7 - 4 Feb 2014
+
+  * Groovy dependency is now 'provided' scope to address conflicts with different Groovy versions.
+
+  * PATCH method now supported (from David Prieto).
+
+  * Order no longer matters when setting the body in a request closure.
+
+  * Support for NTLM authentication (from Damien Papworth).
+
+  * Validate requestContentType is set (from Tomasz Kalkosinski).
+
+  * Allow any HttpClient implementation (from Dana P'Simer and Jean-Alain Geay).
+
+  * Documentation examples previously dependent on the v1.0 Twitter API have been updated.
+
+* v0.6.0 - 16 Oct 2012
+
   * Now requires Groovy 1.8
 
   * Upgrade HttpClient dependency to 4.2.1

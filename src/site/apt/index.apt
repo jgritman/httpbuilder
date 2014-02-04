@@ -8,7 +8,11 @@
 
 News
 
-  You can also follow project updates on {{{http://twitter.com/httpbuilder}Twitter}}
+* 4 Feb 2013 - 0.7 released
+
+  A long overdue release containing a number of community contributions. For a full list see the {{{./changes.html}Changes}} page.
+
+  One possibly breaking changes is that the dependency on Groovy is now 'provided' scope. If you were previously relying on HTTPBuilder to pull Groovy into the dependency tree, you will now need to explicitly import it.
 
 * 16 Oct 2012 - 0.6.0 released, source now hosted on Github
 
