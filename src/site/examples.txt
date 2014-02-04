@@ -289,8 +289,7 @@ START SNIPPET: json3
 END SNIPPET: json3
 
 START SNIPPET: rest1
-@GrabResolver(name='codehaus-snapshots', root=' http://snapshots.repository.codehaus.org//')
-@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.7-SNAPSHOT')
+@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.7')
 @Grab(group='oauth.signpost', module='signpost-core', version='1.2.1.2')
 @Grab(group='oauth.signpost', module='signpost-commonshttp4', version='1.2.1.2')
 
@@ -429,34 +428,26 @@ assert html instanceof groovy.util.slurpersupport.GPathResult
 END SNIPPET: async1
 
 START SNIPPET: urlclient1
-import groovyx.net.http.*
+@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.7')
 
-def http = new HttpURLClient( url: 'http://twitter.com/statuses/' )
+import groovyx.net.http.HttpURLClient
+
+def http = new HttpURLClient( url: 'http://api.openweathermap.org/data/2.5/' )
 
 // JSON request:
-def resp = http.request( path: 'user_timeline.json',
-        query: [id:'httpbuilder', count:5] )
+def resp = http.request( path: 'weather', query: [q: 'London'] )
 
 println "JSON response: ${resp.status}"
 
-resp.data.each {  // iterate over each JSON object in the response array:
-    println it.created_at
-    println '  ' + it.text
-}
+println "It is currently ${resp.data.weather.main[0]} in London."
+println "The temperature is ${resp.data.main.temp} degrees Kelvin"
 
-/* Slightly different request that returns XML; note that Twitter uses the path
-   to determine if you want a response as XML or JSON: */
-
-// JSON request:
-def resp = http.request( path: 'user_timeline.xml',
-        query: [id:'httpbuilder', count:5] )
+/* Slightly different request that returns XML */
+resp = http.request( path: 'weather', query:[q: 'London', mode: 'xml'] )
 
 println "\n\nXML response: ${resp.status}"
-
-resp.data.status.each {  // iterate over each XML 'status' element in the response:
-    println it.created_at.text()
-    println '  ' + it.text.text()
-}
+println "It is currently ${resp.data.weather.@value.text()} in London."
+println "The temperature is ${resp.data.temperature.@value.text()} degrees Kelvin"
 END SNIPPET: urlclient1
 
 START SNIPPET: ssl1
