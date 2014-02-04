@@ -85,7 +85,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * @see RequestConfigDelegate#send(Object, Object)
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
-public class EncoderRegistry {
+public class EncoderRegistry implements Iterable<Map.Entry<String,Closure>> {
 
     Charset charset = Charset.defaultCharset(); // 1.5
     private Map<String,Closure> registeredEncoders = buildDefaultEncoderMap();

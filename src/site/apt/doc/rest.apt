@@ -67,13 +67,12 @@ RESTClient
   JSON POST requests.)  For this reason, a <<<requestContentType>>> parameter must
   be specified in order to identify how the request body should be serialized.
 
-  Also note that we're requesting <<<update.xml>>>, not <<<update.json>>>.  Since
-  we never set a default content-type on the RESTClient instance or pass a
+  Since we never set a default content-type on the RESTClient instance or pass a
   <<<contentType>>> argument in this request, RESTClient will put <<<Accept: */*>>>
   in the request header, and parse the response based on whatever is given in
   the response content-type header.  So because Twitter correctly identifies its
-  response as <<<application/xml>>>, it will automatically be parsed by the
-  default {{{../apidocs/groovyx/net/http/ParserRegistry.html#parseXML(org.apache.http.HttpResponse)}XML parser}}.
+  response as <<<application/json>>>, it will automatically be parsed by the
+  default {{{../apidocs/groovyx/net/http/ParserRegistry.html#parseJSON(org.apache.http.HttpResponse)}JSON parser}}.
 
 
 ** Now <<<DELETE>>> that post

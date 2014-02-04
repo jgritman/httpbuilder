@@ -44,7 +44,7 @@ public class RESTClientTest {
         // test the exception class:
         catch( ex ) { assert ex.response.status == 404 }
 
-//      assert twitter.head( path : 'public_timeline.json' ).status == 200
+        assert twitter.head( path : 'home_timeline.json' ).status == 200
     }
 
     @Test public void testGet() {

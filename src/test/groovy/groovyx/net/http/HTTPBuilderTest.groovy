@@ -341,6 +341,21 @@ class HTTPBuilderTest {
         fail("request should have failed due to unset content type.")
     }
 
+    @Test
+    public void testUrlencRequestContentType() {
+        def http = new HTTPBuilder('http://restmirror.appspot.com/')
+        http.request( POST ) {
+          uri.path = '/'
+          body =  [name: 'bob', title: 'construction worker']
+          requestContentType = ContentType.URLENC
+
+          response.success = { resp ->
+            println "POST response status: ${resp.statusLine}"
+            assert resp.statusLine.statusCode == 201
+          }
+        }
+  }
+
     @Test public void testJSONPost() {
      def builder = new HTTPBuilder("http://restmirror.appspot.com/")
          def result = builder.request(POST, JSON) { req ->

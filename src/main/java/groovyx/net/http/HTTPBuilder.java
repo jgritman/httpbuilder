@@ -430,7 +430,7 @@ public class HTTPBuilder {
      */
     protected Object doRequest( final RequestConfigDelegate delegate )
             throws ClientProtocolException, IOException {
-
+        delegate.encodeBody();
         final HttpRequestBase reqMethod = delegate.getRequest();
 
         final Object contentType = delegate.getContentType();
@@ -502,7 +502,7 @@ public class HTTPBuilder {
                 }
             }
         };
-        
+
         return getClient().execute(reqMethod, responseHandler, delegate.getContext());
     }
 
@@ -940,6 +940,7 @@ public class HTTPBuilder {
         private URIBuilder uri;
         private Map<Object,Object> headers = new StringHashMap<Object>();
         private HttpContextDecorator context = new HttpContextDecorator();
+        private Object body;
 
         public RequestConfigDelegate( HttpRequestBase request, Object contentType,
                 Map<?,?> defaultRequestHeaders,
@@ -1210,15 +1211,23 @@ public class HTTPBuilder {
          * @param body data or closure interpreted as the request body
          */
         public void setBody( Object body ) {
+            this.body = body;
+        }
+
+        public void encodeBody() {
+            if (body == null) {
+                return;
+            }
             if ( ! (request instanceof HttpEntityEnclosingRequest ) )
                 throw new IllegalArgumentException(
                         "Cannot set a request body for a " + request.getMethod() + " method" );
+
             Closure encoder = encoders.getAt( this.getRequestContentType() );
 
             // Either content type or encoder is empty.
             if ( encoder == null )
                 throw new IllegalArgumentException(
-                        "Cannot set a request body without proper content type set" );
+                        "No encoder found for request content type " + getRequestContentType() );
 
             HttpEntity entity = encoder.getMaximumNumberOfParameters() == 2
                     ? (HttpEntity)encoder.call( new Object[] { body, this.getRequestContentType() } )
