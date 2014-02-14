@@ -916,6 +916,9 @@ public class HTTPBuilder {
     }
     
     /**
+     * Ignores certificate issues for SSL connections. Cert does not have to be from a trusted authority 
+     * 	and the hostname does not need to be verified. 
+     * This is primarily for dev situations that make use of localhost, build, and test servers. 
      * 
      * @throws KeyStoreException 
      * @throws NoSuchAlgorithmException 
