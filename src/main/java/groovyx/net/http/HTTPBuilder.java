@@ -35,6 +35,12 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -53,6 +59,9 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.params.CookieSpecPNames;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.AbstractHttpClient;
@@ -904,6 +913,30 @@ public class HTTPBuilder {
         getClient().getParams().setParameter(
                 ConnRoutePNames.DEFAULT_PROXY,
                 new HttpHost(host,port,scheme) );
+    }
+    
+    /**
+     * 
+     * @throws KeyStoreException 
+     * @throws NoSuchAlgorithmException 
+     * @throws UnrecoverableKeyException 
+     * @throws KeyManagementException 
+     * 
+     */
+    public void ignoreSSLIssues() 
+    		throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException{
+        TrustStrategy trustStrat = new TrustStrategy(){
+            public boolean isTrusted(X509Certificate[] chain, String authtype)
+                  throws CertificateException {
+                         return true;
+                  }
+        };
+	  
+        SSLSocketFactory sslSocketFactory = new SSLSocketFactory(trustStrat,SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);		  			 
+     
+        getClient().getConnectionManager().getSchemeRegistry().register(
+            new Scheme("https",443,sslSocketFactory ) );
+
     }
 
     /**
