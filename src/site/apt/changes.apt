@@ -8,6 +8,7 @@
 Change Log
 
 * v0.7.1 - 25 Feb 2014
+
   * Allow override of RESTClient.doRequest() (from Diego Fernandez)
 
   * New method HTTPBuilder.ignoreSSLIssues() (from Adam Hurwitz)
