@@ -283,8 +283,8 @@ public class EncoderRegistry {
      * <p> will return the following JSON string:<pre>
      * {"root":{"first":{"one":1,"two":"2"},"second":"some string"}}</pre></p>
      *
-     * <p>Note that the closure syntax has changed between version 0.5.2 and
-     * version 0.6, to accomidate using Groovy's built in JsonBuilder.</p>
+     * <p>Note that the closure syntax has changed in version 0.8 to accomidate
+     * using Groovy's built in JsonBuilder.</p>
      * @param model data to be converted to JSON, as specified above.
      * @return an {@link HttpEntity} encapsulating this request data
      * @throws UnsupportedEncodingException
