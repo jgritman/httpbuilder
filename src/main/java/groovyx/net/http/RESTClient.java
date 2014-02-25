@@ -116,7 +116,7 @@ public class RESTClient extends HTTPBuilder {
      */
     public Object get( Map<String,?> args ) throws ClientProtocolException,
             IOException, URISyntaxException {
-        return super.doRequest( new RequestConfigDelegate( args, new HttpGet(), null ) );
+        return doRequest( new RequestConfigDelegate( args, new HttpGet(), null ) );
     }
 
     /**
@@ -138,7 +138,7 @@ public class RESTClient extends HTTPBuilder {
      */
     @Override public Object post( Map<String,?> args )
             throws URISyntaxException, ClientProtocolException, IOException {
-        return super.doRequest( new RequestConfigDelegate( args, new HttpPost(), null ) );
+        return doRequest( new RequestConfigDelegate( args, new HttpPost(), null ) );
     }
 
     /**
