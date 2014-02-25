@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>http-builder</artifactId>
     <groupId>org.codehaus.groovy.modules.http-builder</groupId>
-    <version>0.7.1</version>
+    <version>0.8-SNAPSHOT</version>
     <name>HTTP client framework for Groovy</name>
     <url>http://groovy.codehaus.org/modules/http-builder/</url>
     <inceptionYear>2008</inceptionYear>
