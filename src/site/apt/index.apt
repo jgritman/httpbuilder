@@ -8,7 +8,12 @@
 
 News
 
-* 4 Feb 2013 - 0.7 released
+* 25 Feb 2014 - 0.7.1 released
+  A minor release with a couple pull requests from the community.
+
+  Looking forward, release 0.8 will likely contain an upgrade to HttpClient 4.3 and migrate to Groovy's native JsonBuilder for sending JSON. Both of these changes have the potential to introduce backwards incompatibilities.
+
+* 4 Feb 2014 - 0.7 released
 
   A long overdue release containing a number of community contributions. For a full list see the {{{./changes.html}Changes}} page.
 
