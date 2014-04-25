@@ -361,9 +361,11 @@ public class ParserRegistry {
      * @param contentType
      * @return parser that can interpret the given response content type,
      *   or the default parser if no parser is registered for the given
-     *   content-type.  It should NOT return a null value.
+     *   content-type.
      */
     public Closure getAt( Object contentType ) {
+        if ( contentType == null ) return defaultParser;
+
         String ct = contentType.toString();
         int idx = ct.indexOf( ';' );
         if ( idx > 0 ) ct = ct.substring( 0, idx );

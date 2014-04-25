@@ -2,17 +2,10 @@ package groovyx.net.http
 
 import org.junit.Ignore
 import org.junit.Test
-import java.lang.AssertionError
-import java.io.Reader
-import java.io.StringReader;
 
-import groovy.util.XmlSlurper
-import groovy.util.slurpersupport.GPathResult
 import org.apache.http.client.HttpResponseException
-import java.io.ByteArrayOutputStream
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
-import org.apache.xml.resolver.tools.CatalogResolver
 
 class HttpURLClientTest {
 
@@ -236,5 +229,10 @@ class HttpURLClientTest {
             assert false : "Unknown argument should have thrown exception"
         }
         catch ( IllegalArgumentException ex ) { /* Expected exception */ }
+    }
+
+    @Test(expected = SocketTimeoutException)
+    void testTimeout() {
+        new HttpURLClient(url: 'https://www.google.com/').request(timeout: 1)
     }
 }
