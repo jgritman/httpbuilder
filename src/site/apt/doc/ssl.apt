@@ -7,7 +7,7 @@
 SSL Configuration
 
   SSL should, for the most part, "just work."  There are a few situations where
-  it is not completely intuitive.  You can follow the example below, or see HttpClient's
+  it is not completely intuitive.  You can follow the examples below, or see HttpClient's
   {{{http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/org/apache/http/conn/ssl/SSLSocketFactory.html}SSLSocketFactory documentation}}
   for more information.
 
@@ -62,3 +62,16 @@ Certificate was added to keystore
 
 %{code-snippet|id=ssl1|brush=groovy|file=src/site/examples.txt}
 
+
+
+* ignoreSSLIssues
+
+	Alternatively there is a convenience method to ignore SSL issues that arise from 
+	untrusted certificates as well as hostname mismatches. This method is ideally suited 
+	for dev and test situations where strict SSL usage is too time-consuming to configure.
+	
+%{code-snippet|id=ssl2|brush=groovy|file=src/site/examples.txt}
+
+	
+	
+	

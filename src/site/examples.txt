@@ -474,6 +474,12 @@ def status = http.request( HEAD ) {
 }
 END SNIPPET: ssl1
 
+START SNIPPET: ssl2
+http = new HTTPBuilder("some default path")
+http.ignoreSSLIssues()
+
+END SNIPPET: ssl2
+
 START SNIPPET: contenttype1
 import au.com.bytecode.opencsv.CSVReader
 import groovyx.net.http.ParserRegistry
@@ -664,3 +670,4 @@ START SNIPPET: download4
   </resolvers>
 </ivysettings>
 END SNIPPET: download4
+
