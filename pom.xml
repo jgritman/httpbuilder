@@ -405,7 +405,7 @@
     </pluginRepositories>
 
     <scm>
-        <developerConnection>scm:git:git://github.com/jgritman/httpbuilder.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:jgritman/httpbuilder.git</developerConnection>
         <url>http://github.com/jgritman/httpbuilder</url>
     </scm>
 
