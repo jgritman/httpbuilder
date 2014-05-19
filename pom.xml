@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>http-builder</artifactId>
     <groupId>org.codehaus.groovy.modules.http-builder</groupId>
-    <version>0.7.2</version>
+    <version>0.7.2-SNAPSHOT</version>
     <name>HTTP client framework for Groovy</name>
     <url>http://groovy.codehaus.org/modules/http-builder/</url>
     <inceptionYear>2008</inceptionYear>
@@ -419,8 +419,7 @@
     <scm>
         <developerConnection>scm:git:git@github.com:jgritman/httpbuilder.git</developerConnection>
         <url>http://github.com/jgritman/httpbuilder</url>
-      <tag>http-builder-0.7.2</tag>
-  </scm>
+    </scm>
 
     <distributionManagement>
         <repository>
