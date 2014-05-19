@@ -161,6 +161,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
@@ -195,6 +196,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
                 <configuration>
                     <systemProperties>
                     	<property>
@@ -231,6 +233,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
                     <check>
                         <haltOnFailure>false</haltOnFailure>
@@ -262,6 +265,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.17</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -274,6 +278,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -285,6 +290,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/assembly/all.xml</descriptor>
@@ -302,7 +308,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>2.1.1</version>
+                <version>3.3</version>
                 <dependencies>
     <!-- For SyntaxHighlighter macro: http://code.google.com/p/m2-site-tools/ -->
                     <dependency>
@@ -325,16 +331,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <version>2.5</version>
                 <configuration>
                     <preparationGoals>clean verify</preparationGoals>
                 </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-deploy-plugin</artifactId>
+              <version>2.8.1</version>
             </plugin>
         </plugins>
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-webdav-jackrabbit</artifactId>
-                <version>2.6</version>
+                <version>1.0-beta-7</version>
             </extension>
         </extensions>
     </build>
