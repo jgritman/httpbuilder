@@ -205,7 +205,7 @@ public class HttpURLClient {
         if ( arg != null ) {  // if there is a request POST or PUT body
             conn.setDoOutput( true );
             final HttpEntity body = (HttpEntity)encoderRegistry.getAt(
-                    requestContentType ).call( arg );
+                    requestContentType ).call( arg, requestContentType );
             // TODO configurable request charset
 
             //TODO don't override if there is a 'content-type' in the headers list
