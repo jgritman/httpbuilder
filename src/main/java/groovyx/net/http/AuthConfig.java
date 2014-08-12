@@ -162,13 +162,27 @@ public class AuthConfig {
             keyStore.load( jksStream, password.toCharArray() );
         } finally { jksStream.close(); }
 
+        certificate( keyStore, password );
+    }
+
+    /**
+     * Provide a Keystore containing the certificate to be used for
+     * SSL authentication. This method moves the responsibility of
+     * loading the certificates to the application, allowing access
+     * to custom Keystore types such as SmartCard access or other
+     * proprietary forms.
+     * @param keyStore the keystore containing the authentication certificate
+     * @param password password to decrypt the keystore
+     */
+    public void certificate( KeyStore keyStore, String password )
+            throws GeneralSecurityException, IOException {
         SSLSocketFactory ssl = new SSLSocketFactory(keyStore, password);
         ssl.setHostnameVerifier( SSLSocketFactory.STRICT_HOSTNAME_VERIFIER );
 
         builder.getClient().getConnectionManager().getSchemeRegistry()
             .register( new Scheme("https", ssl, 443) );
     }
-
+    
     /**
      * </p>OAuth sign all requests.  Note that this currently does <strong>not</strong>
      * wait for a <code>WWW-Authenticate</code> challenge before sending the
