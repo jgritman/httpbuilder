@@ -21,17 +21,6 @@
  */
 package groovyx.net.http;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
@@ -42,10 +31,14 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * This implementation makes all requests asynchronous by submitting jobs to a
@@ -69,49 +62,49 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     /**
      * Accepts the following named parameters:
      * <dl>
-     *  <dt>threadPool</dt><dd>Custom {@link ExecutorService} instance for
-     *      running submitted requests.  If this is an instance of {@link ThreadPoolExecutor},
-     *      the poolSize will be determined by {@link ThreadPoolExecutor#getMaximumPoolSize()}.
-     *      The default threadPool uses an unbounded queue to accept an unlimited
-     *      number of requests.</dd>
-     *  <dt>poolSize</dt><dd>Max number of concurrent requests</dd>
-     *  <dt>uri</dt><dd>Default request URI</dd>
-     *  <dt>contentType</dt><dd>Default content type for requests and responses</dd>
-     *  <dt>timeout</dt><dd>Timeout in milliseconds to wait for a connection to
-     *      be established and request to complete.</dd>
+     * <dt>threadPool</dt><dd>Custom {@link ExecutorService} instance for
+     * running submitted requests.  If this is an instance of {@link ThreadPoolExecutor},
+     * the poolSize will be determined by {@link ThreadPoolExecutor#getMaximumPoolSize()}.
+     * The default threadPool uses an unbounded queue to accept an unlimited
+     * number of requests.</dd>
+     * <dt>poolSize</dt><dd>Max number of concurrent requests</dd>
+     * <dt>uri</dt><dd>Default request URI</dd>
+     * <dt>contentType</dt><dd>Default content type for requests and responses</dd>
+     * <dt>timeout</dt><dd>Timeout in milliseconds to wait for a connection to
+     * be established and request to complete.</dd>
      * </dl>
      */
-    public AsyncHTTPBuilder( Map<String, ?> args ) throws URISyntaxException {
+    public AsyncHTTPBuilder(Map<String, ?> args) throws URISyntaxException {
         int poolSize = DEFAULT_POOL_SIZE;
         ExecutorService threadPool = null;
-        if ( args != null ) {
-            threadPool = (ExecutorService)args.remove( "threadPool" );
+        if (args != null) {
+            threadPool = (ExecutorService) args.remove("threadPool");
 
-            if ( threadPool instanceof ThreadPoolExecutor )
-                poolSize = ((ThreadPoolExecutor)threadPool).getMaximumPoolSize();
+            if (threadPool instanceof ThreadPoolExecutor)
+                poolSize = ((ThreadPoolExecutor) threadPool).getMaximumPoolSize();
 
             Object poolSzArg = args.remove("poolSize");
-            if ( poolSzArg != null ) poolSize = Integer.parseInt( poolSzArg.toString() );
+            if (poolSzArg != null) poolSize = Integer.parseInt(poolSzArg.toString());
 
-            if ( args.containsKey( "url" ) ) throw new IllegalArgumentException(
-                "The 'url' parameter is deprecated; use 'uri' instead" );
+            if (args.containsKey("url")) throw new IllegalArgumentException(
+                    "The 'url' parameter is deprecated; use 'uri' instead");
             Object defaultURI = args.remove("uri");
-            if ( defaultURI != null ) super.setUri(defaultURI);
+            if (defaultURI != null) super.setUri(defaultURI);
 
             Object defaultContentType = args.remove("contentType");
-            if ( defaultContentType != null )
+            if (defaultContentType != null)
                 super.setContentType(defaultContentType);
 
-            Object timeout = args.remove( "timeout" );
-            if ( timeout != null ) setTimeout( (Integer) timeout );
+            Object timeout = args.remove("timeout");
+            if (timeout != null) setTimeout((Integer) timeout);
 
-            if ( args.size() > 0 ) {
+            if (args.size() > 0) {
                 String invalidArgs = "";
-                for ( String k : args.keySet() ) invalidArgs += k + ",";
+                for (String k : args.keySet()) invalidArgs += k + ",";
                 throw new IllegalArgumentException("Unexpected keyword args: " + invalidArgs);
             }
         }
-        this.initThreadPools( poolSize, threadPool );
+        this.initThreadPools(poolSize, threadPool);
     }
 
     /**
@@ -124,14 +117,14 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * handler closure.
      */
     @Override
-    protected Future<?> doRequest( final RequestConfigDelegate delegate ) {
-        return threadPool.submit( new Callable<Object>() {
-            /*@Override*/ public Object call() throws Exception {
+    protected Future<?> doRequest(final RequestConfigDelegate delegate) {
+        return threadPool.submit(new Callable<Object>() {
+            /*@Override*/
+            public Object call() throws Exception {
                 try {
                     return doRequestSuper(delegate);
-                }
-                catch( Exception ex ) {
-                    log.info( "Exception thrown from response delegate: " + delegate, ex );
+                } catch (Exception ex) {
+                    log.info("Exception thrown from response delegate: " + delegate, ex);
                     throw ex;
                 }
             }
@@ -142,7 +135,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * Because we can't call "super.doRequest" from within the anonymous
      * Callable subclass.
      */
-    private Object doRequestSuper( RequestConfigDelegate delegate ) throws IOException {
+    private Object doRequestSuper(RequestConfigDelegate delegate) throws IOException {
         return super.doRequest(delegate);
     }
 
@@ -150,7 +143,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * Initializes threading parameters for the HTTPClient's
      * {@link ThreadSafeClientConnManager}, and this class' ThreadPoolExecutor.
      */
-    protected void initThreadPools( final int poolSize, final ExecutorService threadPool ) {
+    protected void initThreadPools(final int poolSize, final ExecutorService threadPool) {
         if (poolSize < 1) throw new IllegalArgumentException("poolSize may not be < 1");
         // Create and initialize HTTP parameters
         HttpParams params = super.getClient().getParams();
@@ -162,27 +155,27 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 
         // Create and initialize scheme registry
         SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register( new Scheme( "http",
-                PlainSocketFactory.getSocketFactory(), 80 ) );
-        schemeRegistry.register( new Scheme( "https",
+        schemeRegistry.register(new Scheme("http",
+                PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https",
                 SSLSocketFactory.getSocketFactory(), 443));
 
         ClientConnectionManager cm = new ThreadSafeClientConnManager(
-                params, schemeRegistry );
-        setClient(new DefaultHttpClient( cm, params ));
+                params, schemeRegistry);
+        setClient(new DefaultHttpClient(cm, params));
 
         this.threadPool = threadPool != null ? threadPool :
-            new ThreadPoolExecutor( poolSize, poolSize, 120, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<Runnable>() );
+                new ThreadPoolExecutor(poolSize, poolSize, 120, TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<Runnable>());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected Object defaultSuccessHandler( HttpResponseDecorator resp, Object parsedData )
+    protected Object defaultSuccessHandler(HttpResponseDecorator resp, Object parsedData)
             throws ResponseParseException {
-        return super.defaultSuccessHandler( resp, parsedData );
+        return super.defaultSuccessHandler(resp, parsedData);
     }
 
     /**
@@ -191,24 +184,24 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * The exception is then re-thrown when calling {@link Future#get()
      * future.get()}.  You can access the original exception (e.g. an
      * {@link HttpResponseException}) by calling <code>ex.getCause()</code>.
-     *
      */
     @Override
-    protected void defaultFailureHandler( HttpResponseDecorator resp )
+    protected void defaultFailureHandler(HttpResponseDecorator resp)
             throws HttpResponseException {
-        super.defaultFailureHandler( resp );
+        super.defaultFailureHandler(resp);
     }
 
     /**
      * This timeout is used for both the time to wait for an established
      * connection, and the time to wait for data.
+     *
+     * @param timeout time to wait in milliseconds.
      * @see HttpConnectionParams#setSoTimeout(HttpParams, int)
      * @see HttpConnectionParams#setConnectionTimeout(HttpParams, int)
-     * @param timeout time to wait in milliseconds.
      */
-    public void setTimeout( int timeout ) {
-        HttpConnectionParams.setConnectionTimeout( super.getClient().getParams(), timeout );
-        HttpConnectionParams.setSoTimeout( super.getClient().getParams(), timeout );
+    public void setTimeout(int timeout) {
+        HttpConnectionParams.setConnectionTimeout(super.getClient().getParams(), timeout);
+        HttpConnectionParams.setSoTimeout(super.getClient().getParams(), timeout);
         /* this will cause a thread waiting for an available connection instance
          * to time-out   */
 //      ConnManagerParams.setTimeout( super.getClient().getParams(), timeout );
@@ -216,15 +209,16 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 
     /**
      * Get the timeout in for establishing an HTTP connection.
+     *
      * @return timeout in milliseconds.
      */
     public int getTimeout() {
-        return HttpConnectionParams.getConnectionTimeout( super.getClient().getParams() );
+        return HttpConnectionParams.getConnectionTimeout(super.getClient().getParams());
     }
 
     /**
      * <p>Access the underlying threadpool to adjust things like job timeouts.</p>
-     *
+     * <p/>
      * <p>Note that this is not the same pool used by the HttpClient's
      * {@link ThreadSafeClientConnManager}.  Therefore, increasing the
      * {@link ThreadPoolExecutor#setMaximumPoolSize(int) maximum pool size} will
@@ -242,16 +236,19 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     /**
      * {@inheritDoc}
      */
-    @Override public void shutdown() {
+    @Override
+    public void shutdown() {
         super.shutdown();
         this.threadPool.shutdown();
     }
 
     /**
      * {@inheritDoc}
+     *
      * @see #shutdown()
      */
-    @Override protected void finalize() throws Throwable {
+    @Override
+    protected void finalize() throws Throwable {
         this.shutdown();
         super.finalize();
     }

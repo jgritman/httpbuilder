@@ -1,71 +1,74 @@
-                                    ------
-                                    Download
-                                    ------
-                                    ------
-                                    ------
+------
+Download
+------
+------
+------
 
 Project Archive and JAR
 
-  The latest JAR can be obtained from the Codehaus Maven repository.  The
-  repository also contains project assemblies (.tar.gz), which include the
-  source code, generated JavaDoc, and dependency JARs.  <<The latest release is
-  version ${project-version}.>>
+The latest JAR can be obtained from the Codehaus Maven repository.  The
+repository also contains project assemblies (.tar.gz), which include the
+source code, generated JavaDoc, and dependency JARs.  <
+<The latest release is
+     version ${project-version}.>>
 
-  {{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
-  Browse the latest snapshot here.}}
+{{{http://snapshots.repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
+Browse the latest snapshot here.}}
 
-  {{{http://repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
-  Browse the latest stable build here.}}
+{{{http://repository.codehaus.org/org/codehaus/groovy/modules/http-builder/http-builder/}
+Browse the latest stable build here.}}
 
-  Older releases may also be found under the
-  {{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}old group ID.}}
+Older releases may also be found under the
+{{{http://repository.codehaus.org/org/codehaus/groovy/http-builder/}old group ID.}}
 
 Maven Users
 
-  Maven users can simply copy the dependency tag into their own project:
+Maven users can simply copy the dependency tag into their own project:
 
 %{code-snippet|id=download1|brush=xml|file=src/site/examples.txt}
 
-  You might also need to add the Codehaus repository to your project POM as well:
+You might also need to add the Codehaus repository to your project POM as well:
 
 %{code-snippet|id=download2|brush=xml|file=src/site/examples.txt}
 
 
 Using Grape
 
-  {{{http://groovy.codehaus.org/Grape}Grape}} is a neat dependency management
-  feature in Groovy 1.6+ that allows you to download and add JARs to your classpath at runtime.
+{{{http://groovy.codehaus.org/Grape}Grape}} is a neat dependency management
+feature in Groovy 1.6+ that allows you to download and add JARs to your classpath at runtime.
 
-  You can automatically put HTTPBuilder in your classpath by using the following
-  annotation on a method in your code:
+You can automatically put HTTPBuilder in your classpath by using the following
+annotation on a method in your code:
 
 %{code-snippet|id=download3|brush=groovy|file=src/site/examples.txt}
 
-  Note that in Groovy 1.6, the <<<@Grab>>> annotation must occur on a method
-  definition (it can be an empty method.) Putting the annotation before a
-  statement such as a variable declaration will not work.  This is a common
-  error and Grape will not provide any indication that it is not augmenting
-  the runtime classpath.  This should change in Groovy 1.7.
+Note that in Groovy 1.6, the <<<@Grab>>> annotation must occur on a method
+definition (it can be an empty method.) Putting the annotation before a
+statement such as a variable declaration will not work.  This is a common
+error and Grape will not provide any indication that it is not augmenting
+the runtime classpath.  This should change in Groovy 1.7.
 
-  If you are still having problems, try calling <<<grape>>> from the command
-  line like so:
+If you are still having problems, try calling <<
+<grape>>> from the command
+    line like so:
 
-----------------------------------------
-$ grape resolve org.codehaus.groovy.modules.http-builder http-builder ${project-version}
-  # will tell you where grape is looking and give detailed config information
+    ----------------------------------------
+    $ grape resolve org.codehaus.groovy.modules.http-builder http-builder ${project-version}
+    # will tell you where grape is looking and give detailed config information
 
 
-$ grape install org.codehaus.groovy.modules.http-builder http-builder ${project-version}
-  # will attempt to download the JAR and transitive dependencies
-----------------------------------------
+    $ grape install org.codehaus.groovy.modules.http-builder http-builder ${project-version}
+    # will attempt to download the JAR and transitive dependencies
+    ----------------------------------------
 
-  The above commands will tell you which repository URLs grape is trying to download
-  from if it cannot find the artifact.
+    The above commands will tell you which repository URLs grape is trying to download
+    from if it cannot find the artifact.
 
-  If you are trying to use a snapshot version of HTTPBuilder, you might also
-  need to create the following file in <<<~/.groovy/grapeConfig.xml>>>:
+    If you are trying to use a snapshot version of HTTPBuilder, you might also
+    need to create the following file in <<<~/.groovy/grapeConfig.xml>>>:
 
-%{code-snippet|id=download4|brush=xml|file=src/site/examples.txt}
+    %{code-snippet|id=download4|brush=xml|file=src/site/examples.txt}
 
-  Note the <codehaus.snapshots> line, which tells Grape where HTTPBuilder's
-  snapshot builds are located, since that repository is not searched by default.
+    Note the
+    <codehaus.snapshots> line, which tells Grape where HTTPBuilder's
+        snapshot builds are located, since that repository is not searched by default.

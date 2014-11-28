@@ -35,9 +35,9 @@ public class HttpResponseException extends org.apache.http.client.HttpResponseEx
 
     HttpResponseDecorator response;
 
-    public HttpResponseException( HttpResponseDecorator resp ) {
-        super( resp.getStatusLine().getStatusCode(),
-                resp.getStatusLine().getReasonPhrase() );
+    public HttpResponseException(HttpResponseDecorator resp) {
+        super(resp.getStatusLine().getStatusCode(),
+                resp.getStatusLine().getReasonPhrase());
         this.response = resp;
     }
 

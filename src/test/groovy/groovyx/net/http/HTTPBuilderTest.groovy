@@ -1,4 +1,5 @@
 package groovyx.net.http
+
 import groovy.util.slurpersupport.GPathResult
 import org.apache.http.client.HttpResponseException
 import org.junit.Ignore
@@ -10,19 +11,20 @@ import static org.junit.Assert.fail
 
 class HTTPBuilderTest {
 
-    def twitter = [ user: System.getProperty('twitter.user'),
-                    consumerKey: System.getProperty('twitter.oauth.consumerKey'),
-                    consumerSecret: System.getProperty('twitter.oauth.consumerSecret'),
-                    accessToken: System.getProperty('twitter.oauth.accessToken'),
-                    secretToken: System.getProperty('twitter.oauth.secretToken') ]
+    def twitter = [user          : System.getProperty('twitter.user'),
+                   consumerKey   : System.getProperty('twitter.oauth.consumerKey'),
+                   consumerSecret: System.getProperty('twitter.oauth.consumerSecret'),
+                   accessToken   : System.getProperty('twitter.oauth.accessToken'),
+                   secretToken   : System.getProperty('twitter.oauth.secretToken')]
 
     /**
      * This method will parse the content based on the response content-type
      */
-    @Test public void testGET() {
+    @Test
+    public void testGET() {
         def http = new HTTPBuilder('http://www.google.com')
-        http.get( path:'/search', query:[q:'Groovy'],
-                headers:['User-Agent':"Firefox"] ) { resp, html ->
+        http.get(path: '/search', query: [q: 'Groovy'],
+                headers: ['User-Agent': "Firefox"]) { resp, html ->
             println "response status: ${resp.statusLine}"
             println "Content Type: ${resp.headers.'Content-Type'}"
 
@@ -34,36 +36,38 @@ class HTTPBuilderTest {
         }
     }
 
-    @Test public void testDefaultSuccessHandler() {
+    @Test
+    public void testDefaultSuccessHandler() {
         def http = new HTTPBuilder('http://www.google.com')
-        def html = http.request( GET ) {
-            headers = ['User-Agent':"Firefox"]
+        def html = http.request(GET) {
+            headers = ['User-Agent': "Firefox"]
             uri.path = '/search'
-            uri.query = [q:'Groovy']
+            uri.query = [q: 'Groovy']
         }
         assert html instanceof GPathResult
         assert html.HEAD.size() == 1
         assert html.BODY.size() == 1
 
         // short form where GET takes no response handler.
-        html = http.get( path:'/search', query:[q:'Groovy'] )
+        html = http.get(path: '/search', query: [q: 'Groovy'])
         assert html instanceof GPathResult
         assert html.HEAD.size() == 1
         assert html.BODY.size() == 1
     }
 
-    @Test public void testSetHeaders() {
+    @Test
+    public void testSetHeaders() {
         def http = new HTTPBuilder('http://www.google.com')
         def val = '1'
         def v2 = 'two'
         def h3 = 'three'
         def h4 = 'four'
-        http.headers = [one:"v$val", "$v2" : 2]
+        http.headers = [one: "v$val", "$v2": 2]
         http.headers.three = 'not Three'
         http.headers."$h3" = 'three'
 
         def request
-        def html = http.request( GET ) { req ->
+        def html = http.request(GET) { req ->
             assert headers.one == 'v1'
             assert headers.two == '2'
             assert headers.three == 'three'
@@ -87,28 +91,31 @@ class HTTPBuilderTest {
      * handler will not work well with a chunked response if it is parsed as
      * TEXT or BINARY.
      */
-    @Test public void testReaderWithDefaultResponseHandler() {
+
+    @Test
+    public void testReaderWithDefaultResponseHandler() {
         def http = new HTTPBuilder('http://www.google.com')
 
-        def reader = http.get( contentType:TEXT )
+        def reader = http.get(contentType: TEXT)
 
         assert reader instanceof Reader
         def out = new ByteArrayOutputStream()
         out << reader
         assert out.toString().length() > 0
 //      println out.toString()
-        assert out.toString().trim().endsWith( '</html>' )
+        assert out.toString().trim().endsWith('</html>')
     }
 
-    @Test public void testDefaultFailureHandler() {
+    @Test
+    public void testDefaultFailureHandler() {
         def http = new HTTPBuilder('http://www.google.com')
 
         try {
-            http.get( path:'/adsasf/kjsslkd' ) {
+            http.get(path: '/adsasf/kjsslkd') {
                 assert false
             }
         }
-        catch( HttpResponseException ex ) {
+        catch (HttpResponseException ex) {
             assert ex.statusCode == 404
             assert ex.response.status == 404
             assert ex.response.headers
@@ -120,10 +127,11 @@ class HTTPBuilderTest {
      * This method is similar to the above, but it will will parse the content
      * based on the given content-type, i.e. TEXT (text/plain).
      */
-    @Test public void testReader() {
+    @Test
+    public void testReader() {
         def http = new HTTPBuilder('http://examples.oreilly.com')
-        http.get( uri: 'http://examples.oreilly.com/9780596002527/examples/first.xml',
-                  contentType: TEXT, headers: [Accept:'*/*'] ) { resp, reader ->
+        http.get(uri: 'http://examples.oreilly.com/9780596002527/examples/first.xml',
+                contentType: TEXT, headers: [Accept: '*/*']) { resp, reader ->
             println "response status: ${resp.statusLine}"
             println 'Headers:'
             resp.headers.each {
@@ -137,7 +145,7 @@ class HTTPBuilderTest {
             // we'll validate the reader by passing it to an XmlSlurper manually.
 
             def resolver = ParserRegistry.catalogResolver
-            def parsedData = new XmlSlurper( entityResolver : resolver ).parse(reader)
+            def parsedData = new XmlSlurper(entityResolver: resolver).parse(reader)
             assert parsedData.children().size() > 0
         }
     }
@@ -146,7 +154,8 @@ class HTTPBuilderTest {
      * Tests POST with JSON response, and DELETE with a JSON response.
      */
 
-    @Test public void testPOST() {
+    @Test
+    public void testPOST() {
         def http = new HTTPBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
@@ -154,11 +163,11 @@ class HTTPBuilderTest {
 
         def msg = "HTTPBuilder unit test was run on ${new Date()}"
 
-        def postID = http.request( POST, JSON ) { req ->
+        def postID = http.request(POST, JSON) { req ->
             uri.path = 'update.json'
-            send URLENC, [status:msg,source:'httpbuilder']
+            send URLENC, [status: msg, source: 'httpbuilder']
 
-             response.success = { resp, json ->
+            response.success = { resp, json ->
                 println "Tweet response status: ${resp.statusLine}"
                 assert resp.statusLine.statusCode == 200
                 println "Content Length: ${resp.headers['Content-Length']?.value}"
@@ -171,7 +180,7 @@ class HTTPBuilderTest {
 
         // delete the test message.
         Thread.sleep 5000
-        http.request( DELETE, JSON ) { req ->
+        http.request(DELETE, JSON) { req ->
             uri.path = "destroy/${postID}.json"
 
             response.success = { resp, json ->
@@ -182,8 +191,10 @@ class HTTPBuilderTest {
         }
     }
 
-    @Ignore // twitter is returning a 401 for unknown reasons here
-    @Test public void testPlainURLEnc() {
+    @Ignore
+    // twitter is returning a 401 for unknown reasons here
+    @Test
+    public void testPlainURLEnc() {
         def http = new HTTPBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
@@ -191,15 +202,15 @@ class HTTPBuilderTest {
 
         def msg = "HTTPBuilder's second unit test was run on ${new Date()}"
 
-        def resp = http.post( contentType: JSON, path:'update.json',
-                body:"status=$msg&source=httpbuilder" )
+        def resp = http.post(contentType: JSON, path: 'update.json',
+                body: "status=$msg&source=httpbuilder")
 
         def postID = resp.id.text()
         assert postID
 
         // delete the test message.
         Thread.sleep 5000
-        http.request( DELETE, JSON ) {
+        http.request(DELETE, JSON) {
             uri.path = "destroy/${postID}.json"
         }
     }
@@ -211,7 +222,7 @@ class HTTPBuilderTest {
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
 
-        http.request( HEAD, XML ) {
+        http.request(HEAD, XML) {
             uri.path = 'friends_timeline.xml'
 
             response.success = { resp ->
@@ -222,7 +233,8 @@ class HTTPBuilderTest {
         }
     }
 
-    @Test public void testRequestAndDefaultResponseHandlers() {
+    @Test
+    public void testRequestAndDefaultResponseHandlers() {
         def http = new HTTPBuilder()
 
 //       default response handlers.
@@ -237,7 +249,7 @@ class HTTPBuilderTest {
 //       optional default URL for all actions:
         http.uri = 'http://www.google.com'
 
-        http.request(GET,TEXT) { req ->
+        http.request(GET, TEXT) { req ->
             response.success = { resp, stream ->
                 println 'my response handler!'
                 assert resp.statusLine.statusCode == 200
@@ -250,8 +262,9 @@ class HTTPBuilderTest {
     /**
      * Test a response handler that is assigned within a request config closure:
      */
-    @Test public void test404() {
-        new HTTPBuilder().request('http://www.google.com',GET,TEXT) {
+    @Test
+    public void test404() {
+        new HTTPBuilder().request('http://www.google.com', GET, TEXT) {
             uri.path = '/asdfg/asasdfs' // should produce 404
             response.'404' = {
                 println 'got expected 404!'
@@ -265,16 +278,18 @@ class HTTPBuilderTest {
     /* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
      * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
      */
+
     @Ignore
-    @Test public void testJSON() {
+    @Test
+    public void testJSON() {
 
         def builder = new HTTPBuilder()
 
 //      builder.parser.'text/javascript' = builder.parsers."$JSON"
 
-        builder.request('http://ajax.googleapis.com',GET,JSON) {
+        builder.request('http://ajax.googleapis.com', GET, JSON) {
             uri.path = '/ajax/services/search/web'
-            uri.query = [ v:'1.0', q: 'Earth Day' ]
+            uri.query = [v: '1.0', q: 'Earth Day']
             //UA header required to get Google to GZIP response:
             headers.'User-Agent' = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.4) Gecko/2008111319 Ubuntu/8.10 (intrepid) Firefox/3.0.4"
             response.success = { resp, json ->
@@ -290,13 +305,14 @@ class HTTPBuilderTest {
         }
     }
 
-    @Test public void testAuth() {
-        def http = new HTTPBuilder( 'http://test.webdav.org' )
+    @Test
+    public void testAuth() {
+        def http = new HTTPBuilder('http://test.webdav.org')
 
         /* The path issues a 404, but it does an auth challenge first. */
         http.handler.'404' = { println 'Auth successful' }
 
-        http.request( GET, HTML ) {
+        http.request(GET, HTML) {
             uri.path = '/auth-digest/'
             response.failure = { "expected failure" }
             response.success = {
@@ -304,39 +320,42 @@ class HTTPBuilderTest {
             }
         }
 
-        http.auth.basic( 'user2', 'user2' )
+        http.auth.basic('user2', 'user2')
 
-        http.request( GET, HTML ) {
+        http.request(GET, HTML) {
             uri.path = '/auth-digest/'
         }
 
-        http.request( GET, HTML ) {
+        http.request(GET, HTML) {
             uri.path = '/auth-basic/'
         }
     }
 
-    @Test public void testCatalog() {
-        def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
+    @Test
+    public void testCatalog() {
+        def http = new HTTPBuilder('http://weather.yahooapis.com/forecastrss')
 
-        http.parser.addCatalog getClass().getResource( '/rss-catalog.xml')
-        def xml = http.get( query : [p:'02110',u:'f'] )
+        http.parser.addCatalog getClass().getResource('/rss-catalog.xml')
+        def xml = http.get(query: [p: '02110', u: 'f'])
 
 
     }
 
-    @Test public void testInvalidNamedArg() {
-        def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
+    @Test
+    public void testInvalidNamedArg() {
+        def http = new HTTPBuilder('http://weather.yahooapis.com/forecastrss')
         try {
-            def xml = http.get( query : [p:'02110',u:'f'], blah : 'asdf' )
+            def xml = http.get(query: [p: '02110', u: 'f'], blah: 'asdf')
             throw new AssertionError("request should have failed due to invalid kwarg.")
         }
-        catch ( IllegalArgumentException ex ) { /* Expected result */ }
+        catch (IllegalArgumentException ex) { /* Expected result */
+        }
     }
 
     @Test(expected = IllegalArgumentException)
     public void testShouldThrowExceptionIfContentTypeIsNotSet() {
-        new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' ).request(POST) { request ->
-            body = [p:'02110',u:'f']
+        new HTTPBuilder('http://weather.yahooapis.com/forecastrss').request(POST) { request ->
+            body = [p: '02110', u: 'f']
         }
         fail("request should have failed due to unset content type.")
     }
@@ -344,34 +363,35 @@ class HTTPBuilderTest {
     @Test
     public void testUrlencRequestContentType() {
         def http = new HTTPBuilder('http://restmirror.appspot.com/')
-        http.request( POST ) {
-          uri.path = '/'
-          body =  [name: 'bob', title: 'construction worker']
-          requestContentType = ContentType.URLENC
+        http.request(POST) {
+            uri.path = '/'
+            body = [name: 'bob', title: 'construction worker']
+            requestContentType = ContentType.URLENC
 
-          response.success = { resp ->
-            println "POST response status: ${resp.statusLine}"
-            assert resp.statusLine.statusCode == 201
-          }
+            response.success = { resp ->
+                println "POST response status: ${resp.statusLine}"
+                assert resp.statusLine.statusCode == 201
+            }
         }
-  }
+    }
 
-    @Test public void testJSONPost() {
-     def builder = new HTTPBuilder("http://restmirror.appspot.com/")
-         def result = builder.request(POST, JSON) { req ->
-                 body = [name: 'bob', title: 'construction worker']
+    @Test
+    public void testJSONPost() {
+        def builder = new HTTPBuilder("http://restmirror.appspot.com/")
+        def result = builder.request(POST, JSON) { req ->
+            body = [name: 'bob', title: 'construction worker']
 
-                 response.success = {resp, json ->
-                         println "JSON POST Success: ${resp.statusLine}"
-                         assert json instanceof Map
-                         assert json.name == 'bob'
-                         return json.name
-                 }
+            response.success = { resp, json ->
+                println "JSON POST Success: ${resp.statusLine}"
+                assert json instanceof Map
+                assert json.name == 'bob'
+                return json.name
+            }
 
-                 response.failure = {resp ->
-                         println "JSON POST Failed: ${resp.statusLine}"
-                 }
-         }
-         assert result == 'bob'
+            response.failure = { resp ->
+                println "JSON POST Failed: ${resp.statusLine}"
+            }
+        }
+        assert result == 'bob'
     }
 }

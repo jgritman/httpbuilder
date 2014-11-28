@@ -1,38 +1,39 @@
 package groovyx.net.http
 
-import static groovyx.net.http.Method.HEAD
-
+import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.ssl.SSLSocketFactory
 import org.junit.Ignore
 import org.junit.Test
+
 import java.security.KeyStore
 
-import org.apache.http.conn.scheme.Scheme
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import static groovyx.net.http.Method.HEAD
 
 /**
  * @author tnichols
  */
 public class SSLTest {
 
-    def uri = "https://dev.java.net/" ;
+    def uri = "https://dev.java.net/";
 
     @Ignore
-    @Test public void testTrustedCert() {
-        def http = new HTTPBuilder( uri )
+    @Test
+    public void testTrustedCert() {
+        def http = new HTTPBuilder(uri)
 
-        def keyStore = KeyStore.getInstance( KeyStore.defaultType )
+        def keyStore = KeyStore.getInstance(KeyStore.defaultType)
 
-        getClass().getResource( "/truststore.jks" ).withInputStream {
-           keyStore.load( it, "test1234".toCharArray() )
+        getClass().getResource("/truststore.jks").withInputStream {
+            keyStore.load(it, "test1234".toCharArray())
         }
 
         final socketFactory = new SSLSocketFactory(keyStore)
         socketFactory.hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
 
         http.client.connectionManager.schemeRegistry.register(
-                new Scheme("https", socketFactory, 443) )
+                new Scheme("https", socketFactory, 443))
 
-        def status = http.request( HEAD ) {
+        def status = http.request(HEAD) {
             response.success = { it.statusLine.statusCode }
             response.failure = { it.statusLine.statusCode }
         }
