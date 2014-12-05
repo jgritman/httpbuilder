@@ -180,7 +180,7 @@ class HTTPBuilderTest {
 
         // delete the test message.
         Thread.sleep 5000
-        http.request(DELETE, JSON) { req ->
+        http.request(POST, JSON) { req ->
             uri.path = "destroy/${postID}.json"
 
             response.success = { resp, json ->
