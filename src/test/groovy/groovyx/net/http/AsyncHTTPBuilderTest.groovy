@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException
 
 import static groovyx.net.http.ContentType.HTML
 import static groovyx.net.http.ContentType.JSON
-import static groovyx.net.http.Method.DELETE
+import static groovyx.net.http.Method.*
 
 /**
  * @author tnichols
@@ -115,7 +115,7 @@ public class AsyncHTTPBuilderTest {
         assert postID
 
         // delete the test message.
-        resp = http.request(DELETE, JSON) { req ->
+        resp = http.request(POST, JSON) { req ->
             uri.path = "destroy/${postID}.json"
 
             response.success = { resp2, json ->

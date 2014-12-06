@@ -152,7 +152,7 @@ class HttpURLClientTest {
         def postID = json.id
 
         // delete the test message.
-        resp = http.request(method: DELETE, contentType: JSON,
+        resp = http.request(method: POST, contentType: JSON,
                 path: "destroy/${postID}.json")
 
         json = resp.data
