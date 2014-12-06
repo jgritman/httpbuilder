@@ -29,8 +29,7 @@ import java.util.concurrent.ExecutionException
 
 import static groovyx.net.http.ContentType.HTML
 import static groovyx.net.http.ContentType.JSON
-import static groovyx.net.http.Method.DELETE
-import static groovyx.net.http.Method.POST
+import static groovyx.net.http.Method.*
 
 /**
  * @author tnichols
