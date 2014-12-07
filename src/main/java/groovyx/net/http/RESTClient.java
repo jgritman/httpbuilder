@@ -33,7 +33,7 @@ import java.util.Map;
  * Extension to HTTPBuilder that basically attempts to provide a slightly more
  * REST-ful face on top of HTTPBuilder.  The differences between this class
  * and HTTPBuilder are such:
- * <p/>
+ *
  * <ul>
  * <li>Access to response headers.  All "request" methods on this class by
  * default return an instance of {@link HttpResponseDecorator}, which allows for simple
@@ -42,13 +42,13 @@ import java.util.Map;
  * (in the case of HEAD or DELETE) or be parse-able into some sort of object.
  * That object is accessible via {@link HttpResponseDecorator#getData()}.</li>
  * </ul>
- * <p/>
+ *
  * <p>By default, all request method methods will return a {@link HttpResponseDecorator}
  * instance, which provides convenient access to response headers and the parsed
  * response body.  The response body is parsed based on content-type, identical
  * to how HTTPBuilder's {@link HTTPBuilder#defaultSuccessHandler(HttpResponseDecorator,
  * Object) default response handler} functions.</p>
- * <p/>
+ *
  * <p>Failed requests (i.e. responses which return a status code &gt; 399) will
  * by default throw a {@link HttpResponseException}.  This exception may be used
  * to retrieve additional information regarding the response as well.</p>
@@ -97,8 +97,8 @@ public class RESTClient extends HTTPBuilder {
      * {@link #defaultSuccessHandler(HttpResponseDecorator, Object)}
      * <code>success</code> response handler will return a decorated response
      * object that can be used to read response headers and data.</p>
-     * <p/>
-     * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled
+     *
+     * <p>A 'failed' response (i.e. any HTTP status code &gt; 399) will be handled
      * by the registered 'failure' handler.
      * The {@link #defaultFailureHandler(HttpResponseDecorator, Object)
      * default failure handler} throws a {@link HttpResponseException}.</p>
@@ -120,7 +120,7 @@ public class RESTClient extends HTTPBuilder {
 
     /**
      * <p>Convenience method to perform a POST request.</p>
-     * <p/>
+     *
      * <p>The request body (specified by a <code>body</code> named parameter)
      * will be encoded based on the <code>requestContentType</code> named
      * parameter, or if none is given, the default
@@ -143,7 +143,7 @@ public class RESTClient extends HTTPBuilder {
 
     /**
      * <p> Convenience method to perform a PUT request.</p>
-     * <p/>
+     *
      * <p>The request body (specified by a <code>body</code> named parameter)
      * will be encoded based on the <code>requestContentType</code> named
      * parameter, or if none is given, the default
@@ -165,7 +165,7 @@ public class RESTClient extends HTTPBuilder {
 
     /**
      * <p> Convenience method to perform a PATCH request.</p>
-     * <p/>
+     *
      * <p>The request body (specified by a <code>body</code> named parameter)
      * will be encoded based on the <code>requestContentType</code> named
      * parameter, or if none is given, the default

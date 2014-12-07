@@ -59,12 +59,12 @@ import java.util.Map;
  * probably be parsed with a <code>Reader</code>, while an XML response
  * might be parsed by an XmlSlurper, which would then be passed to the
  * response closure. </p>
- * <p/>
+ *
  * <p>Note that all methods in this class assume {@link HttpResponse#getEntity()}
  * return a non-null value.  It is the job of the HTTPBuilder instance to ensure
  * a NullPointerException is not thrown by passing a response that contains no
  * entity.</p>
- * <p/>
+ *
  * <p>You can see the list of content-type parsers that are built-in to the
  * ParserRegistry class in {@link #buildDefaultParserMap()}.</p>
  *
@@ -291,7 +291,7 @@ public class ParserRegistry {
      * some parsed data.  You can of course call
      * <code>super.buildDefaultParserMap()</code> and then add or remove
      * from that result as well.</p>
-     * <p/>
+     *
      * <p>Default registered parsers are:
      * <ul>
      * <li>{@link ContentType#BINARY} :  {@link #parseStream(HttpResponse) parseStream()}</li>

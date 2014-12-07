@@ -68,32 +68,32 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  * Apache HTTPClient for things like URL-encoded POSTs and REST requests that
  * require building and parsing JSON or XML.  Convenient access to a few common
  * authentication methods is also available.</p>
- * <p/>
- * <p/>
+ *
+ *
  * <h3>Conventions</h3>
  * <p>HTTPBuilder has properties for default headers, URI, contentType, etc.
  * All of these values are also assignable (and in many cases, in much finer
  * detail) from the {@link RequestConfigDelegate} as well.  In any cases where the value
  * is not set on the delegate (from within a request closure,) the builder's
  * default value is used.  </p>
- * <p/>
+ *
  * <p>For instance, any methods that do not take a <code>uri</code> parameter
  * assume you will set the <code>uri</code> property in the request closure or
  * use HTTPBuilder's assigned {@link #getUri() default URI}.</p>
- * <p/>
- * <p/>
+ *
+ *
  * <h3>Response Parsing</h3>
  * <p>By default, HTTPBuilder uses {@link ContentType#ANY} as the default
  * content-type.  This means the value of the request's <code>Accept</code>
  * header is <code>&#42;/*</code>, and the response parser is determined
  * based on the response <code>content-type</code> header. </p>
- * <p/>
+ *
  * <p><strong>If</strong> any contentType is given (either in
  * {@link #setContentType(Object)} or as a request method parameter), the
  * builder will attempt to parse the response using that content-type,
  * regardless of what the server actually responds with.  </p>
- * <p/>
- * <p/>
+ *
+ *
  * <h3>Examples:</h3>
  * Perform an HTTP GET and print the response:
  * <pre>
@@ -101,56 +101,56 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  *
  *   http.get( path : '/search',
  *             contentType : TEXT,
- *             query : [q:'Groovy'] ) { resp, reader ->
+ *             query : [q:'Groovy'] ) { resp, reader -&gt;
  *     println "response status: ${resp.statusLine}"
  *     println 'Response data: -----'
- *     System.out << reader
+ *     System.out &lt;&lt; reader
  *     println '\n--------------------'
  *   }
  * </pre>
- * <p/>
+ *
  * Long form for other HTTP methods, and response-code-specific handlers.
  * This is roughly equivalent to the above example.
- * <p/>
+ *
  * <pre>
  *   def http = new HTTPBuilder('http://www.google.com/search?q=groovy')
  *
- *   http.request( GET, TEXT ) { req ->
+ *   http.request( GET, TEXT ) { req -&gt;
  *
  *     // executed for all successful responses:
- *     response.success = { resp, reader ->
+ *     response.success = { resp, reader -&gt;
  *       println 'my response handler!'
  *       assert resp.statusLine.statusCode == 200
  *       println resp.statusLine
- *       System.out << reader // print response stream
+ *       System.out &lt;&lt; reader // print response stream
  *     }
  *
  *     // executed only if the response status code is 401:
- *     response.'404' = { resp ->
+ *     response.'404' = { resp -&gt;
  *       println 'not found!'
  *     }
  *   }
  * </pre>
- * <p/>
+ *
  * You can also set a default response handler called for any status
- * code > 399 that is not matched to a specific handler. Setting the value
+ * code &gt; 399 that is not matched to a specific handler. Setting the value
  * outside a request closure means it will apply to all future requests with
  * this HTTPBuilder instance:
  * <pre>
- *   http.handler.failure = { resp ->
+ *   http.handler.failure = { resp -&gt;
  *     println "Unexpected failure: ${resp.statusLine}"
  *   }
  * </pre>
- * <p/>
- * <p/>
+ *
+ *
  * And...  Automatic response parsing for registered content types!
- * <p/>
+ *
  * <pre>
  *   http.request( 'http://ajax.googleapis.com', GET, JSON ) {
  *     uri.path = '/ajax/services/search/web'
  *     uri.query = [ v:'1.0', q: 'Calvin and Hobbes' ]
  *
- *     response.success = { resp, json ->
+ *     response.success = { resp, json -&gt;
  *       assert json.size() == 3
  *       println "Query response: "
  *       json.responseData.results.each {
@@ -226,7 +226,7 @@ public class HTTPBuilder {
      * failure status codes.  By default, the <code>success</code> response
      * handler will attempt to parse the data and simply return the parsed
      * object.</p>
-     * <p/>
+     *
      * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponseDecorator, Object)
      * default <code>success</code> response handler}, be sure to read the
      * caveat regarding streaming response data.</p>
@@ -249,8 +249,8 @@ public class HTTPBuilder {
     /**
      * <p>Convenience method to perform an HTTP GET.  The response closure will
      * be called only on a successful response.  </p>
-     * <p/>
-     * <p>A 'failed' response (i.e. any HTTP status code > 399) will be handled
+     *
+     * <p>A 'failed' response (i.e. any HTTP status code &gt; 399) will be handled
      * by the registered 'failure' handler.  The
      * {@link #defaultFailureHandler(HttpResponseDecorator) default failure handler}
      * throws an {@link HttpResponseException}.</p>
@@ -282,7 +282,7 @@ public class HTTPBuilder {
      * failure status codes.  By default, the <code>success</code> response
      * handler will attempt to parse the data and simply return the parsed
      * object. </p>
-     * <p/>
+     *
      * <p><strong>Note:</strong> If using the {@link #defaultSuccessHandler(HttpResponseDecorator, Object)
      * default <code>success</code> response handler}, be sure to read the
      * caveat regarding streaming response data.</p>
@@ -306,12 +306,12 @@ public class HTTPBuilder {
      * <p>
      * Convenience method to perform an HTTP form POST.  The response closure will be
      * called only on a successful response.</p>
-     * <p/>
+     *
      * <p>A 'failed' response (i.e. any
-     * HTTP status code > 399) will be handled by the registered 'failure'
+     * HTTP status code &gt; 399) will be handled by the registered 'failure'
      * handler.  The {@link #defaultFailureHandler(HttpResponseDecorator) default
      * failure handler} throws an {@link HttpResponseException}.</p>
-     * <p/>
+     *
      * <p>The request body (specified by a <code>body</code> named parameter)
      * will be converted to a url-encoded form string unless a different
      * <code>requestContentType</code> named parameter is passed to this method.
@@ -587,14 +587,14 @@ public class HTTPBuilder {
      * probably want to define a <code>response.success = {...}</code> handler
      * from the request closure, which will replace the response handler defined
      * by this method.  </p>
-     * <p/>
-     * <h4>Note for parsers that return streaming content:</h4>
+     *
+     * <h3>Note for parsers that return streaming content:</h3>
      * <p>For responses parsed as {@link ParserRegistry#parseStream(HttpResponse)
      * BINARY} or {@link ParserRegistry#parseText(HttpResponse) TEXT}, the
      * parser will return streaming content -- an <code>InputStream</code> or
      * <code>Reader</code>.  In these cases, this handler will buffer the the
      * response content before the network connection is closed.  </p>
-     * <p/>
+     *
      * <p>In practice, a user-supplied response handler closure is
      * <i>designed</i> to handle streaming content so it can be read directly from
      * the response stream without buffering, which will be much more efficient.
@@ -648,7 +648,7 @@ public class HTTPBuilder {
      * Retrieve the map of response code handlers.  Each map key is a response
      * code as a string (i.e. '401') or either 'success' or 'failure'.  Use this
      * to set default response handlers, e.g.
-     * <pre>builder.handler.'401' = { resp -> println "${resp.statusLine}" }</pre>
+     * <pre>builder.handler.'401' = { resp -&gt; println "${resp.statusLine}" }</pre>
      *
      * @return
      * @see Status
@@ -661,7 +661,7 @@ public class HTTPBuilder {
      * Retrieve the map of registered response content-type parsers.  Use
      * this to set default response parsers, e.g.
      * <pre>
-     * builder.parser.'text/javascript' = { resp ->
+     * builder.parser.'text/javascript' = { resp -&gt;
      *    return resp.entity.content // just returns an InputStream
      * }</pre>
      *
@@ -675,7 +675,7 @@ public class HTTPBuilder {
      * Retrieve the map of registered request content-type encoders.  Use this
      * to customize a request encoder for specific content-types, e.g.
      * <pre>
-     * builder.encoder.'text/javascript' = { body ->
+     * builder.encoder.'text/javascript' = { body -&gt;
      *   def json = body.call( new JsonGroovyBuilder() )
      *   return new StringEntity( json.toString() )
      * }</pre>
@@ -701,7 +701,7 @@ public class HTTPBuilder {
      * <ol>
      * <li>It tells the builder to encode any {@link RequestConfigDelegate#setBody(Object)
      * request body} as this content-type.  Calling {@link
-     * RequestConfigDelegate#setRequestContentType(String)} can override this
+     * RequestConfigDelegate#setRequestContentType(Object)} can override this
      * on a per-request basis.</li>
      * <li>Tells the builder to parse any response as this content-type,
      * regardless of any <code>content-type</code> header that is sent in the
@@ -717,7 +717,7 @@ public class HTTPBuilder {
      * header to determine how to parse the response data.  This allows the user
      * to rely on response headers if they are accurate, or ignore them and
      * forcibly use a certain response parser if so desired.</p>
-     * <p/>
+     *
      * <p>This value is a default and may always be overridden on a per-request
      * basis by using the {@link #request(Method, Object, Closure)
      * builder.request( Method, ContentType, Closure )} method or passing a
@@ -810,7 +810,7 @@ public class HTTPBuilder {
      * Set the default headers to add to all requests made by this builder
      * instance.  These values will replace any previously set default headers.
      *
-     * @param headers map of header names & values.
+     * @param headers map of header names &amp; values.
      */
     public void setHeaders(Map<?, ?> headers) {
         this.defaultRequestHeaders.clear();
@@ -970,7 +970,7 @@ public class HTTPBuilder {
      * closure argument.  That is, an instance of this class is set as the
      * closure's delegate.  This allows the user to configure various parameters
      * within the scope of a single request.  </p>
-     * <p/>
+     *
      * <p>All properties of this class are available from within the closure.
      * For example, you can manipulate various aspects of the
      * {@link HTTPBuilder#setUri(Object) default request URI} for this request
@@ -1033,7 +1033,7 @@ public class HTTPBuilder {
         }
 
         /**
-         * <p>Set the entire URI to be used for this request.  Acceptable
+         * Set the entire URI to be used for this request.  Acceptable
          * parameter types are:
          * <ul>
          * <li><code>URL</code></li>
@@ -1041,8 +1041,9 @@ public class HTTPBuilder {
          * <li><code>URIBuilder</code></li>
          * </ul>
          * Any other parameter type will be assumed that its
-         * <code>toString()</code> method produces a valid URI.</p>
-         * <p/>
+         * <code>toString()</code> method produces a valid URI.
+         *
+         *
          * <p>Note that if you want to change just a portion of the request URI,
          * (e.g. the host, port, path, etc.) you can call {@link #getUri()}
          * which will return a {@link URIBuilder} which can manipulate portions
@@ -1073,7 +1074,7 @@ public class HTTPBuilder {
          * expected to differ from the response content-type (i.e. a URL-encoded
          * POST that should return an HTML page) then this value will be used
          * for the <i>response</i> content-type, while
-         * {@link #setRequestContentType(String)} should be used for the request.
+         * {@link #setRequestContentType(Object)} should be used for the request.
          *
          * @return whatever value was assigned via {@link #setContentType(Object)}
          * or passed from the {@link HTTPBuilder#defaultContentType} when this
@@ -1215,7 +1216,7 @@ public class HTTPBuilder {
          * handled by any encoder or parsers in effect.  Note that any values
          * set here <i>will</i> override any of those automatically assigned
          * values.</p>
-         * <p/>
+         *
          * <p>Example: <code>headers.'Accept-Language' = 'en, en-gb;q=0.8'</code></p>
          *
          * @return a map of HTTP headers that will be sent in the request.
@@ -1229,7 +1230,7 @@ public class HTTPBuilder {
          * the request body is set.  This is a variation of
          * {@link #setBody(Object)} that allows for a different content-type
          * than what is expected for the response.
-         * <p/>
+         *
          * <p>Example:
          * <pre>
          * http.request(POST,HTML) {
@@ -1241,7 +1242,7 @@ public class HTTPBuilder {
          *   }
          *
          *   // response content-type is what was specified in the outer request() argument:
-         *   response.success = { resp, html ->
+         *   response.success = { resp, html -&gt;
          *
          *   }
          * }
@@ -1316,7 +1317,7 @@ public class HTTPBuilder {
          * Access the response handler map to set response parsing logic.
          * i.e.<pre>
          * builder.request( GET, XML ) {
-         *   response.success = { xml ->
+         *   response.success = { xml -&gt;
          *      /* for XML content type, the default parser
          *         will return an XmlSlurper * /
          *      xml.root.children().each { println it }

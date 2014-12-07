@@ -180,16 +180,16 @@ public class URIBuilder implements Cloneable {
      * relative to the current path.
      * e.g. <pre>
      *   def uri = new URIBuilder( 'http://localhost/p1/p2?a=1' )
-     * <p/>
+     *
      *   uri.path = '/p3/p2'
      *   assert uri.toString() == 'http://localhost/p3/p2?a=1'
-     * <p/>
+     *
      *   uri.path = 'p2a'
      *   assert uri.toString() == 'http://localhost/p3/p2a?a=1'
-     * <p/>
+     *
      *   uri.path = '../p4'
-     *   assert uri.toString() == 'http://localhost/p4?a=1&b=2&c=3#frag'
-     * <pre>
+     *   assert uri.toString() == 'http://localhost/p4?a=1&amp;b=2&amp;c=3#frag';
+     * </pre>
      *
      * @param path the path portion of this URI, relative to the current URI.
      * @return this URIBuilder instance, for method chaining.
@@ -239,7 +239,7 @@ public class URIBuilder implements Cloneable {
      * Set the query portion of the URI.  For query parameters with multiple
      * values, put the values in a list like so:
      * <pre>uri.query = [ p1:'val1', p2:['val2', 'val3'] ]
-     * // will produce a query string of ?p1=val1&p2=val2&p2=val3</pre>
+     * // will produce a query string of ?p1=val1&amp;p2=val2&amp;p2=val3</pre>
      *
      * @param params a Map of parameters that will be transformed into the query string
      * @return this URIBuilder instance, for method chaining.
@@ -282,7 +282,7 @@ public class URIBuilder implements Cloneable {
 
     /**
      * Get the query string as a map for convenience.  If any parameter contains
-     * multiple values (e.g. <code>p1=one&p1=two</code>) both values will be
+     * multiple values (e.g. <code>p1=one&amp;p1=two</code>) both values will be
      * inserted into a list for that paramter key (<code>[p1 : ['one','two']]
      * </code>).  Note that this is not a "live" map.  Therefore, you cannot
      * call
@@ -407,7 +407,7 @@ public class URIBuilder implements Cloneable {
      * of named arguments.  e.g.
      * <pre> uriBuilder.addQueryParams( [one:1,two:2] )
      * uriBuilder.addQueryParams( three : 3 ) </pre>
-     * <p/>
+     *
      * If any of the parameters already exist in the URI query, these values
      * will <strong>not</strong> replace them.  Multiple values for the same
      * query parameter may be added by putting them in a list. See

@@ -44,7 +44,7 @@ import java.net.URLConnection;
 import java.util.*;
 
 /**
- * <p>This class provides a simplified API similar to {@link HTTPBuilder}, but
+ * This class provides a simplified API similar to {@link HTTPBuilder}, but
  * uses {@link java.net.HttpURLConnection} for I/O so that it is compatible
  * with Google App Engine.  Features:
  * <ul>
@@ -53,8 +53,9 @@ import java.util.*;
  * <li>Basic authentication</li>
  * </ul>
  * Notably absent are status-code based response handling and the more complex
- * authentication mechanisms.</p>
- * <p/>
+ * authentication mechanisms.
+ *
+ *
  * TODO request encoding support (if anyone asks for it)
  *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>

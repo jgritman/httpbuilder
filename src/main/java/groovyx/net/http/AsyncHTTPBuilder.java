@@ -218,7 +218,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 
     /**
      * <p>Access the underlying threadpool to adjust things like job timeouts.</p>
-     * <p/>
+     *
      * <p>Note that this is not the same pool used by the HttpClient's
      * {@link ThreadSafeClientConnManager}.  Therefore, increasing the
      * {@link ThreadPoolExecutor#setMaximumPoolSize(int) maximum pool size} will

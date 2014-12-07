@@ -143,7 +143,7 @@ public class HttpResponseDecorator implements HttpResponse {
          * Access the named header value, using bracket form.  For example,
          * <code>response.headers['Content-Encoding']</code>
          *
-         * @param name header name, e.g. <code>Content-Type<code>
+         * @param name header name, e.g. <code>Content-Type</code>
          * @return the {@link Header}, or <code>null</code> if it does not exist
          * in this response
          * @see HttpResponse#getFirstHeader(String)
@@ -157,7 +157,7 @@ public class HttpResponseDecorator implements HttpResponse {
          * {@link #getAt(String)}, except it simply returns the header's String
          * value, instead of the Header object.
          *
-         * @param name header name, e.g. <code>Content-Type<code>
+         * @param name header name, e.g. <code>Content-Type</code>
          * @return the {@link Header}, or <code>null</code> if it does not exist
          * in this response
          */

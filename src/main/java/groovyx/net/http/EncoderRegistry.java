@@ -53,8 +53,8 @@ import java.util.*;
  * request content-type}.  For instance, the {@link #encodeForm(Map)} method
  * will be invoked if the request content-type is form-urlencoded, which will
  * cause the following:<code>body=[a:1, b:'two']</code> to be encoded as
- * the equivalent <code>a=1&b=two</code> in the request body.</p>
- * <p/>
+ * the equivalent <code>a=1&amp;b=two</code> in the request body.</p>
+ *
  * <p>Most default encoders can handle a closure as a request body.  In this
  * case, the closure is executed and a suitable 'builder' passed to the
  * closure that is  used for constructing the content.  In the case of
@@ -62,7 +62,7 @@ import java.util.*;
  * be a PrintWriter, and for XML it would be an already-bound
  * {@link StreamingMarkupBuilder}. See each <code>encode...</code> method
  * for details for each particular content-type.</p>
- * <p/>
+ *
  * <p>Contrary to its name, this class does not have anything to do with the
  * <code>content-encoding</code> HTTP header.  </p>
  *
@@ -232,7 +232,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * Encode the content as XML.  The argument may be either an object whose
      * <code>toString</code> produces valid markup, or a Closure which will be
      * interpreted as a builder definition.  A closure argument is
-     * passed to {@link StreamingMarkupBuilder#bind(groovy.lang.Closure)}.
+     * passed to {@link StreamingMarkupBuilder#bind(Object)}.
      *
      * @param xml data that defines the XML structure
      * @return an {@link HttpEntity} encapsulating this request data
@@ -254,12 +254,12 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * other collection type will be converted to a {@link JSONArray}.  A
      * String or GString will be interpreted as valid JSON and passed directly
      * as the request body (with charset conversion if necessary.)</p>
-     * <p/>
+     *
      * <p>If a Closure is passed as the model, it will be executed as if it were
      * a JSON object definition passed to a {@link JsonGroovyBuilder}.  In order
      * for the closure to be interpreted correctly, there must be a 'root'
      * element immediately inside the closure.  For example:</p>
-     * <p/>
+     *
      * <pre>builder.post( JSON ) {
      *   body = {
      *     root {
@@ -271,8 +271,9 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      *     }
      *   }
      * }</pre>
-     * <p> will return the following JSON string:<pre>
-     * {"root":{"first":{"one":1,"two":"2"},"second":"some string"}}</pre></p>
+     *
+     * will return the following JSON string:<pre>
+     * {"root":{"first":{"one":1,"two":"2"},"second":"some string"}}</pre>
      *
      * @param model data to be converted to JSON, as specified above.
      * @return an {@link HttpEntity} encapsulating this request data
@@ -370,7 +371,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * configuration closure via {@link RequestConfigDelegate#setBody(Object)}.
      *
      * @param contentType
-     * @param closure
+     * @param value
      */
     public void putAt(Object contentType, Closure value) {
         if (contentType instanceof ContentType) {

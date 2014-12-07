@@ -28,11 +28,11 @@ package groovyx.net.http;
  */
 public enum Status {
     /**
-     * Any status code >= 100 and < 400
+     * Any status code &gt;= 100 and &lt; 400
      */
     SUCCESS(100, 399),
     /**
-     * Any status code >= 400 and < 1000
+     * Any status code &gt;= 400 and &lt; 1000
      */
     FAILURE(400, 999);
 

@@ -28,7 +28,7 @@ import java.util.Map;
  * Converts keys to strings, mainly to normalize the difference between
  * GString and String keys since a GString will not produce the same hashcode as
  * its equivalent string.
- * <p/>
+ *
  * Basically, any given key will always be coerced to a String, and any retrieved
  * key (either via {@link #keySet()} or {@link #entrySet()} will always be a
  * String.

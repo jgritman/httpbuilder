@@ -44,7 +44,7 @@ public class DeflateEncoding extends ContentEncoding {
 
 
     /**
-     * Wraps the raw entity in a {@link InflaterEntity}.
+     * Wraps the raw entity in a {@link org.apache.http.client.entity.DeflateDecompressingEntity}.
      */
     @Override
     public HttpEntity wrapResponseEntity(HttpEntity raw) {

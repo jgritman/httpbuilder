@@ -43,7 +43,7 @@ public class GZIPEncoding extends ContentEncoding {
     }
 
     /**
-     * Wraps the raw entity in a {@link GZIPDecompressingEntity}.
+     * Wraps the raw entity in a {@link org.apache.http.client.entity.GzipDecompressingEntity}.
      */
     @Override
     public HttpEntity wrapResponseEntity(HttpEntity raw) {
