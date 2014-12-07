@@ -152,26 +152,23 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure<?>>> 
      * @throws IOException
      */
     public HttpEntity encodeText(Object data, Object contentType) throws IOException {
-        if (data instanceof Closure) {
-            StringWriter out = new StringWriter();
-            PrintWriter writer = new PrintWriter(out);
-            ((Closure<?>) data).call(writer);
-            writer.close();
-            out.flush();
-            data = out;
-        } else if (data instanceof Writable) {
-            StringWriter out = new StringWriter();
-            ((Writable) data).writeTo(out);
-            out.flush();
-            data = out;
-        } else if (data instanceof Reader && !(data instanceof BufferedReader))
-            data = new BufferedReader((Reader) data);
-        if (data instanceof BufferedReader) {
-            StringWriter out = new StringWriter();
-            DefaultGroovyMethods.leftShift(out, (BufferedReader) data);
-
-            data = out;
-        }
+		StringWriter out = new StringWriter();
+		if (data instanceof Closure) {
+			PrintWriter writer = new PrintWriter(out);
+			((Closure<?>) data).call(writer);
+			writer.close();
+			out.flush();
+			data = out;
+		} else if (data instanceof Writable) {
+			((Writable) data).writeTo(out);
+			out.flush();
+			data = out;
+		} else if (data instanceof Reader) {
+			DefaultGroovyMethods.leftShift(out,
+					data instanceof BufferedReader ? (BufferedReader) data
+							: new BufferedReader((Reader) data));
+			data = out;
+		}
         // if data is a String, we are already covered.
         if (contentType == null) contentType = ContentType.TEXT;
         return createEntity(contentType, data.toString());
