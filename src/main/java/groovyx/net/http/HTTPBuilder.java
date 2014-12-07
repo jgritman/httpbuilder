@@ -22,6 +22,7 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.*;
@@ -43,6 +44,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
@@ -502,7 +504,9 @@ public class HTTPBuilder {
                     return returnVal;
                 } finally {
                     HttpEntity entity = resp.getEntity();
-                    if (entity != null) entity.consumeContent();
+                    if (entity != null) {
+                    	EntityUtils.consume(entity);
+                    }
                 }
             }
         };
