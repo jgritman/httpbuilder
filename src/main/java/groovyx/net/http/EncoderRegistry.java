@@ -279,7 +279,6 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure<?>>> 
      * @return an {@link HttpEntity} encapsulating this request data
      * @throws UnsupportedEncodingException
      */
-    @SuppressWarnings("unchecked")
     public HttpEntity encodeJSON(Object model, Object contentType) throws UnsupportedEncodingException {
 
         Object json;

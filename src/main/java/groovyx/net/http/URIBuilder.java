@@ -417,7 +417,6 @@ public class URIBuilder implements Cloneable {
      * @return this URIBuilder instance, for method chaining.
      * @throws URISyntaxException
      */
-    @SuppressWarnings("unchecked")
     public URIBuilder addQueryParams(Map<?, ?> params) throws URISyntaxException {
         List<NameValuePair> nvp = new ArrayList<NameValuePair>();
         for (Object key : params.keySet()) {
