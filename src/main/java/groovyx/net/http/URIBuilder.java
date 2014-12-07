@@ -295,7 +295,8 @@ public class URIBuilder implements Cloneable {
      * @return a map of String name/value pairs representing the URI's query
      * string.
      */
-    public Map<String, Object> getQuery() {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String, Object> getQuery() {
         Map<String, Object> params = new HashMap<String, Object>();
         List<NameValuePair> pairs = this.getQueryNVP();
         if (pairs == null) return null;
@@ -305,12 +306,11 @@ public class URIBuilder implements Cloneable {
             String key = pair.getName();
             Object existing = params.get(key);
 
-            if (existing == null) params.put(key, pair.getValue());
-
-            else if (existing instanceof List<?>)
+            if (existing == null) {
+            	params.put(key, pair.getValue());
+            } else if (existing instanceof List) {
                 ((List) existing).add(pair.getValue());
-
-            else {
+            } else {
                 List<String> vals = new ArrayList<String>(2);
                 vals.add((String) existing);
                 vals.add(pair.getValue());
@@ -422,7 +422,7 @@ public class URIBuilder implements Cloneable {
         for (Object key : params.keySet()) {
             Object value = params.get(key);
             if (value instanceof List) {
-                for (Object val : (List) value)
+                for (Object val : (List<?>) value)
                     nvp.add(new BasicNameValuePair(key.toString(),
                             (val != null) ? val.toString() : ""));
             } else nvp.add(new BasicNameValuePair(key.toString(),

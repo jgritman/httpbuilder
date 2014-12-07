@@ -1153,7 +1153,7 @@ public class HTTPBuilder {
          * @param args named parameters to set properties on this delegate.
          * @throws URISyntaxException if the uri argument does not represent a valid URI
          */
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         protected void setPropertiesFromMap(Map<String, ?> args) throws URISyntaxException {
             if (args == null) return;
             if (args.containsKey("url")) throw new IllegalArgumentException(
@@ -1164,7 +1164,7 @@ public class HTTPBuilder {
                     "Default URI is null, and no 'uri' parameter was given");
             this.uri = new URIBuilder(convertToURI(uri));
 
-            Map query = (Map) args.remove("params");
+            Map<?,?> query = (Map<?,?>) args.remove("params");
             if (query != null) {
                 log.warn("'params' argument is deprecated; use 'query' instead.");
                 this.uri.setQuery(query);
@@ -1172,10 +1172,10 @@ public class HTTPBuilder {
             String queryString = (String) args.remove("queryString");
             if (queryString != null) this.uri.setRawQuery(queryString);
 
-            query = (Map) args.remove("query");
+            query = (Map<?,?>) args.remove("query");
             if (query != null) this.uri.addQueryParams(query);
-            Map headers = (Map) args.remove("headers");
-            if (headers != null) this.getHeaders().putAll(headers);
+            Map<?,?> headers = (Map<?,?>) args.remove("headers");
+            if (headers != null) this.getHeaders().putAll((Map)(headers));
 
             Object path = args.remove("path");
             if (path != null) this.uri.setPath(path.toString());

@@ -173,9 +173,9 @@ public class HttpResponseDecorator implements HttpResponse {
          *   println "${it.name} : ${it.value}"
          * }</pre>
          */
-        @SuppressWarnings("unchecked")
-        public Iterator iterator() {
-            return responseBase.headerIterator();
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public Iterator<Header> iterator() {
+            return (Iterator)responseBase.headerIterator();
         }
     }
 

@@ -281,10 +281,10 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure<?>>> 
         Object json;
         if (model instanceof Map) {
             json = new JSONObject();
-            ((JSONObject) json).putAll((Map) model);
+            ((JSONObject) json).putAll((Map<?,?>) model);
         } else if (model instanceof Collection) {
             json = new JSONArray();
-            ((JSONArray) json).addAll((Collection) model);
+            ((JSONArray) json).addAll((Collection<?>) model);
         } else if (model instanceof Closure) {
             Closure<?> closure = (Closure<?>) model;
             closure.setDelegate(new JsonGroovyBuilder());
