@@ -78,15 +78,15 @@ public class ParserRegistry {
      * of {@link #parseStream(HttpResponse)}, which is like a no-op that just
      * returns the unaltered response stream.
      */
-    protected final Closure DEFAULT_PARSER = new MethodClosure(this, "parseStream");
+    protected final Closure<?> DEFAULT_PARSER = new MethodClosure(this, "parseStream");
     /**
      * The default charset to use when no charset is given in the Content-Type
      * header of a response.  This can be modifid via {@link #setDefaultCharset(String)}.
      */
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    private Closure defaultParser = DEFAULT_PARSER;
-    private Map<String, Closure> registeredParsers = buildDefaultParserMap();
+    private Closure<?> defaultParser = DEFAULT_PARSER;
+    private Map<String, Closure<?>> registeredParsers = buildDefaultParserMap();
     private static String defaultCharset = DEFAULT_CHARSET;
 
     protected static final Log log = LogFactory.getLog(ParserRegistry.class);
@@ -301,15 +301,15 @@ public class ParserRegistry {
      * <li>{@link ContentType#JSON} :  {@link #parseJSON(HttpResponse) parseJSON()}</li>
      * </ul>
      */
-    protected Map<String, Closure> buildDefaultParserMap() {
-        Map<String, Closure> parsers = new HashMap<String, Closure>();
+    protected Map<String, Closure<?>> buildDefaultParserMap() {
+        Map<String, Closure<?>> parsers = new HashMap<String, Closure<?>>();
 
         parsers.put(ContentType.BINARY.toString(), new MethodClosure(this, "parseStream"));
         parsers.put(ContentType.TEXT.toString(), new MethodClosure(this, "parseText"));
         parsers.put(ContentType.URLENC.toString(), new MethodClosure(this, "parseForm"));
         parsers.put(ContentType.HTML.toString(), new MethodClosure(this, "parseHTML"));
 
-        Closure pClosure = new MethodClosure(this, "parseXML");
+        Closure<?> pClosure = new MethodClosure(this, "parseXML");
         for (String ct : ContentType.XML.getContentTypeStrings())
             parsers.put(ct, pClosure);
 
@@ -346,7 +346,7 @@ public class ParserRegistry {
      *
      * @return
      */
-    public Closure getDefaultParser() {
+    public Closure<?> getDefaultParser() {
         return this.defaultParser;
     }
 
@@ -355,7 +355,7 @@ public class ParserRegistry {
      *
      * @param defaultParser if
      */
-    public void setDefaultParser(Closure defaultParser) {
+    public void setDefaultParser(Closure<?> defaultParser) {
         if (defaultParser == null) this.defaultParser = DEFAULT_PARSER;
         this.defaultParser = defaultParser;
     }
@@ -371,14 +371,14 @@ public class ParserRegistry {
      * or the default parser if no parser is registered for the given
      * content-type.
      */
-    public Closure getAt(Object contentType) {
+    public Closure<?> getAt(Object contentType) {
         if (contentType == null) return defaultParser;
 
         String ct = contentType.toString();
         int idx = ct.indexOf(';');
         if (idx > 0) ct = ct.substring(0, idx);
 
-        Closure parser = registeredParsers.get(ct);
+        Closure<?> parser = registeredParsers.get(ct);
         if (parser != null) return parser;
 
         log.warn("Cannot find parser for content-type: " + ct
@@ -396,7 +396,7 @@ public class ParserRegistry {
      * @param value       code that will parse the HttpResponse and return parsed
      *                    data to the response handler.
      */
-    public void putAt(Object contentType, Closure value) {
+    public void putAt(Object contentType, Closure<?> value) {
         if (contentType instanceof ContentType) {
             for (String ct : ((ContentType) contentType).getContentTypeStrings())
                 this.registeredParsers.put(ct, value);
@@ -409,7 +409,7 @@ public class ParserRegistry {
      * @param key content-type string
      * @return
      */
-    public Closure propertyMissing(Object key) {
+    public Closure<?> propertyMissing(Object key) {
         return this.getAt(key);
     }
 
@@ -419,7 +419,7 @@ public class ParserRegistry {
      * @param key   content-type string
      * @param value parser closure
      */
-    public void propertyMissing(Object key, Closure value) {
+    public void propertyMissing(Object key, Closure<?> value) {
         this.putAt(key, value);
     }
 
@@ -428,7 +428,7 @@ public class ParserRegistry {
      *
      * @return
      */
-    public Iterator<Map.Entry<String, Closure>> iterator() {
+    public Iterator<Map.Entry<String, Closure<?>>> iterator() {
         return this.registeredParsers.entrySet().iterator();
     }
 }

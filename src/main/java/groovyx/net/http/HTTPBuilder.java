@@ -22,6 +22,7 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.*;
@@ -43,6 +44,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
@@ -173,8 +175,8 @@ public class HTTPBuilder {
     protected Object defaultContentType = ContentType.ANY;
     protected Object defaultRequestContentType = null;
     protected boolean autoAcceptHeader = true;
-    protected final Map<Object, Closure> defaultResponseHandlers =
-            new StringHashMap<Closure>(buildDefaultResponseHandlers());
+    protected final Map<Object, Closure<?>> defaultResponseHandlers =
+            new StringHashMap<Closure<?>>(buildDefaultResponseHandlers());
     protected ContentEncodingRegistry contentEncodingHandler = new ContentEncodingRegistry();
 
     protected final Map<Object, Object> defaultRequestHeaders = new StringHashMap<Object>();
@@ -263,7 +265,7 @@ public class HTTPBuilder {
      * @throws URISyntaxException      if a uri argument is given which does not
      *                                 represent a valid URI
      */
-    public Object get(Map<String, ?> args, Closure responseClosure)
+    public Object get(Map<String, ?> args, Closure<?> responseClosure)
             throws ClientProtocolException, IOException, URISyntaxException {
         RequestConfigDelegate delegate = new RequestConfigDelegate(new HttpGet(),
                 this.defaultContentType,
@@ -325,7 +327,7 @@ public class HTTPBuilder {
      * @throws URISyntaxException      if a uri argument is given which does not
      *                                 represent a valid URI
      */
-    public Object post(Map<String, ?> args, Closure responseClosure)
+    public Object post(Map<String, ?> args, Closure<?> responseClosure)
             throws URISyntaxException, ClientProtocolException, IOException {
         RequestConfigDelegate delegate = new RequestConfigDelegate(new HttpPost(),
                 this.defaultContentType,
@@ -355,7 +357,7 @@ public class HTTPBuilder {
      * @throws IOException
      * @see #request(Object, Method, Object, Closure)
      */
-    public Object request(Method method, Closure configClosure) throws ClientProtocolException, IOException {
+    public Object request(Method method, Closure<?> configClosure) throws ClientProtocolException, IOException {
         return this.doRequest(this.defaultURI.toURI(), method,
                 this.defaultContentType, configClosure);
     }
@@ -372,7 +374,7 @@ public class HTTPBuilder {
      * @throws IOException
      * @see #request(Object, Method, Object, Closure)
      */
-    public Object request(Method method, Object contentType, Closure configClosure)
+    public Object request(Method method, Object contentType, Closure<?> configClosure)
             throws ClientProtocolException, IOException {
         return this.doRequest(this.defaultURI.toURI(), method,
                 contentType, configClosure);
@@ -399,7 +401,7 @@ public class HTTPBuilder {
      * @throws IOException
      * @throws URISyntaxException      if the uri argument does not represent a valid URI
      */
-    public Object request(Object uri, Method method, Object contentType, Closure configClosure)
+    public Object request(Object uri, Method method, Object contentType, Closure<?> configClosure)
             throws ClientProtocolException, IOException, URISyntaxException {
         return this.doRequest(convertToURI(uri), method, contentType, configClosure);
     }
@@ -409,7 +411,7 @@ public class HTTPBuilder {
      * config closure, then pass the delegate to {@link #doRequest(RequestConfigDelegate)},
      * which actually executes the request.
      */
-    protected Object doRequest(URI uri, Method method, Object contentType, Closure configClosure)
+    protected Object doRequest(URI uri, Method method, Object contentType, Closure<?> configClosure)
             throws ClientProtocolException, IOException {
 
         HttpRequestBase reqMethod;
@@ -470,7 +472,7 @@ public class HTTPBuilder {
                         response, delegate.getContext(), null);
                 try {
                     int status = resp.getStatusLine().getStatusCode();
-                    Closure responseClosure = delegate.findResponseHandler(status);
+                    Closure<?> responseClosure = delegate.findResponseHandler(status);
                     log.debug("Response code: " + status + "; found handler: " + responseClosure);
 
                     Object[] closureArgs = null;
@@ -502,7 +504,9 @@ public class HTTPBuilder {
                     return returnVal;
                 } finally {
                     HttpEntity entity = resp.getEntity();
-                    if (entity != null) entity.consumeContent();
+                    if (entity != null) {
+                    	EntityUtils.consume(entity);
+                    }
                 }
             }
         };
@@ -547,7 +551,7 @@ public class HTTPBuilder {
         }
 
         Object parsedData = null;
-        Closure parser = parsers.getAt(responseContentType);
+        Closure<?> parser = parsers.getAt(responseContentType);
         if (parser == null) log.warn("No parser found for content-type: "
                 + responseContentType);
         else {
@@ -568,8 +572,8 @@ public class HTTPBuilder {
      * @see #defaultSuccessHandler(HttpResponseDecorator, Object)
      * @see #defaultFailureHandler(HttpResponseDecorator)
      */
-    protected Map<Object, Closure> buildDefaultResponseHandlers() {
-        Map<Object, Closure> map = new StringHashMap<Closure>();
+    protected Map<Object, Closure<?>> buildDefaultResponseHandlers() {
+        Map<Object, Closure<?>> map = new StringHashMap<Closure<?>>();
         map.put(Status.SUCCESS,
                 new MethodClosure(this, "defaultSuccessHandler"));
         map.put(Status.FAILURE,
@@ -653,7 +657,7 @@ public class HTTPBuilder {
      * @return
      * @see Status
      */
-    public Map<?, Closure> getHandler() {
+    public Map<?, Closure<?>> getHandler() {
         return this.defaultResponseHandlers;
     }
 
@@ -983,7 +987,7 @@ public class HTTPBuilder {
         private HttpRequestBase request;
         private Object contentType;
         private Object requestContentType;
-        private Map<Object, Closure> responseHandlers = new StringHashMap<Closure>();
+        private Map<Object, Closure<?>> responseHandlers = new StringHashMap<Closure<?>>();
         private URIBuilder uri;
         private Map<Object, Object> headers = new StringHashMap<Object>();
         private HttpContextDecorator context = new HttpContextDecorator();
@@ -991,7 +995,7 @@ public class HTTPBuilder {
 
         public RequestConfigDelegate(HttpRequestBase request, Object contentType,
                                      Map<?, ?> defaultRequestHeaders,
-                                     Map<?, Closure> defaultResponseHandlers) {
+                                     Map<?, Closure<?>> defaultResponseHandlers) {
             if (request == null) throw new IllegalArgumentException(
                     "Internal error - HttpRequest instance cannot be null");
             this.request = request;
@@ -1004,7 +1008,7 @@ public class HTTPBuilder {
             if (uri != null) this.uri = new URIBuilder(uri);
         }
 
-        public RequestConfigDelegate(Map<String, ?> args, HttpRequestBase request, Closure successHandler)
+        public RequestConfigDelegate(Map<String, ?> args, HttpRequestBase request, Closure<?> successHandler)
                 throws URISyntaxException {
             this(request, defaultContentType, defaultRequestHeaders, defaultResponseHandlers);
             if (successHandler != null)
@@ -1153,7 +1157,7 @@ public class HTTPBuilder {
          * @param args named parameters to set properties on this delegate.
          * @throws URISyntaxException if the uri argument does not represent a valid URI
          */
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         protected void setPropertiesFromMap(Map<String, ?> args) throws URISyntaxException {
             if (args == null) return;
             if (args.containsKey("url")) throw new IllegalArgumentException(
@@ -1164,7 +1168,7 @@ public class HTTPBuilder {
                     "Default URI is null, and no 'uri' parameter was given");
             this.uri = new URIBuilder(convertToURI(uri));
 
-            Map query = (Map) args.remove("params");
+            Map<?,?> query = (Map<?,?>) args.remove("params");
             if (query != null) {
                 log.warn("'params' argument is deprecated; use 'query' instead.");
                 this.uri.setQuery(query);
@@ -1172,10 +1176,10 @@ public class HTTPBuilder {
             String queryString = (String) args.remove("queryString");
             if (queryString != null) this.uri.setRawQuery(queryString);
 
-            query = (Map) args.remove("query");
+            query = (Map<?,?>) args.remove("query");
             if (query != null) this.uri.addQueryParams(query);
-            Map headers = (Map) args.remove("headers");
-            if (headers != null) this.getHeaders().putAll(headers);
+            Map<?,?> headers = (Map<?,?>) args.remove("headers");
+            if (headers != null) this.getHeaders().putAll((Map)(headers));
 
             Object path = args.remove("path");
             if (path != null) this.uri.setPath(path.toString());
@@ -1284,7 +1288,7 @@ public class HTTPBuilder {
                 throw new IllegalArgumentException(
                         "Cannot set a request body for a " + request.getMethod() + " method");
 
-            Closure encoder = encoders.getAt(this.getRequestContentType());
+            Closure<?> encoder = encoders.getAt(this.getRequestContentType());
 
             // Either content type or encoder is empty.
             if (encoder == null)
@@ -1306,8 +1310,8 @@ public class HTTPBuilder {
          * @param statusCode HTTP response status code
          * @return the response handler
          */
-        protected Closure findResponseHandler(int statusCode) {
-            Closure handler = this.getResponse().get(Integer.toString(statusCode));
+        protected Closure<?> findResponseHandler(int statusCode) {
+            Closure<?> handler = this.getResponse().get(Integer.toString(statusCode));
             if (handler == null) handler =
                     this.getResponse().get(Status.find(statusCode).toString());
             return handler;
@@ -1326,7 +1330,7 @@ public class HTTPBuilder {
          *
          * @return
          */
-        public Map<Object, Closure> getResponse() {
+        public Map<Object, Closure<?>> getResponse() {
             return this.responseHandlers;
         }
 

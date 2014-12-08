@@ -70,10 +70,10 @@ import java.util.*;
  * @see RequestConfigDelegate#setBody(Object)
  * @see RequestConfigDelegate#send(Object, Object)
  */
-public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
+public class EncoderRegistry implements Iterable<Map.Entry<String, Closure<?>>> {
 
     Charset charset = Charset.defaultCharset(); // 1.5
-    private Map<String, Closure> registeredEncoders = buildDefaultEncoderMap();
+    private Map<String, Closure<?>> registeredEncoders = buildDefaultEncoderMap();
 
     /**
      * Set the charset used in the content-type header of all requests that send
@@ -122,7 +122,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
                     out.toByteArray()), out.size());
         } else if (data instanceof Closure) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ((Closure) data).call(out); // data is written to out
+            ((Closure<?>) data).call(out); // data is written to out
             entity = new InputStreamEntity(new ByteArrayInputStream(
                     out.toByteArray()), out.size());
         }
@@ -152,26 +152,23 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * @throws IOException
      */
     public HttpEntity encodeText(Object data, Object contentType) throws IOException {
-        if (data instanceof Closure) {
-            StringWriter out = new StringWriter();
-            PrintWriter writer = new PrintWriter(out);
-            ((Closure) data).call(writer);
-            writer.close();
-            out.flush();
-            data = out;
-        } else if (data instanceof Writable) {
-            StringWriter out = new StringWriter();
-            ((Writable) data).writeTo(out);
-            out.flush();
-            data = out;
-        } else if (data instanceof Reader && !(data instanceof BufferedReader))
-            data = new BufferedReader((Reader) data);
-        if (data instanceof BufferedReader) {
-            StringWriter out = new StringWriter();
-            DefaultGroovyMethods.leftShift(out, (BufferedReader) data);
-
-            data = out;
-        }
+		StringWriter out = new StringWriter();
+		if (data instanceof Closure) {
+			PrintWriter writer = new PrintWriter(out);
+			((Closure<?>) data).call(writer);
+			writer.close();
+			out.flush();
+			data = out;
+		} else if (data instanceof Writable) {
+			((Writable) data).writeTo(out);
+			out.flush();
+			data = out;
+		} else if (data instanceof Reader) {
+			DefaultGroovyMethods.leftShift(out,
+					data instanceof BufferedReader ? (BufferedReader) data
+							: new BufferedReader((Reader) data));
+			data = out;
+		}
         // if data is a String, we are already covered.
         if (contentType == null) contentType = ContentType.TEXT;
         return createEntity(contentType, data.toString());
@@ -279,18 +276,17 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * @return an {@link HttpEntity} encapsulating this request data
      * @throws UnsupportedEncodingException
      */
-    @SuppressWarnings("unchecked")
     public HttpEntity encodeJSON(Object model, Object contentType) throws UnsupportedEncodingException {
 
         Object json;
         if (model instanceof Map) {
             json = new JSONObject();
-            ((JSONObject) json).putAll((Map) model);
+            ((JSONObject) json).putAll((Map<?,?>) model);
         } else if (model instanceof Collection) {
             json = new JSONArray();
-            ((JSONArray) json).addAll((Collection) model);
+            ((JSONArray) json).addAll((Collection<?>) model);
         } else if (model instanceof Closure) {
-            Closure closure = (Closure) model;
+            Closure<?> closure = (Closure<?>) model;
             closure.setDelegate(new JsonGroovyBuilder());
             json = (JSON) closure.call();
         } else if (model instanceof String || model instanceof GString)
@@ -326,14 +322,14 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * <code>super.buildDefaultEncoderMap()</code> and then add or remove
      * from that result as well.
      */
-    protected Map<String, Closure> buildDefaultEncoderMap() {
-        Map<String, Closure> encoders = new HashMap<String, Closure>();
+    protected Map<String, Closure<?>> buildDefaultEncoderMap() {
+        Map<String, Closure<?>> encoders = new HashMap<String, Closure<?>>();
 
         encoders.put(ContentType.BINARY.toString(), new MethodClosure(this, "encodeStream"));
         encoders.put(ContentType.TEXT.toString(), new MethodClosure(this, "encodeText"));
         encoders.put(ContentType.URLENC.toString(), new MethodClosure(this, "encodeForm"));
 
-        Closure encClosure = new MethodClosure(this, "encodeXML");
+        Closure<?> encClosure = new MethodClosure(this, "encodeXML");
         for (String ct : ContentType.XML.getContentTypeStrings())
             encoders.put(ct, encClosure);
         encoders.put(ContentType.HTML.toString(), encClosure);
@@ -355,7 +351,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * @return encoder that can interpret the given content type,
      * or null.
      */
-    public Closure getAt(Object contentType) {
+    public Closure<?> getAt(Object contentType) {
         String ct = contentType.toString();
         int idx = ct.indexOf(';');
         if (idx > 0) ct = ct.substring(0, idx);
@@ -373,7 +369,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * @param contentType
      * @param value
      */
-    public void putAt(Object contentType, Closure value) {
+    public void putAt(Object contentType, Closure<?> value) {
         if (contentType instanceof ContentType) {
             for (String ct : ((ContentType) contentType).getContentTypeStrings())
                 this.registeredEncoders.put(ct, value);
@@ -386,7 +382,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * @param key
      * @return
      */
-    public Closure propertyMissing(Object key) {
+    public Closure<?> propertyMissing(Object key) {
         return this.getAt(key);
     }
 
@@ -396,7 +392,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      * @param key
      * @param value
      */
-    public void propertyMissing(Object key, Closure value) {
+    public void propertyMissing(Object key, Closure<?> value) {
         this.putAt(key, value);
     }
 
@@ -405,7 +401,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String, Closure>> {
      *
      * @return
      */
-    public Iterator<Map.Entry<String, Closure>> iterator() {
+    public Iterator<Map.Entry<String, Closure<?>>> iterator() {
         return this.registeredEncoders.entrySet().iterator();
     }
 }
