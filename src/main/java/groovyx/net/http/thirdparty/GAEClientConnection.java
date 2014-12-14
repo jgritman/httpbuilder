@@ -22,6 +22,7 @@
 package groovyx.net.http.thirdparty;
 
 import com.google.appengine.api.urlfetch.*;
+
 import org.apache.http.*;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.ManagedClientConnection;
@@ -34,6 +35,7 @@ import org.apache.http.protocol.HttpContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
@@ -284,4 +286,15 @@ class GAEClientConnection
     private boolean closed;
 
     private static URLFetchService urlFS = URLFetchServiceFactory.getURLFetchService();
+
+	public void bind(Socket arg0) throws IOException {
+	}
+
+	public String getId() {
+		return null;
+	}
+
+	public Socket getSocket() {
+		return null;
+	}
 }

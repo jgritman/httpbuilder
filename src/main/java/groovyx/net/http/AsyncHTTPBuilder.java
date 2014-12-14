@@ -21,24 +21,27 @@
  */
 package groovyx.net.http;
 
-import org.apache.http.HttpVersion;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.params.ConnPerRouteBean;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.cookie.CookieSpecProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.cookie.BestMatchSpecFactory;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 /**
  * This implementation makes all requests asynchronous by submitting jobs to a
@@ -144,25 +147,15 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * {@link ThreadSafeClientConnManager}, and this class' ThreadPoolExecutor.
      */
     protected void initThreadPools(final int poolSize, final ExecutorService threadPool) {
-        if (poolSize < 1) throw new IllegalArgumentException("poolSize may not be < 1");
-        // Create and initialize HTTP parameters
-        HttpParams params = super.getClient().getParams();
-        ConnManagerParams.setMaxTotalConnections(params, poolSize);
-        ConnManagerParams.setMaxConnectionsPerRoute(params,
-                new ConnPerRouteBean(poolSize));
+        if (poolSize < 1) {
+        	throw new IllegalArgumentException("poolSize may not be < 1");
+        }
 
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-
-        // Create and initialize scheme registry
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http",
-                PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https",
-                SSLSocketFactory.getSocketFactory(), 443));
-
-        ClientConnectionManager cm = new ThreadSafeClientConnManager(
-                params, schemeRegistry);
-        setClient(new DefaultHttpClient(cm, params));
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(poolSize);
+        cm.setDefaultMaxPerRoute(poolSize);
+        
+        getBuilder().setMaxConnTotal(poolSize).setMaxConnPerRoute(poolSize).setConnectionManager(cm);
 
         this.threadPool = threadPool != null ? threadPool :
                 new ThreadPoolExecutor(poolSize, poolSize, 120, TimeUnit.SECONDS,
@@ -200,11 +193,10 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * @see HttpConnectionParams#setConnectionTimeout(HttpParams, int)
      */
     public void setTimeout(int timeout) {
-        HttpConnectionParams.setConnectionTimeout(super.getClient().getParams(), timeout);
-        HttpConnectionParams.setSoTimeout(super.getClient().getParams(), timeout);
-        /* this will cause a thread waiting for an available connection instance
-         * to time-out   */
-//      ConnManagerParams.setTimeout( super.getClient().getParams(), timeout );
+    	RequestConfig.Builder requestBuilder = RequestConfig.custom();
+    	requestBuilder = requestBuilder.setConnectTimeout(timeout);
+    	requestBuilder = requestBuilder.setConnectionRequestTimeout(timeout);
+    	getBuilder().setDefaultRequestConfig(requestBuilder.build());	
     }
 
     /**

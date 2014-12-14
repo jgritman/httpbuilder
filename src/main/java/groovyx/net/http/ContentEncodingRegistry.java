@@ -22,8 +22,10 @@
 package groovyx.net.http;
 
 import groovyx.net.http.ContentEncoding.Type;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,16 +63,13 @@ public class ContentEncodingRegistry {
      * @param encodings encoding name (either a {@link ContentEncoding.Type} or
      *                  a <code>content-encoding</code> string.
      */
-    void setInterceptors(final AbstractHttpClient client, Object... encodings) {
-        // remove any encoding interceptors that are already set
-        client.removeRequestInterceptorByClass(ContentEncoding.RequestInterceptor.class);
-        client.removeResponseInterceptorByClass(ContentEncoding.ResponseInterceptor.class);
-
-        for (Object encName : encodings) {
-            ContentEncoding enc = availableEncoders.get(encName.toString());
-            if (enc == null) continue;
-            client.addRequestInterceptor(enc.getRequestInterceptor());
-            client.addResponseInterceptor(enc.getResponseInterceptor());
-        }
+    void setInterceptors(final HttpClientBuilder builder, Object... encodings) {
+		for (Object encName : encodings) {
+			ContentEncoding enc = availableEncoders.get(encName.toString());
+			if (enc != null) {
+				builder.addInterceptorFirst(enc.getRequestInterceptor());
+				builder.addInterceptorFirst(enc.getResponseInterceptor());
+			}
+		}
     }
 }

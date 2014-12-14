@@ -21,47 +21,59 @@
  */
 package groovyx.net.http;
 
+import static groovyx.net.http.URIBuilder.convertToURI;
 import groovy.lang.Closure;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.*;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.cookie.params.CookieSpecPNames;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.MethodClosure;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Map;
 
-import static groovyx.net.http.URIBuilder.convertToURI;
+import javax.net.ssl.SSLContext;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.cookie.CookieSpecProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.cookie.BestMatchSpecFactory;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.MethodClosure;
 
 /**
  * <p>
@@ -166,6 +178,7 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  */
 public class HTTPBuilder {
 
+	private HttpClientBuilder builder;
     private HttpClient client;
     protected URIBuilder defaultURI = null;
     protected AuthConfig auth = new AuthConfig(this);
@@ -511,7 +524,8 @@ public class HTTPBuilder {
             }
         };
 
-        return getClient().execute(reqMethod, responseHandler, delegate.getContext());
+		return getClient().execute(reqMethod, responseHandler,
+				delegate.getContext());
     }
 
     /**
@@ -775,15 +789,10 @@ public class HTTPBuilder {
      *                  string that is known by the {@link ContentEncodingRegistry}
      * @see ContentEncodingRegistry
      */
-    public void setContentEncoding(Object... encodings) {
-        HttpClient client = getClient();
-        if (client instanceof AbstractHttpClient) {
-            this.contentEncodingHandler.setInterceptors((AbstractHttpClient) client, encodings);
-        } else {
-            throw new IllegalStateException("The HttpClient is not an AbstractHttpClient!");
-        }
-
-    }
+	public void setContentEncoding(Object... encodings) {
+		this.contentEncodingHandler.setInterceptors(getBuilder(),
+				encodings != null ? encodings : new Object[0]);
+	}
 
     /**
      * Set the default URI used for requests that do not explicitly take a
@@ -837,17 +846,24 @@ public class HTTPBuilder {
         return this.defaultRequestHeaders;
     }
 
+    protected HttpClientBuilder getBuilder() {
+    	return builder == null ? (builder = HttpClients.custom()) : builder;
+    }
+    
     /**
      * Return the underlying HTTPClient that is used to handle HTTP requests.
      *
      * @return the client instance.
      */
+    @Deprecated // temporary to mark all calls
     public HttpClient getClient() {
         if (client == null) {
-            HttpParams defaultParams = new BasicHttpParams();
-            defaultParams.setParameter(CookieSpecPNames.DATE_PATTERNS,
-                    Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z"));
-            client = createClient(defaultParams);
+        	Registry<CookieSpecProvider> cookieSpecRegistry = RegistryBuilder.<CookieSpecProvider>create()
+            .register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory(new String[] {
+            		"EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z"
+            }, false)).build();
+        	client = getBuilder().setDefaultCookieSpecRegistry(cookieSpecRegistry).build();
+        	builder = null;
         }
         return client;
     }
@@ -856,15 +872,18 @@ public class HTTPBuilder {
         this.client = client;
     }
 
-    /**
-     * Override this method in a subclass to customize creation of the
-     * HttpClient instance.
-     *
-     * @param params
-     * @return
-     */
-    protected HttpClient createClient(HttpParams params) {
-        return new DefaultHttpClient(params);
+	/**
+	 * Override this method in a subclass to customize creation of the
+	 * HttpClient instance.
+	 *
+	 * @param params
+	 * @return
+	 * @deprecated use org.apache.http.impl.client.HttpClientBuilder to create
+	 *             custom client
+	 */
+    @Deprecated
+    protected HttpClient createClient(org.apache.http.params.HttpParams params) {
+        return new org.apache.http.impl.client.DefaultHttpClient(params);
     }
 
     /**
@@ -927,9 +946,11 @@ public class HTTPBuilder {
      * @see HttpHost#HttpHost(String, int, String)
      */
     public void setProxy(String host, int port, String scheme) {
-        getClient().getParams().setParameter(
-                ConnRoutePNames.DEFAULT_PROXY,
-                new HttpHost(host, port, scheme));
+//        getClient().getParams().setParameter(
+//                ConnRoutePNames.DEFAULT_PROXY,
+//                new HttpHost(host, port, scheme));
+        /// how to handle ConnRoutePNames.DEFAULT_PROXY - "http.route.default-proxy" ???
+        getBuilder().setProxy(new HttpHost(host, port, scheme));
     }
 
     /**
@@ -942,21 +963,28 @@ public class HTTPBuilder {
      * @throws UnrecoverableKeyException
      * @throws KeyManagementException
      */
-    public void ignoreSSLIssues()
-            throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
-        TrustStrategy trustStrat = new TrustStrategy() {
-            public boolean isTrusted(X509Certificate[] chain, String authtype)
-                    throws CertificateException {
-                return true;
-            }
-        };
+	public void ignoreSSLIssues() throws KeyManagementException,
+			UnrecoverableKeyException, NoSuchAlgorithmException,
+			KeyStoreException {
+		TrustStrategy trustStrat = new TrustStrategy() {
+			public boolean isTrusted(X509Certificate[] chain, String authtype)
+					throws CertificateException {
+				return true;
+			}
+		};
+		SSLContext sslCtx = SSLContexts
+				.custom()
+				.setSecureRandom(new SecureRandom())
+				.loadTrustMaterial(
+						KeyStore.getInstance(KeyStore.getDefaultType()),
+						trustStrat).build();
 
-        SSLSocketFactory sslSocketFactory = new SSLSocketFactory(trustStrat, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+				sslCtx, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
-        getClient().getConnectionManager().getSchemeRegistry().register(
-                new Scheme("https", 443, sslSocketFactory));
-
-    }
+		getBuilder().setSSLSocketFactory(sslsf);
+		// need to test shortcode: getBuilder().setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+	}
 
     /**
      * Release any system resources held by this instance.

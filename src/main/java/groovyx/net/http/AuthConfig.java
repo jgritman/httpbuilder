@@ -24,16 +24,22 @@ package groovyx.net.http;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.exception.OAuthException;
+
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpCoreContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +48,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * Encapsulates all configuration related to HTTP authentication methods.
@@ -51,8 +60,9 @@ import java.util.Map;
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  * @see HTTPBuilder#getAuth()
  */
-public class AuthConfig {
-    protected HTTPBuilder builder;
+public class AuthConfig extends BasicCredentialsProvider {
+
+	protected HTTPBuilder builder;
 
     public AuthConfig(HTTPBuilder builder) {
         this.builder = builder;
@@ -68,9 +78,11 @@ public class AuthConfig {
      * @param pass
      */
     public void basic(String user, String pass) {
-        URI uri = ((URIBuilder) builder.getUri()).toURI();
-        if (uri == null) throw new IllegalStateException("a default URI must be set");
-        this.basic(uri.getHost(), uri.getPort(), user, pass);
+    	URI uri = ((URIBuilder) builder.getUri()).toURI();
+        if (uri == null) {
+        	throw new IllegalStateException("a default URI must be set");
+        }
+        basic(uri.getHost(), uri.getPort(), user, pass);
     }
 
     /**
@@ -82,14 +94,21 @@ public class AuthConfig {
      * @param pass
      */
     public void basic(String host, int port, String user, String pass) {
-        final HttpClient client = builder.getClient();
-        if (!(client instanceof AbstractHttpClient)) {
-            throw new IllegalStateException("client is not an AbstractHttpClient");
-        }
-        ((AbstractHttpClient) client).getCredentialsProvider().setCredentials(
-                new AuthScope(host, port),
-                new UsernamePasswordCredentials(user, pass)
-        );
+    	basic(host, port, AuthScope.ANY_REALM, AuthScope.ANY_SCHEME, user, pass);
+    }
+    
+    /**
+     * Set authentication credentials to be used for the given host and port.
+     *
+     * @param host
+     * @param port
+     * @param user
+     * @param pass
+     * @param realm
+     * @param scheme
+     */
+    public void basic(String host, int port, String realm, String scheme, String user, String pass) {
+    	setCredentials(new AuthScope(host, port, realm, scheme), new UsernamePasswordCredentials(user, pass));	
     }
 
     /**
@@ -118,14 +137,7 @@ public class AuthConfig {
      * @param domain
      */
     public void ntlm(String host, int port, String user, String pass, String workstation, String domain) {
-        final HttpClient client = builder.getClient();
-        if (!(client instanceof AbstractHttpClient)) {
-            throw new IllegalStateException("client is not an AbstractHttpClient");
-        }
-        ((AbstractHttpClient) client).getCredentialsProvider().setCredentials(
-                new AuthScope(host, port),
-                new NTCredentials(user, pass, workstation, domain)
-        );
+        setCredentials(new AuthScope(host, port), new NTCredentials(user, pass, workstation, domain));
     }
 
     /**
@@ -136,23 +148,29 @@ public class AuthConfig {
      * @param certURL  URL to a JKS keystore where the certificate is stored.
      * @param password password to decrypt the keystore
      */
-    public void certificate(String certURL, String password)
-            throws GeneralSecurityException, IOException {
+	public void certificate(String certURL, String password)
+			throws GeneralSecurityException, IOException {
 
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        InputStream jksStream = new URL(certURL).openStream();
-        try {
-            keyStore.load(jksStream, password.toCharArray());
-        } finally {
-            jksStream.close();
-        }
+		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+		InputStream jksStream = new URL(certURL).openStream();
+		try {
+			keyStore.load(jksStream, password.toCharArray());
+		} finally {
+			jksStream.close();
+		}
 
-        SSLSocketFactory ssl = new SSLSocketFactory(keyStore, password);
-        ssl.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+		SSLContext sslCtx = SSLContexts
+				.custom()
+				.setSecureRandom(new SecureRandom())
+				.loadTrustMaterial(
+						KeyStore.getInstance(KeyStore.getDefaultType()),
+						new TrustSelfSignedStrategy()).build();
 
-        builder.getClient().getConnectionManager().getSchemeRegistry()
-                .register(new Scheme("https", ssl, 443));
-    }
+		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+				sslCtx, SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+
+		builder.getBuilder().setSSLSocketFactory(sslsf);
+	}
 
     /**
      * <p>OAuth sign all requests.  Note that this currently does <strong>not</strong>
@@ -174,14 +192,11 @@ public class AuthConfig {
      */
     public void oauth(String consumerKey, String consumerSecret,
                       String accessToken, String secretToken) {
-        final HttpClient client = builder.getClient();
-        if (!(client instanceof AbstractHttpClient)) {
-            throw new IllegalStateException("client is not an AbstractHttpClient");
-        }
-        ((AbstractHttpClient) client).removeRequestInterceptorByClass(OAuthSigner.class);
-        if (consumerKey != null)
-            ((AbstractHttpClient) client).addRequestInterceptor(new OAuthSigner(
-                    consumerKey, consumerSecret, accessToken, secretToken));
+		if (consumerKey != null) {
+			builder.getBuilder().addInterceptorFirst(
+					new OAuthSigner(consumerKey, consumerSecret, accessToken,
+							secretToken));
+		}
     }
 
     /**
@@ -204,7 +219,7 @@ public class AuthConfig {
              * Best we can do until AuthScheme supports HttpContext.  See:
              * https://issues.apache.org/jira/browse/HTTPCLIENT-901 */
             try {
-                HttpHost host = (HttpHost) ctx.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+                HttpHost host = (HttpHost) ctx.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
                 final URI requestURI = new URI(host.toURI()).resolve(request.getRequestLine().getUri());
 
                 oauth.signpost.http.HttpRequest oAuthRequest =
