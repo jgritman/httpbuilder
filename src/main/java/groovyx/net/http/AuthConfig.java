@@ -21,26 +21,6 @@
  */
 package groovyx.net.http;
 
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.exception.OAuthException;
-
-import org.apache.http.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.NTCredentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpCoreContext;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -53,6 +33,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.net.ssl.SSLContext;
+
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.exception.OAuthException;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpCoreContext;
 
 /**
  * Encapsulates all configuration related to HTTP authentication methods.
@@ -122,7 +122,9 @@ public class AuthConfig extends BasicCredentialsProvider {
      */
     public void ntlm(String user, String pass, String workstation, String domain) {
         URI uri = ((URIBuilder) builder.getUri()).toURI();
-        if (uri == null) throw new IllegalStateException("a default URI must be set");
+        if (uri == null) {
+        	throw new IllegalStateException("a default URI must be set");
+        }
         this.ntlm(uri.getHost(), uri.getPort(), user, pass, workstation, domain);
     }
 

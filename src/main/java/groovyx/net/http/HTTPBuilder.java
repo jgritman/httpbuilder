@@ -58,18 +58,23 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.CookieSpecProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BestMatchSpecFactory;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -180,6 +185,7 @@ public class HTTPBuilder {
 
 	private HttpClientBuilder builder;
     private HttpClient client;
+    int timeout = 0;
     protected URIBuilder defaultURI = null;
     protected AuthConfig auth = new AuthConfig(this);
 
@@ -458,14 +464,16 @@ public class HTTPBuilder {
 
         if (this.autoAcceptHeader) {
             String acceptContentTypes = contentType.toString();
-            if (contentType instanceof ContentType)
+            if (contentType instanceof ContentType) {
                 acceptContentTypes = ((ContentType) contentType).getAcceptHeader();
+            }
             reqMethod.setHeader("Accept", acceptContentTypes);
         }
 
         reqMethod.setURI(delegate.getUri().toURI());
-        if (reqMethod.getURI() == null)
+        if (reqMethod.getURI() == null) {
             throw new IllegalStateException("Request URI cannot be null");
+        }
 
         log.debug(reqMethod.getMethod() + " " + reqMethod.getURI());
 
@@ -478,11 +486,14 @@ public class HTTPBuilder {
             else reqMethod.setHeader(key.toString(), val.toString());
         }
 
+        final HttpClientContext httpCtx = delegate.getContext();
+        httpCtx.setCredentialsProvider(auth);
+        
         ResponseHandler<Object> responseHandler = new ResponseHandler<Object>() {
             public Object handleResponse(HttpResponse response)
                     throws ClientProtocolException, IOException {
                 HttpResponseDecorator resp = new HttpResponseDecorator(
-                        response, delegate.getContext(), null);
+                        response, new HttpContextDecorator(httpCtx), null);
                 try {
                     int status = resp.getStatusLine().getStatusCode();
                     Closure<?> responseClosure = delegate.findResponseHandler(status);
@@ -524,8 +535,7 @@ public class HTTPBuilder {
             }
         };
 
-		return getClient().execute(reqMethod, responseHandler,
-				delegate.getContext());
+		return getClient().execute(reqMethod, responseHandler, httpCtx);
     }
 
     /**
@@ -862,6 +872,11 @@ public class HTTPBuilder {
             .register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory(new String[] {
             		"EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z"
             }, false)).build();
+        	RequestConfig.Builder requestBuilder = RequestConfig.custom();
+        	requestBuilder.setConnectTimeout(timeout);
+        	requestBuilder.setConnectionRequestTimeout(timeout);
+        	requestBuilder.setSocketTimeout(timeout);
+        	getBuilder().setDefaultRequestConfig(requestBuilder.build());
         	client = getBuilder().setDefaultCookieSpecRegistry(cookieSpecRegistry).build();
         	builder = null;
         }
@@ -937,6 +952,26 @@ public class HTTPBuilder {
         this.contentEncodingHandler = cer;
     }
 
+
+    /**
+     * This timeout is used for both the time to wait for an established
+     * connection, and the time to wait for data.
+     *
+     * @param timeout time to wait in milliseconds.
+     */
+    public void setTimeout(int timeout) {
+    	this.timeout = timeout;
+    }
+
+    /**
+     * Get the timeout in for establishing an HTTP connection.
+     *
+     * @return timeout in milliseconds.
+     */
+    public int getTimeout() {
+    	return timeout;
+    }
+    
     /**
      * Set the default HTTP proxy to be used for all requests.
      *
@@ -992,7 +1027,13 @@ public class HTTPBuilder {
      * @see ClientConnectionManager#shutdown()
      */
     public void shutdown() {
-        getClient().getConnectionManager().shutdown();
+    	if (client instanceof CloseableHttpClient) {
+    		try {
+				((CloseableHttpClient)client).close();
+			} catch (IOException e) {
+				log.warn("Cannot close client", e);
+			}
+    	}
     }
 
 
@@ -1018,7 +1059,7 @@ public class HTTPBuilder {
         private Map<Object, Closure<?>> responseHandlers = new StringHashMap<Closure<?>>();
         private URIBuilder uri;
         private Map<Object, Object> headers = new StringHashMap<Object>();
-        private HttpContextDecorator context = new HttpContextDecorator();
+        private HttpClientContext context = HttpClientContext.create();
         private Object body;
 
         public RequestConfigDelegate(HttpRequestBase request, Object contentType,
@@ -1366,10 +1407,10 @@ public class HTTPBuilder {
          * Get the {@link HttpContext} that will be used for this request.  By
          * default, a new context is created for each request.
          *
-         * @return
+         * @return HttpClientContext
          * @see ClientContext
          */
-        public HttpContextDecorator getContext() {
+        public HttpClientContext getContext() {
             return this.context;
         }
 
@@ -1379,7 +1420,7 @@ public class HTTPBuilder {
          * @param ctx
          */
         public void setContext(HttpContext ctx) {
-            this.context = new HttpContextDecorator(ctx);
+            this.context = HttpClientContext.adapt(ctx);
         }
     }
 }

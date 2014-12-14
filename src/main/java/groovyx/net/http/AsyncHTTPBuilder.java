@@ -185,30 +185,6 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     }
 
     /**
-     * This timeout is used for both the time to wait for an established
-     * connection, and the time to wait for data.
-     *
-     * @param timeout time to wait in milliseconds.
-     * @see HttpConnectionParams#setSoTimeout(HttpParams, int)
-     * @see HttpConnectionParams#setConnectionTimeout(HttpParams, int)
-     */
-    public void setTimeout(int timeout) {
-    	RequestConfig.Builder requestBuilder = RequestConfig.custom();
-    	requestBuilder = requestBuilder.setConnectTimeout(timeout);
-    	requestBuilder = requestBuilder.setConnectionRequestTimeout(timeout);
-    	getBuilder().setDefaultRequestConfig(requestBuilder.build());	
-    }
-
-    /**
-     * Get the timeout in for establishing an HTTP connection.
-     *
-     * @return timeout in milliseconds.
-     */
-    public int getTimeout() {
-        return HttpConnectionParams.getConnectionTimeout(super.getClient().getParams());
-    }
-
-    /**
      * <p>Access the underlying threadpool to adjust things like job timeouts.</p>
      *
      * <p>Note that this is not the same pool used by the HttpClient's
