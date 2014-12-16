@@ -195,7 +195,7 @@ public class AuthConfig extends BasicCredentialsProvider {
     public void oauth(String consumerKey, String consumerSecret,
                       String accessToken, String secretToken) {
 		if (consumerKey != null) {
-			builder.getBuilder().addInterceptorFirst(
+			builder.getBuilder().addInterceptorLast(
 					new OAuthSigner(consumerKey, consumerSecret, accessToken,
 							secretToken));
 		}

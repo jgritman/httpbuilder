@@ -73,8 +73,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BestMatchSpecFactory;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -893,8 +891,9 @@ public class HTTPBuilder {
 	 *
 	 * @param params
 	 * @return
-	 * @deprecated use org.apache.http.impl.client.HttpClientBuilder to create
-	 *             custom client
+	 * @deprecated use org.apache.http.impl.client.HttpClientBuilder
+	 * 				or org.apache.http.impl.client.HttpClients
+	 * 				to create custom client 
 	 */
     @Deprecated
     protected HttpClient createClient(org.apache.http.params.HttpParams params) {
