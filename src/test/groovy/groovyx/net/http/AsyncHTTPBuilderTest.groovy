@@ -103,7 +103,8 @@ public class AsyncHTTPBuilderTest {
                 System.getProperty('twitter.oauth.accessToken'),
                 System.getProperty('twitter.oauth.secretToken')
 
-        http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+        //http.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+		http.setExpectContinue false
 
         def msg = "AsyncHTTPBuilder unit test was run on ${new Date()}"
 

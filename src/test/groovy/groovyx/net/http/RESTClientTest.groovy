@@ -26,7 +26,9 @@ public class RESTClientTest {
                 System.getProperty('twitter.oauth.accessToken'),
                 System.getProperty('twitter.oauth.secretToken')
         twitter.contentType = ContentType.JSON
-        HttpConnectionParams.setSoTimeout twitter.client.params, 15000
+		
+        //HttpConnectionParams.setSoTimeout twitter.client.params, 15000
+		twitter.setTimeout 15000
     }
 
     @Test

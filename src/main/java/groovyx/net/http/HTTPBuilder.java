@@ -184,6 +184,7 @@ public class HTTPBuilder {
 	private HttpClientBuilder builder;
     private HttpClient client;
     int timeout = 0;
+    boolean expectContinue = true;
     protected URIBuilder defaultURI = null;
     protected AuthConfig auth = new AuthConfig(this);
 
@@ -874,6 +875,7 @@ public class HTTPBuilder {
         	requestBuilder.setConnectTimeout(timeout);
         	requestBuilder.setConnectionRequestTimeout(timeout);
         	requestBuilder.setSocketTimeout(timeout);
+        	requestBuilder.setExpectContinueEnabled(expectContinue);
         	getBuilder().setDefaultRequestConfig(requestBuilder.build());
         	client = getBuilder().setDefaultCookieSpecRegistry(cookieSpecRegistry).build();
         	builder = null;
@@ -971,7 +973,15 @@ public class HTTPBuilder {
     	return timeout;
     }
     
-    /**
+    public boolean isExpectContinue() {
+		return expectContinue;
+	}
+
+	public void setExpectContinue(boolean state) {
+		this.expectContinue = state;
+	}
+
+	/**
      * Set the default HTTP proxy to be used for all requests.
      *
      * @param host   host name or IP
