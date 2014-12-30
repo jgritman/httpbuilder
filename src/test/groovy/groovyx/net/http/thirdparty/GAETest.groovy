@@ -1,38 +1,15 @@
 package groovyx.net.http.thirdparty
 
 import groovy.util.slurpersupport.GPathResult
+import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.ParserRegistry
-import org.apache.http.impl.client.AbstractHttpClient
-import org.apache.http.impl.client.DefaultHttpClient
-import org.apache.http.params.HttpParams
-import org.junit.Ignore
 import org.junit.Test
 
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
 
 class GAETest {
-
-    def http = null
-
-    @Ignore
-    @Test
-    public void testURLFetchService() {
-        http = newBuilder()
-        http.uri = 'http://ajax.googleapis.com/ajax/services/search/web'
-        http.request(GET) {
-            uri.query = [v: '1.0', q: 'HTTPBuilder']
-
-            response.success = { resp, json ->
-                println resp.statusLine
-                json.responseData.results.each {
-                    println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
-                }
-            }
-        }
-    }
-
 
     def twitter = [user          : System.getProperty('twitter.user'),
                    consumerKey   : System.getProperty('twitter.oauth.consumerKey'),
@@ -45,7 +22,7 @@ class GAETest {
      */
     @Test
     public void testGET() {
-        def http = newBuilder('http://www.google.com')
+        def http = new HTTPBuilder('http://www.google.com')
         http.get(path: '/search', query: [q: 'Groovy'],
                 headers: ['User-Agent': "Firefox"]) { resp, html ->
             println "response status: ${resp.statusLine}"
@@ -61,7 +38,7 @@ class GAETest {
 
     @Test
     public void testDefaultSuccessHandler() {
-        def http = newBuilder('http://www.google.com')
+        def http = new HTTPBuilder('http://www.google.com')
         def html = http.request(GET) {
             headers = ['User-Agent': "Firefox"]
             uri.path = '/search'
@@ -80,7 +57,7 @@ class GAETest {
 
     @Test
     public void testSetHeaders() {
-        def http = newBuilder('http://www.google.com')
+        def http = new HTTPBuilder('http://www.google.com')
         def val = '1'
         def v2 = 'two'
         def h3 = 'three'
@@ -117,7 +94,7 @@ class GAETest {
 
     @Test
     public void testReaderWithDefaultResponseHandler() {
-        def http = newBuilder('http://www.google.com')
+        def http = new HTTPBuilder('http://www.google.com')
 
         def reader = http.get(contentType: TEXT)
 
@@ -131,7 +108,7 @@ class GAETest {
 
     @Test
     public void testDefaultFailureHandler() {
-        def http = newBuilder('http://www.google.com')
+        def http = new HTTPBuilder('http://www.google.com')
 
         try {
             http.get(path: '/adsasf/kjsslkd') {
@@ -152,7 +129,7 @@ class GAETest {
      */
     @Test
     public void testReader() {
-        def http = newBuilder('http://examples.oreilly.com')
+        def http = new HTTPBuilder('http://examples.oreilly.com')
         http.get(uri: 'http://examples.oreilly.com/9780596002527/examples/first.xml',
                 contentType: TEXT, headers: [Accept: '*/*']) { resp, reader ->
             println "response status: ${resp.statusLine}"
@@ -179,7 +156,7 @@ class GAETest {
 
     @Test
     public void testPOST() {
-        def http = newBuilder('https://api.twitter.com/1.1/statuses/')
+        def http = new HTTPBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
@@ -215,33 +192,9 @@ class GAETest {
         }
     }
 
-    @Ignore
-    // twitter is returning a 401 for unknown reasons here
-    @Test
-    public void testPlainURLEnc() {
-        def http = newBuilder('https://api.twitter.com/1.1/statuses/')
-
-        http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
-                twitter.accessToken, twitter.secretToken
-
-        def msg = "HTTPBuilder's second unit test was run on ${new Date()}"
-
-        def resp = http.post(contentType: JSON, path: 'update.json',
-                body: "status=$msg&source=httpbuilder")
-
-        def postID = resp.id.text()
-        assert postID
-
-        // delete the test message.
-        Thread.sleep 5000
-        http.request(DELETE, JSON) {
-            uri.path = "destroy/${postID}.json"
-        }
-    }
-
 //  @Test
     public void testHeadMethod() {
-        def http = newBuilder('https://api.twitter.com/1.1/statuses/')
+        def http = new HTTPBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
                 twitter.accessToken, twitter.secretToken
@@ -259,7 +212,7 @@ class GAETest {
 
     @Test
     public void testRequestAndDefaultResponseHandlers() {
-        def http = newBuilder()
+        def http = new HTTPBuilder()
 
 //       default response handlers.
         http.handler.'401' = { resp ->
@@ -288,7 +241,7 @@ class GAETest {
      */
     @Test
     public void test404() {
-        newBuilder().request('http://www.google.com', GET, TEXT) {
+        new HTTPBuilder().request('http://www.google.com', GET, TEXT) {
             uri.path = '/asdfg/asasdfs' // should produce 404
             response.'404' = {
                 println 'got expected 404!'
@@ -299,39 +252,9 @@ class GAETest {
         }
     }
 
-    /* http://googlesystem.blogspot.com/2008/04/google-search-rest-api.html
-     * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
-     */
-
-    @Ignore
-    @Test
-    public void testJSON() {
-
-        def builder = newBuilder()
-
-//      builder.parser.'text/javascript' = builder.parsers."$JSON"
-
-        builder.request('http://ajax.googleapis.com', GET, JSON) {
-            uri.path = '/ajax/services/search/web'
-            uri.query = [v: '1.0', q: 'Calvin and Hobbes']
-            //UA header required to get Google to GZIP response:
-            headers.'User-Agent' = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.4) Gecko/2008111319 Ubuntu/8.10 (intrepid) Firefox/3.0.4"
-            response.success = { resp, json ->
-                assert resp.headers['Content-Encoding'].value == "gzip"
-                assert json.size() == 3
-                //println json.responseData
-                println "Query response: "
-                json.responseData.results.each {
-                    println "  ${it.titleNoFormatting} : ${it.visibleUrl}"
-                }
-                null
-            }
-        }
-    }
-
     @Test
     public void testAuth() {
-        def http = newBuilder('http://test.webdav.org')
+        def http = new HTTPBuilder('http://test.webdav.org')
 
         /* The path issues a 404, but it does an auth challenge first. */
         http.handler.'404' = { println 'Auth successful' }
@@ -357,20 +280,9 @@ class GAETest {
 
     @Test
     public void testCatalog() {
-        def http = newBuilder('http://weather.yahooapis.com/forecastrss')
+        def http = new HTTPBuilder('http://weather.yahooapis.com/forecastrss')
 
         http.parser.addCatalog getClass().getResource('/rss-catalog.xml')
         def xml = http.get(query: [p: '02110', u: 'f'])
-
-
-    }
-
-    def newBuilder(uri) {
-        return new groovyx.net.http.HTTPBuilder(uri) {
-            @Override
-            protected AbstractHttpClient getClient(HttpParams params) {
-                return new DefaultHttpClient(new GAEConnectionManager(), params)
-            }
-        }
     }
 }
