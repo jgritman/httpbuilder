@@ -1,7 +1,7 @@
 package groovyx.net.http
 
 import groovy.util.slurpersupport.GPathResult
-import org.apache.http.params.HttpConnectionParams
+import org.apache.http.message.BasicHeader
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -26,9 +26,9 @@ public class RESTClientTest {
                 System.getProperty('twitter.oauth.accessToken'),
                 System.getProperty('twitter.oauth.secretToken')
         twitter.contentType = ContentType.JSON
-		
-        //HttpConnectionParams.setSoTimeout twitter.client.params, 15000
-		twitter.setTimeout 15000
+        // when this header isn't set to null 'testHead()' fails
+        twitter.builder.setDefaultHeaders([new BasicHeader('Accept-Encoding', null)])
+        twitter.setTimeout 15000
     }
 
     @Test
