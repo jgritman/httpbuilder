@@ -27,15 +27,7 @@ import groovy.lang.Writable;
 import groovy.xml.StreamingMarkupBuilder;
 import groovyx.net.http.HTTPBuilder.RequestConfigDelegate;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +47,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
@@ -319,6 +312,34 @@ public class EncoderRegistry implements Iterable<Map.Entry<String,Closure>> {
     }
 
     /**
+     * Set the request body as a multipart list of parameters.
+     * Binary parts should be included as java.io.File or an InputStream
+     * @param params
+     * @return an {@link HttpEntity} encapsulating this request data
+     * @throws UnsupportedEncodingException
+     */
+    @SuppressWarnings("unchecked")
+    public HttpEntity encodeFormMultipart(Map<String,?> params) throws UnsupportedEncodingException {
+        MultipartEntityBuilder multipartBuilder = MultipartEntityBuilder.create();
+
+        for ( String key : params.keySet() ) {
+            Object val = params.get( key );
+            if ( val instanceof String){
+
+                multipartBuilder.addTextBody(key, (String) val);
+            }
+            if ( val instanceof File){
+                multipartBuilder.addBinaryBody(key, (File) val);
+            }
+            if ( val instanceof InputStream){
+                multipartBuilder.addBinaryBody(key, (InputStream) val, org.apache.http.entity.ContentType.DEFAULT_BINARY, key);
+            }
+        }
+
+        return multipartBuilder.build();
+    }
+
+    /**
      * Helper method used by encoder methods to create an {@link HttpEntity}
      * instance that encapsulates the request data.  This may be used by any
      * non-streaming encoder that needs to send textual data.  It also sets the
@@ -349,6 +370,7 @@ public class EncoderRegistry implements Iterable<Map.Entry<String,Closure>> {
         encoders.put( ContentType.BINARY.toString(), new MethodClosure(this,"encodeStream") );
         encoders.put( ContentType.TEXT.toString(), new MethodClosure( this, "encodeText" ) );
         encoders.put( ContentType.URLENC.toString(), new MethodClosure( this, "encodeForm" ) );
+        encoders.put( ContentType.MULTIPART.toString(), new MethodClosure( this, "encodeFormMultipart" ) );
 
         Closure encClosure = new MethodClosure(this,"encodeXML");
         for ( String ct : ContentType.XML.getContentTypeStrings() )

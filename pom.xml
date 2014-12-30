@@ -29,7 +29,17 @@
             <artifactId>httpclient</artifactId>
             <version>4.2.1</version>
         </dependency>
-		<dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.3.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.3.3</version>
+        </dependency>
+        <dependency>
             <!-- Only needed for JSON parsing -->
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
@@ -230,7 +240,7 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-            <plugin>
+           <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.6</version>
@@ -247,13 +257,13 @@
                 </configuration>
                 <executions>
                     <!--<execution>
-                        <id>test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>cobertura</goal>
-                        </goals>
-                    </execution>
-                    --><execution>
+                     <id>test</id>
+                     <phase>test</phase>
+                     <goals>
+                         <goal>cobertura</goal>
+                     </goals>
+                 </execution>
+                 --><execution>
                         <id>defaults</id>
                         <goals>
                             <goal>clean</goal>

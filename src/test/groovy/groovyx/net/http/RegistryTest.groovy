@@ -3,8 +3,11 @@ package groovyx.net.http
 import org.apache.http.ProtocolVersion
 import org.apache.http.entity.StringEntity
 import org.apache.http.message.BasicHttpResponse
-import org.junit.Testimport java.io.StringReaderimport java.io.ByteArrayInputStream
-import static groovyx.net.http.ContentType.*
+import org.junit.Test
+import java.io.StringReader
+import java.io.ByteArrayInputStream
+import static groovyx.net.http.ContentType.*
+
 /**
  * @author tnichols
  */
@@ -188,5 +191,16 @@ public class RegistryTest {
         assert map
         assert map.p1 == 'goober'
         assert map.p2 == 'something else' 
+    }
+
+    @Test public void testMultipartEncoder() {
+        def enc = new EncoderRegistry()
+
+        def param1 = "p1"
+        def entity = enc.encodeFormMultipart( [param1:'one', p2: new File(getClass().getResource("/log4j.xml").getPath())] )
+
+        assert entity.contentType.elements[0].name == 'multipart/form-data'
+        assert entity.multipart.parts[0].header.toString() == "[Content-Disposition: form-data; name=\"param1\", Content-Type: text/plain; charset=ISO-8859-1, Content-Transfer-Encoding: 8bit]"
+        assert entity.multipart.parts[1].header.toString() == "[Content-Disposition: form-data; name=\"p2\"; filename=\"log4j.xml\", Content-Type: application/octet-stream, Content-Transfer-Encoding: binary]"
     }
 }
