@@ -22,9 +22,7 @@
 package groovyx.net.http;
 
 import groovyx.net.http.ContentEncoding.Type;
-
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.util.HashMap;

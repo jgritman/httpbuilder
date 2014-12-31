@@ -21,27 +21,13 @@
  */
 package groovyx.net.http;
 
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.cookie.CookieSpecProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.impl.cookie.BestMatchSpecFactory;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import java.util.concurrent.*;
 
 /**
  * This implementation makes all requests asynchronous by submitting jobs to a

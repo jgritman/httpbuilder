@@ -21,39 +21,10 @@
  */
 package groovyx.net.http;
 
-import static groovyx.net.http.URIBuilder.convertToURI;
 import groovy.lang.Closure;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Map;
-
-import javax.net.ssl.SSLContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
@@ -77,6 +48,18 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
+
+import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Map;
+
+import static groovyx.net.http.URIBuilder.convertToURI;
 
 /**
  * <p>
@@ -800,7 +783,7 @@ public class HTTPBuilder {
      */
 	public void setContentEncoding(Object... encodings) {
 		this.contentEncodingHandler.setInterceptors(getBuilder(),
-				encodings != null ? encodings : new Object[0]);
+                encodings != null ? encodings : new Object[0]);
 	}
 
     /**
