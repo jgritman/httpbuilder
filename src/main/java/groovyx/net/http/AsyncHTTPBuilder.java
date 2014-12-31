@@ -22,7 +22,6 @@
 package groovyx.net.http;
 
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -130,7 +129,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 
     /**
      * Initializes threading parameters for the HTTPClient's
-     * {@link ThreadSafeClientConnManager}, and this class' ThreadPoolExecutor.
+     * {@link PoolingHttpClientConnectionManager}, and this class' ThreadPoolExecutor.
      */
     protected void initThreadPools(final int poolSize, final ExecutorService threadPool) {
         if (poolSize < 1) {
@@ -174,7 +173,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * <p>Access the underlying threadpool to adjust things like job timeouts.</p>
      *
      * <p>Note that this is not the same pool used by the HttpClient's
-     * {@link ThreadSafeClientConnManager}.  Therefore, increasing the
+     * {@link PoolingHttpClientConnectionManager}.  Therefore, increasing the
      * {@link ThreadPoolExecutor#setMaximumPoolSize(int) maximum pool size} will
      * not in turn increase the number of possible concurrent requests.  It will
      * simply cause more requests to be <i>attempted</i> which will then simply
