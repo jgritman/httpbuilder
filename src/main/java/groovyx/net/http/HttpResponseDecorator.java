@@ -22,8 +22,6 @@
 package groovyx.net.http;
 
 import org.apache.http.*;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
 import java.util.Iterator;
@@ -114,7 +112,7 @@ public class HttpResponseDecorator implements HttpResponse {
      * Get the execution context used during this request
      *
      * @return the {@link HttpContext}
-     * @see ExecutionContext
+     * @see HttpContext
      */
     public HttpContextDecorator getContext() {
         return this.context;
@@ -173,12 +171,11 @@ public class HttpResponseDecorator implements HttpResponse {
          *   println "${it.name} : ${it.value}"
          * }</pre>
          */
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({"unchecked", "rawtypes"})
         public Iterator<Header> iterator() {
-            return (Iterator)responseBase.headerIterator();
+            return (Iterator) responseBase.headerIterator();
         }
     }
-
 
     public HttpEntity getEntity() {
         return responseBase.getEntity();
@@ -248,10 +245,6 @@ public class HttpResponseDecorator implements HttpResponse {
         return responseBase.getLastHeader(arg0);
     }
 
-    public HttpParams getParams() {
-        return responseBase.getParams();
-    }
-
     public ProtocolVersion getProtocolVersion() {
         return responseBase.getProtocolVersion();
     }
@@ -284,7 +277,23 @@ public class HttpResponseDecorator implements HttpResponse {
         responseBase.setHeaders(arg0);
     }
 
-    public void setParams(HttpParams arg0) {
-        responseBase.setParams(arg0);
+    /**
+     * @deprecated Since version 4.3 of Apache HttpCore HttpParams class is deprecated.
+     * Please use configuration classes provided 'org.apache.http.config' and 'org.apache.http.client.config'"
+     */
+    @Deprecated
+    @SuppressWarnings("deprecation")
+    public void setParams(org.apache.http.params.HttpParams params) {
+        responseBase.setParams(params);
+    }
+
+    /**
+     * @deprecated Since version 4.3 of Apache HttpCore HttpParams class is deprecated.
+     * Please use configuration classes provided 'org.apache.http.config' and 'org.apache.http.client.config'"
+     */
+    @Deprecated
+    @SuppressWarnings("deprecation")
+    public org.apache.http.params.HttpParams getParams() {
+        return responseBase.getParams();
     }
 }

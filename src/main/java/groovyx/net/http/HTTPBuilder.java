@@ -878,9 +878,10 @@ public class HTTPBuilder {
 	 * @return
 	 * @deprecated use org.apache.http.impl.client.HttpClientBuilder
 	 * 				or org.apache.http.impl.client.HttpClients
-	 * 				to create custom client 
+	 * 				to create custom client
 	 */
     @Deprecated
+    @SuppressWarnings("deprecated")
     protected HttpClient createClient(org.apache.http.params.HttpParams params) {
         return new org.apache.http.impl.client.DefaultHttpClient(params);
     }
@@ -1016,7 +1017,7 @@ public class HTTPBuilder {
     /**
      * Release any system resources held by this instance.
      *
-     * @see ClientConnectionManager#shutdown()
+     * @see org.apache.http.conn.HttpClientConnectionManager#shutdown()
      */
     public void shutdown() {
     	if (client instanceof CloseableHttpClient) {
@@ -1400,7 +1401,7 @@ public class HTTPBuilder {
          * default, a new context is created for each request.
          *
          * @return HttpClientContext
-         * @see ClientContext
+         * @see org.apache.http.client.protocol.HttpClientContext
          */
         public HttpClientContext getContext() {
             return this.context;

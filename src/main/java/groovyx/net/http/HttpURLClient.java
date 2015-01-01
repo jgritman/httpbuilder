@@ -32,7 +32,6 @@ import org.apache.http.*;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHeaderIterator;
 import org.apache.http.message.BasicStatusLine;
-import org.apache.http.params.HttpParams;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 
@@ -54,8 +53,8 @@ import java.util.*;
  * </ul>
  * Notably absent are status-code based response handling and the more complex
  * authentication mechanisms.
- *
- *
+ * <p/>
+ * <p/>
  * TODO request encoding support (if anyone asks for it)
  *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
@@ -400,6 +399,7 @@ public class HttpURLClient {
         public HttpEntity getEntity() {
             return new HttpEntity() {
 
+                @Deprecated
                 public void consumeContent() throws IOException {
                     conn.getInputStream().close();
                 }
@@ -502,8 +502,23 @@ public class HttpURLClient {
             return val != null ? new BasicHeader(key, val) : null;
         }
 
-        public HttpParams getParams() {
+        /**
+         * @deprecated Since version 4.3 of Apache HttpCore HttpParams class is deprecated.
+         * Please use configuration classes provided 'org.apache.http.config' and 'org.apache.http.client.config'"
+         */
+        @Deprecated
+        @SuppressWarnings("deprecation")
+        public org.apache.http.params.HttpParams getParams() {
             return null;
+        }
+
+        /**
+         * @deprecated Since version 4.3 of Apache HttpCore HttpParams class is deprecated.
+         * Please use configuration classes provided 'org.apache.http.config' and 'org.apache.http.client.config'"
+         */
+        @Deprecated
+        @SuppressWarnings("deprecation")
+        public void setParams(org.apache.http.params.HttpParams params) {
         }
 
         public ProtocolVersion getProtocolVersion() {
@@ -563,9 +578,6 @@ public class HttpURLClient {
         }
 
         public void setHeaders(Header[] arg0) {
-        }
-
-        public void setParams(HttpParams arg0) {
         }
     }
 
