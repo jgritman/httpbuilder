@@ -1,12 +1,11 @@
 HTTPBuilder = Easy HTTP client for Groovy.
-http://groovy.codehaus.org/modules/http-builder
-
 
 Build Instructions:
 
  HTTPBuilder is built using Apache Maven (http://maven.apache.org)
  $ mvn install
 
+Documentation: https://github.com/jgritman/httpbuilder/wiki
 
 Contributions:
 
