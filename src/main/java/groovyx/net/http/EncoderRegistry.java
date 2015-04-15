@@ -204,10 +204,6 @@ public class EncoderRegistry implements Iterable<Map.Entry<String,Closure>> {
      * @return an {@link HttpEntity} encapsulating this request data
      * @throws UnsupportedEncodingException
      */
-    public UrlEncodedFormEntity encodeForm( Map<?,?> params )
-            throws UnsupportedEncodingException {
-        return encodeForm( params, null );
-    }
 
     public UrlEncodedFormEntity encodeForm( Map<?,?> params, Object contentType )
             throws UnsupportedEncodingException {
