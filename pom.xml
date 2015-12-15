@@ -432,8 +432,8 @@
     </pluginRepositories>
 
     <scm>
-        <developerConnection>scm:git:git@github.com:jgritman/httpbuilder.git</developerConnection>
-        <url>http://github.com/jgritman/httpbuilder</url>
+        <developerConnection>scm:git:git@github.com:adcarabajal/httpbuilder.git</developerConnection>
+        <url>https://github.com/adcarabajal/httpbuilder</url>
       <tag>HEAD</tag>
   </scm>
 
