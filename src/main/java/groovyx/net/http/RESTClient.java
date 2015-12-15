@@ -216,7 +216,7 @@ public class RESTClient extends HTTPBuilder {
      */
     public Object delete( Map<String,?> args ) throws URISyntaxException,
             ClientProtocolException, IOException {
-        return this.doRequest( new RequestConfigDelegate( args, new HttpDelete(), null ) );
+        return this.doRequest( new RequestConfigDelegate( args, new HttpDeleteWithBody(), null ) );
     }
 
     /**
