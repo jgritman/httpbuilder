@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>http-builder</artifactId>
     <groupId>org.codehaus.groovy.modules.http-builder</groupId>
-    <version>0.7.3-SNAPSHOT</version>
+    <version>0.7.3.1-SNAPSHOT</version>
     <name>HTTP client framework for Groovy</name>
     <url>http://groovy.codehaus.org/modules/http-builder/</url>
     <inceptionYear>2008</inceptionYear>
@@ -27,9 +27,24 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.2.1</version>
+            <version>4.3.6</version>
         </dependency>
-		<dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.3.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.3.3</version>
+        </dependency>
+        <dependency>
             <!-- Only needed for JSON parsing -->
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
@@ -230,7 +245,7 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-            <plugin>
+           <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.6</version>
@@ -247,13 +262,13 @@
                 </configuration>
                 <executions>
                     <!--<execution>
-                        <id>test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>cobertura</goal>
-                        </goals>
-                    </execution>
-                    --><execution>
+                     <id>test</id>
+                     <phase>test</phase>
+                     <goals>
+                         <goal>cobertura</goal>
+                     </goals>
+                 </execution>
+                 --><execution>
                         <id>defaults</id>
                         <goals>
                             <goal>clean</goal>
@@ -417,27 +432,23 @@
     </pluginRepositories>
 
     <scm>
-        <developerConnection>scm:git:git@github.com:jgritman/httpbuilder.git</developerConnection>
-        <url>http://github.com/jgritman/httpbuilder</url>
+        <developerConnection>scm:git:git@github.com:adcarabajal/httpbuilder.git</developerConnection>
+        <url>https://github.com/adcarabajal/httpbuilder</url>
       <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
         <repository>
-            <id>Groovy-Contrib</id>
-            <name>Codehaus Groovy Repo</name>
-            <url>dav:https://dav.codehaus.org/repository/gmod</url>
+            <id>mule-ee-releases</id>
+            <name>MuleSoft Release Repository</name>
+            <url>https://repository-master.mulesoft.org/nexus/content/repositories/ci-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>Groovy-Contrib</id>
-            <name>Codehaus Groovy Snapshots Repo</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/gmod</url>
+            <id>mule-ee-snapshots</id>
+            <name>MuleSoft Snapshot Repository</name>
+            <url>https://repository-master.mulesoft.org/nexus/content/repositories/ci-snapshots/</url>
+            <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
-        <site>
-            <id>Groovy-Contrib</id>
-            <name>Codehaus Groovy WebDAV</name>
-            <url>dav:https://dav.codehaus.org/groovy/modules/http-builder</url>
-        </site>
     </distributionManagement>
 
     <mailingLists>

@@ -45,6 +45,17 @@ class GAEClientConnection
   }
 
   // From interface ManagedClientConnection
+  public String getId() {
+    return null;
+  }
+
+  public void bind(Socket socket) throws IOException {
+    throw new IOException("not supported");
+  }
+
+  public Socket getSocket() {
+    return null;
+  }
 
   public boolean isSecure() {
     return route.isSecure();

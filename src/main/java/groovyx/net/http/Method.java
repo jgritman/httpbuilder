@@ -39,7 +39,7 @@ public enum Method {
     GET( HttpGet.class ),
     PUT( HttpPut.class ),
     POST( HttpPost.class ),
-    DELETE( HttpDelete.class ),
+    DELETE( HttpDeleteWithBody.class ),
     HEAD( HttpHead.class ),
     PATCH( HttpPatch.class );
 
