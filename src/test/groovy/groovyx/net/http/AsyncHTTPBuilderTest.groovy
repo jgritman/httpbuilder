@@ -19,64 +19,38 @@
  * enhancements or improvements back to the community under a similar open
  * source license.  Thank you. -TMN
  */
-package groovyx.net.http
+package groovyx.net.http;
 
-import org.junit.Ignore
-import org.junit.Test
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
-import java.util.concurrent.ExecutionException
-import org.apache.http.conn.ConnectTimeoutException
+import spock.lang.*;
+import static groovyx.net.http.ContentType.*;
+import static groovyx.net.http.Method.*;
+import java.util.concurrent.ExecutionException;
+import org.apache.http.conn.ConnectTimeoutException;
+import java.util.concurrent.TimeUnit;
 
-/**
- * @author tnichols
- */
-public class AsyncHTTPBuilderTest {
+class AsyncHTTPBuilderTest extends Specification {
 
-    @Test public void testAsyncRequests() {
-        def http = new AsyncHTTPBuilder( poolSize : 4,
-                        uri : 'http://hc.apache.org',
-                        contentType : ContentType.HTML )
+    final static Closure returnTrue = { resp, html -> true; };
+    
+    def "Asynch Requests"() {
+        setup:
+        def http = new AsyncHTTPBuilder(poolSize: 4, uri: 'http://hc.apache.org',
+                                        contentType: ContentType.HTML);
+        
+        def futures = [ http.get(path:'/', returnTrue),
+                        http.get(path:'/httpcomponents-client-ga/', returnTrue),
+                        http.get(path:'/httpcomponents-core-dev/', returnTrue),
+                        http.get(uri:'http://svn.apache.org/', returnTrue) ];
 
-        def done = []
+        expect:
+        futures.every { req -> req.get(30L, TimeUnit.SECONDS); }
 
-        done << http.get(path:'/') { resp, html ->
-            println "${Thread.currentThread().name} response 1"
-            true
-        }
-
-        done << http.get(path:'/httpcomponents-client-ga/') { resp, html ->
-            println "${Thread.currentThread().name} response 2"
-            true
-        }
-
-        done << http.get(path:'/httpcomponents-core-dev/') { resp, html ->
-            println "${Thread.currentThread().name} response 3"
-            true
-        }
-
-        done << http.get(uri:'http://svn.apache.org/') { resp, html ->
-            println "${Thread.currentThread().name} response 4"
-            true
-        }
-
-        println done.size()
-
-        def timeout = 30000
-        def time = 0
-        while ( true ) {
-            if ( done.every{ it.done ? it.get() : 0 } ) break
-            print '.'
-            Thread.sleep 2000
-            time += 2000
-            if ( time > timeout ) assert false : "Timeout waiting for async operations"
-        }
+        cleanup:
         http.shutdown()
-        println 'done.'
     }
 
     @Ignore
-    @Test public void testDefaultConstructor() {
+    def "Default Constructor"() {
         def http = new AsyncHTTPBuilder()
         def resp = http.get( uri:'http://ajax.googleapis.com',
                     path : '/ajax/services/search/web',
@@ -89,8 +63,8 @@ public class AsyncHTTPBuilderTest {
         http.shutdown()
     }
 
-    @Test @Ignore
-    public void testPostAndDelete() {
+    @Ignore
+    def "Post And Delete"() {
         def http = new AsyncHTTPBuilder(uri:'https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
@@ -127,56 +101,51 @@ public class AsyncHTTPBuilderTest {
     }
 
 
-    @Test public void testTimeout() {
-        def http = new AsyncHTTPBuilder( uri:'http://netflix.com',
-                contentType: HTML, timeout:2 ) // 2ms to force timeout
+    def "Timeout"() {
+        when:
+        def http = new AsyncHTTPBuilder(uri:'http://netflix.com',
+                                        contentType: HTML, timeout: 2) // 2ms to force timeout
+        then:
+        http.timeout == 2
 
-        assert http.timeout == 2
+        when:
+        def resp = http.get(path: '/ajax/services/search/web',
+                            query: [ v:'1.0', q: 'HTTPBuilder' ]);
+        sleep(100L);
+        resp.get();
 
-        def resp = http.get( path : '/ajax/services/search/web',
-                query : [ v:'1.0', q: 'HTTPBuilder' ] )
+        then:
+        def ex = thrown(ExecutionException);
+        ex.cause.getClass() == ConnectTimeoutException;
 
-        Thread.sleep 100
-        try {
-            resp.get()
-            assert false
-        }
-        catch ( ExecutionException ex ) {
-            assert ex.cause.getClass() == ConnectTimeoutException
-        }
+        cleanup:
+        http.shutdown();
     }
 
-    @Test public void testPoolsizeAndQueueing() {
-        def http = new AsyncHTTPBuilder( poolSize : 1 ,
-                uri : 'http://ajax.googleapis.com/ajax/services/search/web' )
+    def "Pool Size And Queueing"() {
+        setup:
+        long timeout = 60L;
+        def http = new AsyncHTTPBuilder(poolSize: 1 ,
+                                        uri: 'http://ajax.googleapis.com/ajax/services/search/web');
 
-        def responses = []
-        /* With one thread in the pool, responses will be sequential but should
-         * queue up w/o being rejected. */
-        responses << http.get( query : [q:'Groovy', v:'1.0'] )
-        responses << http.get( query : [q:'Ruby', v:'1.0'] )
-        responses << http.get( query : [q:'Scala', v:'1.0'] )
+        when:
+        def futures = [ http.get(query: [q:'Groovy', v:'1.0'], returnTrue),
+                        http.get(query: [q:'Ruby', v:'1.0'], returnTrue),
+                        http.get(query: [q:'Scala', v:'1.0'], returnTrue) ];
 
-        def timeout = 60000
-        def time = 0
-        while ( true ) {
-            if ( responses.every{ it.done ? it.get() : 0 } ) break
-            print '.'
-            Thread.sleep 2000
-            time += 2000
-            if ( time > timeout ) assert false
-        }
-        println()
+        then:
+        futures.every { resp -> resp.get(60L, TimeUnit.SECONDS); };
+
+        cleanup:
         http.shutdown()
     }
 
-    @Test public void testInvalidNamedArg() {
-        try {
-            def http = new AsyncHTTPBuilder( poolsize : 1 ,
-                uri : 'http://ajax.googleapis.com/ajax/services/search/web' )
-            throw new AssertionError("request should have failed due to invalid kwarg.")
-        }
-        catch ( IllegalArgumentException ex ) { /* Expected result */ }
-    }
+    def "Invalid Named Arg"() {
+        when:
+        def http = new AsyncHTTPBuilder(poolsize: 1, //should be poolSize (why are we testing this?)
+                                        uri: 'http://ajax.googleapis.com/ajax/services/search/web');
 
+        then:
+        thrown(IllegalArgumentException);
+    }
 }
