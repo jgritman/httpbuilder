@@ -36,7 +36,8 @@ public class RESTClientTest {
         assert twitter.contentType == ContentType.XML
     }
 
-    @Test public void testHead() {
+    @Test @Ignore
+    public void testHead() {
         try { // twitter sends a 302 Found to /statuses, which then returns a 406...  What??
             twitter.head path : 'asdf'
             assert false : 'Expected exception'
@@ -47,7 +48,8 @@ public class RESTClientTest {
         assert twitter.head( path : 'home_timeline.json' ).status == 200
     }
 
-    @Test public void testGet() {
+    @Test @Ignore
+    public void testGet() {
         // testing w/ content-type other than default:
         /* Note also that Twitter doesn't really care about the "Accept" header
            anyway, it wants you to put it in the URL, i.e. something.xml or
@@ -62,7 +64,8 @@ public class RESTClientTest {
         assert resp.data.status.size() > 0
     }
 
-    @Test public void testPost() {
+    @Test @Ignore
+    public void testPost() {
         def msg = "RESTClient unit test was run on ${new Date()}"
 
         def resp = twitter.post(
@@ -79,7 +82,8 @@ public class RESTClientTest {
         println "Updated post; ID: ${postID}"
     }
 
-    @Test public void testDelete() {
+    @Test @Ignore
+    public void testDelete() {
         Thread.sleep 10000
         // delete the test message.
         if ( ! postID ) throw new IllegalStateException( "No post ID from testPost()" )
@@ -105,7 +109,8 @@ public class RESTClientTest {
         */
     }
 
-    @Test public void testDefaultHandlers() {
+    @Test @Ignore
+    public void testDefaultHandlers() {
         def resp = twitter.get( path : 'user_timeline.json',
             query : [screen_name :'httpbuilder',count:2] )
         assert resp.data.size() == 2
@@ -119,7 +124,8 @@ public class RESTClientTest {
         }
     }
 
-    @Test public void testQueryParameters() {
+    @Test @Ignore
+    public void testQueryParameters() {
         twitter.contentType = 'text/javascript'
         twitter.headers = null
         def resp = twitter.get(

@@ -89,7 +89,8 @@ public class AsyncHTTPBuilderTest {
         http.shutdown()
     }
 
-    @Test public void testPostAndDelete() {
+    @Test @Ignore
+    public void testPostAndDelete() {
         def http = new AsyncHTTPBuilder(uri:'https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth System.getProperty('twitter.oauth.consumerKey'),

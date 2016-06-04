@@ -146,7 +146,8 @@ class HTTPBuilderTest {
      * Tests POST with JSON response, and DELETE with a JSON response.
      */
 
-    @Test public void testPOST() {
+    @Test @Ignore
+    public void testPOST() {
         def http = new HTTPBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
@@ -315,7 +316,8 @@ class HTTPBuilderTest {
         }
     }
 
-    @Test public void testCatalog() {
+    @Test @Ignore
+    public void testCatalog() {
         def http = new HTTPBuilder( 'http://weather.yahooapis.com/forecastrss' )
 
         http.parser.addCatalog getClass().getResource( '/rss-catalog.xml')

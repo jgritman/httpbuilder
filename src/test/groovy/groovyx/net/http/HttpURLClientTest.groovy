@@ -33,7 +33,8 @@ class HttpURLClientTest {
         assert html.BODY.size() == 1
     }
 
-    @Test public void testRedirect() {
+    @Test @Ignore
+    public void testRedirect() {
         def http = new HttpURLClient(followRedirects:false)
 
         def params = [ url:'http://www.google.com/search',
@@ -122,7 +123,8 @@ class HttpURLClientTest {
      * Tests POST with XML response, and DELETE with a JSON response.
      */
 
-    @Test public void testPOST() {
+    @Test @Ignore
+    public void testPOST() {
         def http = new HttpURLClient(url:'https://api.twitter.com/1.1/statuses/')
 
         http.setOAuth twitter.consumerKey, twitter.consumerSecret,
@@ -168,7 +170,8 @@ class HttpURLClientTest {
         assert resp.headers.Status == "200 OK"
     }
 
-    @Test public void testParsers() {
+    @Test @Ignore
+    public void testParsers() {
         def parsers = new ParserRegistry()
         def done = false
         parsers.'application/json' = { done = true }

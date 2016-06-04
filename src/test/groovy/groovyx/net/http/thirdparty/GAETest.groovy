@@ -172,7 +172,8 @@ class GAETest {
      * Tests POST with XML response, and DELETE with a JSON response.
      */
 
-    @Test public void testPOST() {
+    @Test @Ignore
+    public void testPOST() {
         def http = newBuilder('https://api.twitter.com/1.1/statuses/')
 
         http.auth.oauth twitter.consumerKey, twitter.consumerSecret,
@@ -342,7 +343,8 @@ class GAETest {
         }
     }
 
-    @Test public void testCatalog() {
+    @Test @Ignore
+    public void testCatalog() {
         def http = newBuilder( 'http://weather.yahooapis.com/forecastrss' )
 
         http.parser.addCatalog getClass().getResource( '/rss-catalog.xml')
