@@ -1,40 +1,38 @@
 package groovyx.net.http
 
-import org.junit.Ignore
-import org.junit.Test
+import spock.lang.*;
+import org.apache.http.client.HttpResponseException;
+import static groovyx.net.http.ContentType.*;
+import static groovyx.net.http.Method.*;
 
-import org.apache.http.client.HttpResponseException
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
-
-class HttpURLClientTest {
-
+class HttpURLClientTest extends Specification {
+    
     def twitter = [ user: System.getProperty('twitter.user'),
                     consumerKey: System.getProperty('twitter.oauth.consumerKey'),
                     consumerSecret: System.getProperty('twitter.oauth.consumerSecret'),
                     accessToken: System.getProperty('twitter.oauth.accessToken'),
-                    secretToken: System.getProperty('twitter.oauth.secretToken') ]
+                    secretToken: System.getProperty('twitter.oauth.secretToken') ];
 
     /**
      * This method will parse the content based on the response content-type
      */
-    @Test public void testGET() {
-        def http = new HttpURLClient(url:'http://www.google.com')
-        def resp = http.request( path:'/search', query:[q:'HTTPBuilder'],
-                headers:['User-Agent':'Firefox'] )
+    def "GET"() {
+        setup:
+        def http = new HttpURLClient(url:'http://www.google.com');
 
-        println "response status: ${resp.statusLine}"
+        when:
+        def html = http.request(path: '/search', query: [q:'HTTPBuilder'],
+                                headers: ['User-Agent':'Firefox']).data;
 
-        def html = resp.data
-        assert html
-        assert html.HEAD.size() == 1
-        assert html.HEAD.TITLE.size() == 1
-        println "Title: ${html.HEAD.TITLE.text()}"
-        assert html.BODY.size() == 1
+        then:
+        html
+        html.HEAD.size() == 1
+        html.HEAD.TITLE.size() == 1
+        html.BODY.size() == 1
     }
 
-    @Test @Ignore
-    public void testRedirect() {
+    @Ignore
+    def "Redirect"() {
         def http = new HttpURLClient(followRedirects:false)
 
         def params = [ url:'http://www.google.com/search',
@@ -52,7 +50,7 @@ class HttpURLClientTest {
         assert resp.data
     }
 
-    @Test public void testSetHeaders() {
+    def "Set Headers"() {
         def http = new HttpURLClient(url:'http://www.google.com')
         def val = '1'
         def v2 = 'two'
@@ -73,61 +71,67 @@ class HttpURLClientTest {
 */  }
 
 
-    @Test public void testFailure() {
+    def "Failure"() {
+        setup:
         def http = new HttpURLClient(url:'http://www.google.com')
 
-        try {
-            def resp = http.request( path:'/adsasf/kjsslkd' )
-        }
-        catch( HttpResponseException ex ) {
-            assert ex.statusCode == 404
-            assert ! ex.response.success
-            assert ex.response.headers.every { it.name && it.value }
-        }
-        assert http.url.toString() == 'http://www.google.com'
+        when:
+        def resp = http.request( path:'/adsasf/kjsslkd' )
+
+        then:
+        def ex = thrown(HttpResponseException)
+        ex.statusCode == 404
+        !ex.response.success
+        ex.response.headers.every { it.name && it.value }
+        http.url.toString() == 'http://www.google.com'
     }
 
     /**
      * This method is similar to testGET, but it will will parse the content
      * based on the given content-type, i.e. TEXT (text/plain).
      */
-    @Test public void testReader() {
-        def http = new HttpURLClient()
-        def resp = http.request( url:'http://validator.w3.org/about.html',
-                  contentType: TEXT, headers: [Accept:'*/*'] )
-
-        println "response status: ${resp.statusLine}"
-
-        assert resp.data instanceof StringReader
-
-        // we'll validate the reader by passing it to an XmlSlurper manually.
-        def resolver = ParserRegistry.catalogResolver
+    def "Reader"() {
+        setup:
+        def http = new HttpURLClient();
+        def resolver = ParserRegistry.catalogResolver;
         def parser = new XmlSlurper(entityResolver: resolver);
         parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
         parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        def parsedData = parser.parse(resp.data)
+
+        when:
+        def resp = http.request( url:'http://validator.w3.org/about.html',
+                                 contentType: TEXT, headers: [Accept:'*/*']);
+        def parsedData = parser.parse(resp.data);
+        
+        then:
+        resp.data instanceof StringReader
+        parsedData.children().size() > 0
+        
+        cleanup:
         resp.data.close()
-        assert parsedData.children().size() > 0
     }
 
     /** W3C pages will have a doctype, but will return a 503 if you do a GET
      * for them with the Java User-Agent.
      */
-    @Test public void testCatalog() {
-        def http = new HttpURLClient(
-                url:'http://validator.w3.org/',
-                contentType: XML )
+    def "Catalog"() {
+        setup:
+        def http = new HttpURLClient(url: 'http://validator.w3.org/',
+                                     contentType: XML);
 
-        def resp = http.request( path : 'about.html' )
-        assert resp.data
+        when:
+        def resp = http.request(path : 'about.html');
+
+        then:
+        resp.data
     }
 
     /* REST testing with Twitter!
      * Tests POST with XML response, and DELETE with a JSON response.
      */
 
-    @Test @Ignore
-    public void testPOST() {
+    @Ignore
+    def "POST"() {
         def http = new HttpURLClient(url:'https://api.twitter.com/1.1/statuses/')
 
         http.setOAuth twitter.consumerKey, twitter.consumerSecret,
@@ -173,8 +177,8 @@ class HttpURLClientTest {
         assert resp.headers.Status == "200 OK"
     }
 
-    @Test @Ignore
-    public void testParsers() {
+    @Ignore
+    def "Parsers"() {
         def parsers = new ParserRegistry()
         def done = false
         parsers.'application/json' = { done = true }
@@ -203,7 +207,7 @@ class HttpURLClientTest {
      * http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=Earth%20Day
      */
     @Ignore
-    @Test public void testJSON() {
+    def "JSON"() {
 
         def http = new HttpURLClient()
 
@@ -224,21 +228,25 @@ class HttpURLClientTest {
         }
     }
 
-    @Test public void testUnknownNamedParam() {
+    def "Unknown Named Param"() {
+        setup:
         def http = new HttpURLClient()
 
-        try {
-            def resp = http.request( url:'http://ajax.googleapis.com',
-                    method:GET, contentType:JSON ,
-                Path : '/ajax/services/search/web',
-                query : [ v:'1.0', q: 'Calvin and Hobbes' ] )
-            assert false : "Unknown argument should have thrown exception"
-        }
-        catch ( IllegalArgumentException ex ) { /* Expected exception */ }
+        when:
+        def resp = http.request(url: 'http://ajax.googleapis.com',
+                                method: GET, contentType: JSON,
+                                Path: '/ajax/services/search/web',
+                                query: [ v:'1.0', q: 'Calvin and Hobbes' ]);
+
+        then:
+        thrown(IllegalArgumentException);
     }
 
-    @Test(expected = SocketTimeoutException)
-    void testTimeout() {
+    def "Timeout"() {
+        when:
         new HttpURLClient(url: 'https://www.google.com/').request(timeout: 1)
+
+        then:
+        thrown(SocketTimeoutException);
     }
 }

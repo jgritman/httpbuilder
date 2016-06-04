@@ -15,6 +15,7 @@ import org.junit.Ignore
 import org.junit.Test
 import org.junit.Before
 
+//TODO: Lots of this test looks like duplicates elsewhere, are they still needed?
 class GAETest {
 
     def http = null

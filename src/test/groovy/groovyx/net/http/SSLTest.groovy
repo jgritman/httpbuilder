@@ -1,23 +1,20 @@
 package groovyx.net.http
 
-import static groovyx.net.http.Method.HEAD
-
-import org.junit.Ignore
-import org.junit.Test
-import java.security.KeyStore
-
-import org.apache.http.conn.scheme.Scheme
+import java.security.KeyStore;
+import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import spock.lang.*;
+import static groovyx.net.http.Method.HEAD;
 
 /**
  * @author tnichols
  */
-public class SSLTest {
+class SSLTest extends Specification {
 
     def uri = "https://dev.java.net/" ;
 
     @Ignore
-    @Test public void testTrustedCert() {
+    def "Trusted Cert"() {
         def http = new HTTPBuilder( uri )
 
         def keyStore = KeyStore.getInstance( KeyStore.defaultType )

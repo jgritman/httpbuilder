@@ -1,43 +1,43 @@
-package groovyx.net.http
+package groovyx.net.http;
 
-import org.junit.Ignore
-import org.junit.Test
-import org.junit.Before
-import junit.framework.Assert
-import groovy.util.slurpersupport.GPathResult
-import org.apache.http.params.HttpConnectionParams
-import static groovyx.net.http.ContentType.*
+import spock.lang.*;
+import junit.framework.Assert;
+import groovy.util.slurpersupport.GPathResult;
+import org.apache.http.params.HttpConnectionParams;
+import static groovyx.net.http.ContentType.*;
 
-/**
- * @author tnichols
- *
- */
-public class RESTClientTest {
+class RESTClientTest extends Specification {
 
     def twitter = null
     static postID = null
     def userID = System.getProperty('twitter.user')
 
-    @Before public void setUp() {
+    def setup() {
         twitter = new RESTClient( 'https://api.twitter.com/1.1/statuses/' )
-        twitter.auth.oauth System.getProperty('twitter.oauth.consumerKey'),
-                System.getProperty('twitter.oauth.consumerSecret'),
-                System.getProperty('twitter.oauth.accessToken'),
-                System.getProperty('twitter.oauth.secretToken')
+        twitter.auth.oauth(System.getProperty('twitter.oauth.consumerKey'),
+                           System.getProperty('twitter.oauth.consumerSecret'),
+                           System.getProperty('twitter.oauth.accessToken'),
+                           System.getProperty('twitter.oauth.secretToken'))
         twitter.contentType = ContentType.JSON
         HttpConnectionParams.setSoTimeout twitter.client.params, 15000
     }
 
-    @Test public void testConstructors() {
-        twitter = new RESTClient()
-        assert twitter.contentType == ContentType.ANY
+    def "Constructors"() {
+        when:
+        def twitter = new RESTClient();
+        
+        then:
+        twitter.contentType == ContentType.ANY
 
-        twitter = new RESTClient( 'http://www.google.com', ContentType.XML )
-        assert twitter.contentType == ContentType.XML
+        when:
+        twitter = new RESTClient( 'http://www.google.com', ContentType.XML );
+
+        then:
+        twitter.contentType == ContentType.XML
     }
 
-    @Test @Ignore
-    public void testHead() {
+    @Ignore
+    def "Head"() {
         try { // twitter sends a 302 Found to /statuses, which then returns a 406...  What??
             twitter.head path : 'asdf'
             assert false : 'Expected exception'
@@ -48,8 +48,8 @@ public class RESTClientTest {
         assert twitter.head( path : 'home_timeline.json' ).status == 200
     }
 
-    @Test @Ignore
-    public void testGet() {
+    @Ignore
+    def "Get"() {
         // testing w/ content-type other than default:
         /* Note also that Twitter doesn't really care about the "Accept" header
            anyway, it wants you to put it in the URL, i.e. something.xml or
@@ -64,8 +64,8 @@ public class RESTClientTest {
         assert resp.data.status.size() > 0
     }
 
-    @Test @Ignore
-    public void testPost() {
+    @Ignore
+    def "Post"() {
         def msg = "RESTClient unit test was run on ${new Date()}"
 
         def resp = twitter.post(
@@ -82,8 +82,8 @@ public class RESTClientTest {
         println "Updated post; ID: ${postID}"
     }
 
-    @Test @Ignore
-    public void testDelete() {
+    @Ignore
+    def "Delete"() {
         Thread.sleep 10000
         // delete the test message.
         if ( ! postID ) throw new IllegalStateException( "No post ID from testPost()" )
@@ -95,7 +95,7 @@ public class RESTClientTest {
     }
 
     @Ignore
-    @Test public void testOptions() {
+    def "Options"() {
         // get a message ID then test which ways I can delete it:
         def resp = twitter.get( uri: 'http://twitter.com/statuses/user_timeline/httpbuilder.json' )
 
@@ -109,8 +109,8 @@ public class RESTClientTest {
         */
     }
 
-    @Test @Ignore
-    public void testDefaultHandlers() {
+    @Ignore
+    def "Defaul tHandlers"() {
         def resp = twitter.get( path : 'user_timeline.json',
             query : [screen_name :'httpbuilder',count:2] )
         assert resp.data.size() == 2
@@ -124,8 +124,8 @@ public class RESTClientTest {
         }
     }
 
-    @Test @Ignore
-    public void testQueryParameters() {
+    @Ignore
+    def "Query Parameters"() {
         twitter.contentType = 'text/javascript'
         twitter.headers = null
         def resp = twitter.get(
@@ -135,39 +135,42 @@ public class RESTClientTest {
         assert resp.data.size() == 5
     }
 
-    @Test public void testUnknownNamedParams() {
-        try {
-            twitter.get( Path : 'user_timeline.json',
-                query : [screen_name :'httpbuilder',count:2] )
-            assert false : "exception should be thrown"
-        }
-        catch ( IllegalArgumentException ex ) { /* Expected exception */ }
+    def "Unknown Named Params"() {
+        when:
+        twitter.get(Path: 'user_timeline.json',
+                    query: [screen_name :'httpbuilder',count:2]);
+
+        then:
+        thrown(IllegalArgumentException);
     }
 
-    @Test public void testJSONPost() {
-        def http = new RESTClient("http://restmirror.appspot.com/")
-        def resp = http.post(
-            path:'/', contentType:'text/javascript',
-            body: [name: 'bob', title: 'construction worker'] )
+    def "JSON Post"() {
+        setup:
+        def http = new RESTClient("http://restmirror.appspot.com/");
 
-        println "JSON POST Success: ${resp.statusLine}"
-        assert resp.data instanceof Map
-        assert resp.data.name == 'bob'
+        when:
+        def resp = http.post(path:'/', contentType:'text/javascript',
+                             body: [name: 'bob', title: 'construction worker']);
+
+        then:
+        resp.data instanceof Map
+        resp.data.name == 'bob'
     }
 
-    @Test public void testXMLPost() {
+    def "XML Post"() {
+        setup:
         def http = new RESTClient("http://restmirror.appspot.com/")
-
         def postBody = {
             person( name: 'bob', title: 'builder' )
         }
 
-        def resp = http.post(   path:'/', contentType: XML, body: postBody )
+        when:
+        def resp = http.post(path:'/', contentType: XML, body: postBody);
 
-        println "XML POST Success: ${resp.statusLine}"
-        assert resp.data instanceof GPathResult
-        assert resp.data.name() == 'person'
-        assert resp.data.@name == 'bob'
-        assert resp.data.@title == 'builder'
+        then:
+        resp.data instanceof GPathResult
+        resp.data.name() == 'person'
+        resp.data.@name == 'bob'
+        resp.data.@title == 'builder'
     }
 }
