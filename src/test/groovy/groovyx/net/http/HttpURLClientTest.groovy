@@ -102,7 +102,10 @@ class HttpURLClientTest {
 
         // we'll validate the reader by passing it to an XmlSlurper manually.
         def resolver = ParserRegistry.catalogResolver
-        def parsedData = new XmlSlurper( entityResolver : resolver ).parse(resp.data)
+        def parser = new XmlSlurper(entityResolver: resolver);
+        parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+        parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        def parsedData = parser.parse(resp.data)
         resp.data.close()
         assert parsedData.children().size() > 0
     }

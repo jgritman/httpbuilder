@@ -352,10 +352,10 @@ class GAETest {
 
 
     }
-
+    
     def newBuilder( uri ) {
         return new groovyx.net.http.HTTPBuilder(uri) {
-            @Override protected AbstractHttpClient getClient(HttpParams params) {
+            protected AbstractHttpClient getClient(HttpParams params) {
                 return new DefaultHttpClient( new GAEConnectionManager(), params)
             }
         }

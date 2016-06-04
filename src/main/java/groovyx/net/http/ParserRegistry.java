@@ -264,6 +264,8 @@ public class ParserRegistry {
     public GPathResult parseXML( HttpResponse resp ) throws IOException, SAXException, ParserConfigurationException {
         XmlSlurper xml = new XmlSlurper();
         xml.setEntityResolver( catalogResolver );
+        xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+        xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
         return xml.parse( parseText( resp ) );
     }
 
