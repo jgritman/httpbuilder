@@ -21,6 +21,7 @@
  */
 package groovyx.net.http;
 
+import groovy.json.JsonBuilder;
 import groovy.lang.Closure;
 import groovy.lang.GString;
 import groovy.lang.Writable;
@@ -43,11 +44,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.groovy.JsonGroovyBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -264,58 +260,48 @@ public class EncoderRegistry implements Iterable<Map.Entry<String,Closure>> {
     }
 
     /**
-     * <p>Accepts a Collection or a JavaBean object which is converted to JSON.
-     * A Map or POJO/POGO will be converted to a {@link JSONObject}, and any
-     * other collection type will be converted to a {@link JSONArray}.  A
-     * String or GString will be interpreted as valid JSON and passed directly
-     * as the request body (with charset conversion if necessary.)</p>
-     *
-     * <p>If a Closure is passed as the model, it will be executed as if it were
-     * a JSON object definition passed to a {@link JsonGroovyBuilder}.  In order
-     * for the closure to be interpreted correctly, there must be a 'root'
-     * element immediately inside the closure.  For example:</p>
-     *
-     * <pre>builder.post( JSON ) {
-     *   body = {
-     *     root {
-     *       first {
-     *         one = 1
-     *         two = '2'
-     *       }
-     *       second = 'some string'
-     *     }
+     * Encode the content as JSON.  The argument may be one of the following:
+     * <p><ul>
+     * <li> {@link String}: Assumed to be valid JSON and will be passed to remote as is.</li>
+     * <li> {@link GString}: Assumed to be valid JSON, <code>toString</code> will be called, and the result will be passed to remote.</li>
+     * <li> Anything else will be converted to JSON using {@link JsonBuilder} and the result will be passed to remote.</li></ul>
+     * <p>Note: prior to verion 0.8 this method used the json-lib library to build json from objects. From 0.8 on
+     * this method uses the native JsonBuilder in groovy. The main difference between the two is that JsonBuilder does
+     * not support property assignment when using builder syntax; instead use method calls. The following code snippets
+     * show an example of the differences:
+     * <p>Pre 0.8:
+     * <pre>
+     * root {
+     *   first {
+     *     one = 1
+     *     two = '2'
      *   }
-     * }</pre>
-     * <p> will return the following JSON string:<pre>
-     * {"root":{"first":{"one":1,"two":"2"},"second":"some string"}}</pre></p>
-     *
-     * @param model data to be converted to JSON, as specified above.
+     *        
+     *   second = 'some string'
+     * }
+     * </pre></p>
+     * <p>Post 0.8:
+     * <pre>
+     * root {
+     *   first {
+     *     one 1
+     *     two '2'
+     *   }
+     *        
+     *   second 'some string'
+     * }
+     * </pre></p>
+     * <p>Both produce this JSON output: <pre>{"first":{"one":1,"two":"2"},"second":"some string"}</pre>
+     * @param model data that will be converted to Json.
      * @return an {@link HttpEntity} encapsulating this request data
      * @throws UnsupportedEncodingException
      */
-    @SuppressWarnings("unchecked")
-    public HttpEntity encodeJSON( Object model, Object contentType ) throws UnsupportedEncodingException {
-
-        Object json;
-        if ( model instanceof Map ) {
-            json = new JSONObject();
-            ((JSONObject)json).putAll( (Map)model );
-        }
-        else if ( model instanceof Collection ) {
-            json = new JSONArray();
-            ((JSONArray)json).addAll( (Collection)model );
-        }
-        else if ( model instanceof Closure ) {
-            Closure closure = (Closure)model;
-            closure.setDelegate( new JsonGroovyBuilder() );
-            json = (JSON)closure.call();
-        }
-        else if ( model instanceof String || model instanceof GString )
-            json = model; // assume string is valid JSON already.
-        else json = JSONObject.fromObject( model ); // Assume object is a JavaBean
-
-        if ( contentType == null ) contentType = ContentType.JSON;
-        return this.createEntity( contentType, json.toString() );
+    public HttpEntity encodeJSON(final Object model, final Object contentType) throws UnsupportedEncodingException {
+        final Object type = contentType == null ? ContentType.JSON : contentType;
+        final String json = ((model instanceof String || model instanceof GString) ?
+                             model.toString() :
+                             new JsonBuilder(model).toString());
+        return createEntity(type, json);
     }
 
     /**

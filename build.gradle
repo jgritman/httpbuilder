@@ -28,12 +28,6 @@ dependencies {
 
     compile('org.apache.httpcomponents:httpclient:4.2.1')
 
-    compile('net.sf.json-lib:json-lib:2.3:jdk15') {
-        exclude(group: 'org.jruby', module: 'jruby')
-        exclude(group: 'xmlunit', module: 'xmlunit')
-        exclude(group: 'xom', module: 'xom')
-    }
-
     //TODO: Only import modules needed?
     compile('org.codehaus.groovy:groovy-all:2.4.6')
     compile('net.sourceforge.nekohtml:nekohtml:1.9.16');

@@ -193,10 +193,11 @@ class RegistryTest extends Specification{
         def jsonClosure = {
             root {
                 first {
-                    one = 1
-                    two = '2'
+                    one 1
+                    two '2'
                 }
-                second = 'some string' } };
+                second 'some string'
+            } };
         when:
         def entity = reg.encodeJSON(jsonMap, null);
 

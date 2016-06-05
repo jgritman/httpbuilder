@@ -22,8 +22,7 @@
 package groovyx.net.http;
 
 import java.util.Iterator;
-
-import org.apache.commons.collections.iterators.ArrayIterator;
+import java.util.Arrays;
 
 /**
  * Enumeration of common <a href="http://www.iana.org/assignments/media-types/">IANA</a>
@@ -83,7 +82,7 @@ public enum ContentType {
      */
     @SuppressWarnings("unchecked")
     public String getAcceptHeader() {
-        Iterator<String> iter = new ArrayIterator(ctStrings);
+        Iterator<String> iter = Arrays.asList(ctStrings).iterator();
         StringBuilder sb = new StringBuilder();
         while ( iter.hasNext() ) {
             sb.append( iter.next() );
