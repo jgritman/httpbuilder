@@ -193,6 +193,12 @@ public class HTTPBuilder {
     private static final Logger log = LoggerFactory.getLogger(HTTPBuilder.class);
     public static final Set<String> EXPECTED_CONSTRUCTOR_ARGS =
         Collections.unmodifiableSet(new HashSet<>(Arrays.asList("uri", "contentType", "client")));
+
+    public static final Set<String> EXPECTED_PROPERTY_SET_ARGS =
+        Collections.unmodifiableSet(new HashSet<>(Arrays.asList("uri", "queryString", "query", "headers",
+                                                                "path", "contentType", "requestContentType",
+                                                                "body", "params")));
+
     public static final Object DEFAULT_CONTENT_TYPE = ContentType.ANY;
     
     private final HttpClient client;
@@ -1237,48 +1243,49 @@ public class HTTPBuilder {
          * @throws URISyntaxException if the uri argument does not represent a valid URI
          */
         @SuppressWarnings("unchecked")
-        protected void setPropertiesFromMap( Map<String,?> args ) throws URISyntaxException {
-            if ( args == null ) return;
-            if ( args.containsKey( "url" ) ) throw new IllegalArgumentException(
-                    "The 'url' parameter is deprecated; use 'uri' instead" );
-            Object uri = args.remove( "uri" );
-            if ( uri == null ) uri = defaultURI;
-            if ( uri == null ) throw new IllegalStateException(
-                    "Default URI is null, and no 'uri' parameter was given" );
-            this.uri = new URIBuilder( convertToURI( uri ) );
-
-            Map query = (Map)args.remove( "params" );
-            if ( query != null ) {
-                if(log.isWarnEnabled()) {
-                    log.warn( "'params' argument is deprecated; use 'query' instead." );
-                }
-                
-                this.uri.setQuery( query );
+        protected void setPropertiesFromMap(final Map<String,?> args) throws URISyntaxException {
+            if(args == null) {
+                return;
             }
-            String queryString = (String)args.remove("queryString");
-            if ( queryString != null ) this.uri.setRawQuery(queryString);
+            
+            assertValidArguments(EXPECTED_PROPERTY_SET_ARGS, args);
 
-            query = (Map)args.remove( "query" );
-            if ( query != null ) this.uri.addQueryParams( query );
-            Map headers = (Map)args.remove( "headers" );
-            if ( headers != null ) this.getHeaders().putAll( headers );
+            final Object uri = args.containsKey("uri") ? args.get("uri") : defaultURI;
+            if(uri == null) {
+                throw new IllegalStateException("Default URI is null, and no 'uri' parameter was given");
+            }
+            this.uri = new URIBuilder(convertToURI(uri));
 
-            Object path = args.remove( "path" );
-            if ( path != null ) this.uri.setPath( path.toString() );
+            if(args.containsKey("params")) {
+                this.uri.setQuery((Map) args.get("params"));
+            }
+            
+            if(args.containsKey("queryString")) {
+                this.uri.setRawQuery((String) args.get("queryString"));
+            }
 
-            Object contentType = args.remove( "contentType" );
-            if ( contentType != null ) this.setContentType( contentType );
-
-            contentType = args.remove( "requestContentType" );
-            if ( contentType != null ) this.setRequestContentType( contentType );
-
-            Object body = args.remove("body");
-            if ( body != null ) this.setBody( body );
-
-            if ( args.size() > 0 ) {
-                String invalidArgs = "";
-                for ( String k : args.keySet() ) invalidArgs += k + ",";
-                throw new IllegalArgumentException("Unexpected keyword args: " + invalidArgs);
+            if(args.containsKey("query")) {
+                this.uri.addQueryParams((Map) args.get("query"));
+            }
+            
+            if(args.containsKey("headers")) {
+                this.getHeaders().putAll((Map) args.get("headers"));
+            }
+            
+            if(args.containsKey("path")) {
+                this.uri.setPath(args.get("path").toString());
+            }
+            
+            if(args.containsKey("contentType")) {
+                this.setContentType(args.get("contentType"));
+            }
+            
+            if(args.containsKey("requestContentType")) {
+                this.setRequestContentType(args.get("requestContentType"));
+            }
+            
+            if(args.containsKey("body")) {
+                this.setBody(args.get("body"));
             }
         }
 
