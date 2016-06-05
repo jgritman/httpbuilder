@@ -14,3 +14,4 @@ Lowest java version supported is Java 7.
 
 Lowest Groovy version supported is 2.4.
 
+Http verb methods in HTTPBuilder (get/post etc.) no longer remove arguments from passed argument map.
