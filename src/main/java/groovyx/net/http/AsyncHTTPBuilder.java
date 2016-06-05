@@ -21,15 +21,18 @@
  */
 package groovyx.net.http;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -38,9 +41,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.params.SyncBasicHttpParams;
 import org.apache.http.HttpVersion;
+import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.conn.params.ConnPerRouteBean;
@@ -54,6 +56,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.params.SyncBasicHttpParams;
 
 /**
  * This implementation makes all requests asynchronous by submitting jobs to a
@@ -71,6 +74,8 @@ public class AsyncHTTPBuilder extends HTTPBuilder implements AutoCloseable {
      */
     public static final int DEFAULT_POOL_SIZE = 4;
 
+    private static final Log log = LogFactory.getLog(AsyncHTTPBuilder.class);
+    
     private static final Set<String> EXPECTED_CONSTRUCTOR_ARGS;
 
     static {
@@ -132,21 +137,8 @@ public class AsyncHTTPBuilder extends HTTPBuilder implements AutoCloseable {
         if(poolSize < 1) {
             throw new IllegalArgumentException("poolSize may not be < 1");
         }
-        
-        // Create and initialize HTTP parameters
-        final HttpParams params = new SyncBasicHttpParams();
-        ConnManagerParams.setMaxTotalConnections(params, poolSize);
-        ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRouteBean(poolSize));
-        
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        
-        // Create and initialize scheme registry
-        final SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        
-        final ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
-        return new DefaultHttpClient(cm, params);
+
+        return asyncClient(poolSize);
     }
 
     protected static int populatePoolSize(final Map<String,?> args) {
@@ -185,7 +177,10 @@ public class AsyncHTTPBuilder extends HTTPBuilder implements AutoCloseable {
                         return doRequestSuper(delegate);
                     }
                     catch( Exception ex ) {
-                        log.info( "Exception thrown from response delegate: " + delegate, ex );
+                        if(log.isInfoEnabled()) {
+                            log.info("Exception thrown from response delegate: " + delegate, ex);
+                        }
+                        
                         throw ex;
                     }
                 }
@@ -239,7 +234,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder implements AutoCloseable {
      * @return timeout in milliseconds.
      */
     public int getTimeout() {
-        return HttpConnectionParams.getConnectionTimeout( super.getClient().getParams() );
+        return HttpConnectionParams.getConnectionTimeout(getClient().getParams());
     }
 
     /**

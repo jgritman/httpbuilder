@@ -27,13 +27,14 @@ import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpPatch;
 
 /**
  * Extension to HTTPBuilder that basically attempts to provide a slightly more
@@ -90,6 +91,14 @@ public class RESTClient extends HTTPBuilder {
         super( defaultURI, defaultContentType );
     }
 
+    public RESTClient(final Object defaultURI, final Object defaultContentType,
+                      final HttpClient client) throws URISyntaxException {
+        super(defaultURI, defaultContentType, client);
+    }
+
+    public RESTClient(final Map<String,?> args) throws URISyntaxException {
+        super(args);
+    }
 
     /**
      * <p>Convenience method to perform an HTTP GET request.  It will use the HTTPBuilder's

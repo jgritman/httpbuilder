@@ -55,23 +55,33 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnManagerParams;
+import org.apache.http.conn.params.ConnPerRouteBean;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.params.CookieSpecPNames;
-import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.params.SyncBasicHttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
@@ -179,6 +189,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  */
 public class HTTPBuilder {
 
+    private static final Log log = LogFactory.getLog(HTTPBuilder.class);
     public static final Set<String> EXPECTED_CONSTRUCTOR_ARGS =
         Collections.unmodifiableSet(new HashSet<>(Arrays.asList("uri", "contentType", "client")));
     public static final Object DEFAULT_CONTENT_TYPE = ContentType.ANY;
@@ -188,8 +199,6 @@ public class HTTPBuilder {
     private volatile Object defaultContentType;
     
     protected AuthConfig auth = new AuthConfig( this );
-
-    protected final Log log = LogFactory.getLog( getClass() );
 
     protected Object defaultRequestContentType = null;
     protected boolean autoAcceptHeader = true;
@@ -202,11 +211,45 @@ public class HTTPBuilder {
     protected EncoderRegistry encoders = new EncoderRegistry();
     protected ParserRegistry parsers = new ParserRegistry();
 
-    public static HttpClient defaultClient() {
-        final HttpParams params = new BasicHttpParams();
+    public static HttpParams cookieNames(final HttpParams params) {
         params.setParameter(CookieSpecPNames.DATE_PATTERNS,
                             Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z"));
-        return new DefaultHttpClient(params);
+        return params;
+    }
+    
+    public static HttpParams basicParams() {
+        return cookieNames(new BasicHttpParams());
+    }
+
+    public static HttpParams syncParams() {
+        return cookieNames(new SyncBasicHttpParams());
+    }
+    
+    public static HttpClient singleThreadedClient() {
+        return new DefaultHttpClient(basicParams());
+    }
+    
+    public static HttpClient poolingClient(final int max) {
+        final PoolingClientConnectionManager manager = new PoolingClientConnectionManager();
+        manager.setMaxTotal(max);
+        manager.setDefaultMaxPerRoute(max);
+        return new DefaultHttpClient(manager, syncParams());
+    }
+
+    public static HttpClient asyncClient(final int poolSize) {
+        final HttpParams params = syncParams();
+        ConnManagerParams.setMaxTotalConnections(params, poolSize);
+        ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRouteBean(poolSize));
+        
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        
+        // Create and initialize scheme registry
+        final SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+        
+        final ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
+        return new DefaultHttpClient(cm, params);
     }
 
     public HTTPBuilder(final Object defaultURI,
@@ -214,7 +257,7 @@ public class HTTPBuilder {
                        final HttpClient client) throws URISyntaxException {
         this.defaultURI = populateUri(defaultURI);
         this.defaultContentType = defaultContentType == null ? ContentType.ANY : defaultContentType;
-        this.client = client == null ? defaultClient() : client;
+        this.client = client == null ? singleThreadedClient() : client;
 
         contentEncodingHandler.setInterceptors((AbstractHttpClient) this.client,
                                                ContentEncoding.Type.GZIP,
@@ -486,7 +529,9 @@ public class HTTPBuilder {
         if ( reqMethod.getURI() == null)
             throw new IllegalStateException( "Request URI cannot be null" );
 
-        log.debug( reqMethod.getMethod() + " " + reqMethod.getURI() );
+        if(log.isDebugEnabled()) {
+            log.debug( reqMethod.getMethod() + " " + reqMethod.getURI() );
+        }
 
         // set any request headers from the delegate
         Map<?,?> headers = delegate.getHeaders();
@@ -505,7 +550,10 @@ public class HTTPBuilder {
                 try {
                     int status = resp.getStatusLine().getStatusCode();
                     Closure responseClosure = delegate.findResponseHandler( status );
-                    log.debug( "Response code: " + status + "; found handler: " + responseClosure );
+
+                    if(log.isDebugEnabled()) {
+                        log.debug( "Response code: " + status + "; found handler: " + responseClosure );
+                    }
 
                     Object[] closureArgs = null;
                     switch ( responseClosure.getMaximumNumberOfParameters() ) {
@@ -522,7 +570,11 @@ public class HTTPBuilder {
                         catch ( Exception ex ) {
                             Header h = entity.getContentType();
                             String respContentType = h != null ? h.getValue() : null;
-                            log.warn( "Error parsing '" + respContentType + "' response", ex );
+
+                            if(log.isWarnEnabled()) {
+                                log.warn( "Error parsing '" + respContentType + "' response", ex );
+                            }
+                            
                             throw new ResponseParseException( resp, ex );
                         }
                         break;
@@ -532,7 +584,10 @@ public class HTTPBuilder {
                     }
 
                     Object returnVal = responseClosure.call( closureArgs );
-                    log.trace( "response handler result: " + returnVal );
+
+                    if(log.isTraceEnabled()) {
+                        log.trace( "response handler result: " + returnVal );
+                    }
 
                     return returnVal;
                 }
@@ -563,7 +618,10 @@ public class HTTPBuilder {
             throws HttpResponseException {
         // For HEAD or OPTIONS requests, there should be no response entity.
         if ( resp.getEntity() == null ) {
-            log.debug( "Response contains no entity.  Parsed data is null." );
+            if(log.isDebugEnabled()) {
+                log.debug( "Response contains no entity.  Parsed data is null." );
+            }
+            
             return null;
         }
         // first, start with the _given_ content-type
@@ -574,7 +632,10 @@ public class HTTPBuilder {
                 responseContentType = ParserRegistry.getContentType( resp );
         }
         catch ( RuntimeException ex ) {
-            log.warn( "Could not parse content-type: " + ex.getMessage() );
+            if(log.isWarnEnabled()) {
+                log.warn( "Could not parse content-type: " + ex.getMessage() );
+            }
+            
             /* if for whatever reason we can't determine the content-type, but
              * still want to attempt to parse the data, use the BINARY
              * content-type so that the response will be buffered into a
@@ -584,13 +645,28 @@ public class HTTPBuilder {
 
         Object parsedData = null;
         Closure parser = parsers.getAt( responseContentType );
-        if ( parser == null ) log.warn( "No parser found for content-type: "
-            + responseContentType );
+        if ( parser == null ) {
+            if(log.isWarnEnabled()) {
+                log.warn("No parser found for content-type: " + responseContentType);
+            }
+        }
         else {
-            log.debug( "Parsing response as: " + responseContentType );
+
+            if(log.isDebugEnabled()) {
+                log.debug( "Parsing response as: " + responseContentType );
+            }
+            
             parsedData = parser.call( resp );
-            if ( parsedData == null ) log.warn( "Parser returned null!" );
-            else log.debug( "Parsed data to instance of: " + parsedData.getClass() );
+            if(parsedData == null) {
+                if(log.isWarnEnabled()) {
+                    log.warn( "Parser returned null!" );
+                }
+            }
+            else {
+                if(log.isDebugEnabled()) {
+                    log.debug( "Parsed data to instance of: " + parsedData.getClass() );
+                }
+            }
         }
         return parsedData;
     }
@@ -656,9 +732,13 @@ public class HTTPBuilder {
                 DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
                 parsedData = new StringReader( buffer.toString() );
             }
-            else if ( parsedData instanceof Closeable )
-                log.warn( "Parsed data is streaming, but will be accessible after " +
-                        "the network connection is closed.  Use at your own risk!" );
+            else if ( parsedData instanceof Closeable ) {
+                if(log.isWarnEnabled()) {
+                    log.warn( "Parsed data is streaming, but will be accessible after " +
+                              "the network connection is closed.  Use at your own risk!" );
+                }
+            }
+            
             return parsedData;
         }
         catch ( IOException ex ) {
@@ -1168,7 +1248,10 @@ public class HTTPBuilder {
 
             Map query = (Map)args.remove( "params" );
             if ( query != null ) {
-                log.warn( "'params' argument is deprecated; use 'query' instead." );
+                if(log.isWarnEnabled()) {
+                    log.warn( "'params' argument is deprecated; use 'query' instead." );
+                }
+                
                 this.uri.setQuery( query );
             }
             String queryString = (String)args.remove("queryString");

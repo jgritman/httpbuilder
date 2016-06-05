@@ -95,7 +95,7 @@ public class ParserRegistry {
     private Map<String,Closure> registeredParsers = buildDefaultParserMap();
     private static String defaultCharset = DEFAULT_CHARSET;
 
-    protected static final Log log = LogFactory.getLog( ParserRegistry.class );
+    private static final Log log;
 
     /**
      * This CatalogResolver is static to avoid the overhead of re-parsing
@@ -111,13 +111,18 @@ public class ParserRegistry {
         catalogManager.setIgnoreMissingProperties( true );
         catalogManager.setUseStaticCatalog( false );
         catalogManager.setRelativeCatalogs( true );
+
+        log = LogFactory.getLog(ParserRegistry.class);
+        
         try {
             catalogResolver = new CatalogResolver( catalogManager );
             catalogResolver.getCatalog().parseCatalog(
                     ParserRegistry.class.getResource( "/catalog/html.xml" ) );
-        } catch ( IOException ex ) {
-            LogFactory.getLog( ParserRegistry.class )
-                .warn( "Could not resolve default XML catalog", ex );
+        }
+        catch(IOException ex) {
+            if(log.isWarnEnabled()) {
+                log.warn("Could not resolve default XML catalog", ex);
+            }
         }
     }
 
@@ -145,14 +150,20 @@ public class ParserRegistry {
                 .getElements()[0].getParameterByName("charset");
 
             if ( charset == null || charset.getValue().trim().equals("") ) {
-                log.debug( "Could not find charset in response; using " + defaultCharset );
+                if(log.isDebugEnabled()) {
+                    log.debug( "Could not find charset in response; using " + defaultCharset );
+                }
+                
                 return defaultCharset;
             }
 
             return charset.getValue();
         }
         catch ( RuntimeException ex ) { // NPE or OOB Exceptions
-            log.warn( "Could not parse charset from content-type header in response" );
+            if(log.isWarnEnabled()) {
+                log.warn( "Could not parse charset from content-type header in response" );
+            }
+            
             return Charset.defaultCharset().name();
         }
     }
@@ -375,8 +386,11 @@ public class ParserRegistry {
         Closure parser = registeredParsers.get(ct);
         if ( parser != null ) return parser;
 
-        log.warn( "Cannot find parser for content-type: " + ct
-                    + " -- using default parser.");
+        if(log.isWarnEnabled()) {
+            log.warn( "Cannot find parser for content-type: " + ct
+                      + " -- using default parser.");
+        }
+        
         return defaultParser;
     }
 
