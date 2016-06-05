@@ -5,3 +5,12 @@ HTTPBuilder.createClient no longer exists. To change the underlying http client,
 HTTPBuilder.getClient() is now final; HTTPBuilder.setClient() has been removed.
 
 AsyncHTTPBuilder.finalize() no longer exists, use AutoCloseable for automatic resource management.
+
+HTTPBuilder and HttpURLClient no longer contain a protected log fields. The log fields are now private static.
+
+Internally now uses Slf4j instead of commons-logging.
+
+Lowest java version supported is Java 7.
+
+Lowest Groovy version supported is 2.4.
+

@@ -48,8 +48,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -189,7 +190,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  */
 public class HTTPBuilder {
 
-    private static final Log log = LogFactory.getLog(HTTPBuilder.class);
+    private static final Logger log = LoggerFactory.getLogger(HTTPBuilder.class);
     public static final Set<String> EXPECTED_CONSTRUCTOR_ARGS =
         Collections.unmodifiableSet(new HashSet<>(Arrays.asList("uri", "contentType", "client")));
     public static final Object DEFAULT_CONTENT_TYPE = ContentType.ANY;

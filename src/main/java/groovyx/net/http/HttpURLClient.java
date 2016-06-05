@@ -47,8 +47,9 @@ import oauth.signpost.basic.DefaultOAuthConsumer;
 import oauth.signpost.basic.HttpURLConnectionRequestAdapter;
 import oauth.signpost.exception.OAuthException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
@@ -92,7 +93,7 @@ public class HttpURLClient {
     protected OAuthWrapper oauth;
 
     /** Logger instance defined for use by sub-classes */
-    protected Log log =  LogFactory.getLog( getClass() );
+    private static final Logger log = LoggerFactory.getLogger(HttpURLClient.class);
 
     /**
      * Perform a request.  Parameters are:
@@ -178,7 +179,12 @@ public class HttpURLClient {
         arg = null;
         arg = args.remove( "auth" );
         if ( arg != null ) {
-            if ( oauth != null ) log.warn( "You are trying to use both OAuth and basic authentication!" );
+            if(oauth != null) {
+                if(log.isWarnEnabled()) {
+                    log.warn( "You are trying to use both OAuth and basic authentication!" );
+                }
+            }
+            
             try {
                 List<?> vals = (List<?>)arg;
                 conn.addRequestProperty( "Authorization", getBasicAuthHeader(
@@ -229,17 +235,22 @@ public class HttpURLClient {
         }
 
         String method = conn.getRequestMethod();
-        log.debug( method + " " + url );
+        if(log.isDebugEnabled()) {
+            log.debug( method + " " + url );
+        }
 
         HttpResponse response = new HttpURLResponseAdapter(conn);
         if ( ContentType.ANY.equals( contentType ) ) contentType = conn.getContentType();
 
         Object result = this.getparsedResult(method, contentType, response);
 
-        log.debug( response.getStatusLine() );
+        if(log.isDebugEnabled()) {
+            log.debug(response.getStatusLine().toString());
+        }
+        
         HttpResponseDecorator decoratedResponse = new HttpResponseDecorator( response, result );
 
-        if ( log.isTraceEnabled() ) {
+        if(log.isTraceEnabled()) {
             for ( Header h : decoratedResponse.getHeaders() )
                 log.trace( " << " + h.getName() + " : " + h.getValue() );
         }
@@ -267,8 +278,12 @@ public class HttpURLClient {
                 DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
                 parsedData = new StringReader( buffer.toString() );
             }
-            else if ( parsedData instanceof Closeable )
-                log.warn( "Parsed data is streaming, but cannot be buffered: " + parsedData.getClass() );
+            else if ( parsedData instanceof Closeable ) {
+                if(log.isWarnEnabled()) {
+                    log.warn( "Parsed data is streaming, but cannot be buffered: " + parsedData.getClass() );
+                }
+            }
+            
             return parsedData;
         }
         catch ( IOException ex ) {
