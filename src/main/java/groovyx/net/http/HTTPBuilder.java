@@ -42,7 +42,11 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -175,13 +179,18 @@ import org.codehaus.groovy.runtime.MethodClosure;
  */
 public class HTTPBuilder {
 
-    private HttpClient client;
-    protected URIBuilder defaultURI = null;
+    public static final Set<String> EXPECTED_CONSTRUCTOR_ARGS =
+        Collections.unmodifiableSet(new HashSet<>(Arrays.asList("uri", "contentType", "client")));
+    public static final Object DEFAULT_CONTENT_TYPE = ContentType.ANY;
+    
+    private final HttpClient client;
+    private volatile URIBuilder defaultURI;
+    private volatile Object defaultContentType;
+    
     protected AuthConfig auth = new AuthConfig( this );
 
     protected final Log log = LogFactory.getLog( getClass() );
 
-    protected Object defaultContentType = ContentType.ANY;
     protected Object defaultRequestContentType = null;
     protected boolean autoAcceptHeader = true;
     protected final Map<Object,Closure> defaultResponseHandlers =
@@ -193,12 +202,30 @@ public class HTTPBuilder {
     protected EncoderRegistry encoders = new EncoderRegistry();
     protected ParserRegistry parsers = new ParserRegistry();
 
+    public static HttpClient defaultClient() {
+        final HttpParams params = new BasicHttpParams();
+        params.setParameter(CookieSpecPNames.DATE_PATTERNS,
+                            Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z"));
+        return new DefaultHttpClient(params);
+    }
+
+    public HTTPBuilder(final Object defaultURI,
+                       final Object defaultContentType,
+                       final HttpClient client) throws URISyntaxException {
+        this.defaultURI = populateUri(defaultURI);
+        this.defaultContentType = defaultContentType == null ? ContentType.ANY : defaultContentType;
+        this.client = client == null ? defaultClient() : client;
+
+        contentEncodingHandler.setInterceptors((AbstractHttpClient) this.client,
+                                               ContentEncoding.Type.GZIP,
+                                               ContentEncoding.Type.DEFLATE);
+    }
+    
     /**
      * Creates a new instance with a <code>null</code> default URI.
      */
-    public HTTPBuilder() {
-        setContentEncoding( ContentEncoding.Type.GZIP,
-                ContentEncoding.Type.DEFLATE );
+    public HTTPBuilder() throws URISyntaxException {
+        this(null, null, null);
     }
 
     /**
@@ -209,8 +236,8 @@ public class HTTPBuilder {
      *  {@link URIBuilder#convertToURI(Object)}.
      * @throws URISyntaxException if the given argument does not represent a valid URI
      */
-    public HTTPBuilder( Object defaultURI ) throws URISyntaxException {
-        setUri( defaultURI );
+    public HTTPBuilder(final Object defaultURI) throws URISyntaxException {
+        this(defaultURI, null, null);
     }
 
     /**
@@ -224,9 +251,13 @@ public class HTTPBuilder {
      *   for common types.
      * @throws URISyntaxException if the uri argument does not represent a valid URI
      */
-    public HTTPBuilder( Object defaultURI, Object defaultContentType ) throws URISyntaxException {
-        setUri( defaultURI );
-        this.defaultContentType = defaultContentType;
+    public HTTPBuilder(final Object defaultURI, final Object defaultContentType) throws URISyntaxException {
+        this(defaultURI, defaultContentType, null);
+    }
+
+    public HTTPBuilder(final Map<String,?> args) throws URISyntaxException {
+        this(populateUri(args.get("uri")), args.get("contentType"), (HttpClient) args.get("client"));
+        assertValidArguments(EXPECTED_CONSTRUCTOR_ARGS, args);
     }
 
     /**
@@ -772,16 +803,14 @@ public class HTTPBuilder {
      * {@link ContentEncoding.Type} value, or a <code>content-encoding</code>
      * string that is known by the {@link ContentEncodingRegistry}
      */
-    public void setContentEncoding( Object... encodings ) {
-	  	HttpClient client = getClient();
-		if ( client instanceof AbstractHttpClient ) {
-          this.contentEncodingHandler.setInterceptors( (AbstractHttpClient)client, encodings );
-		} else {
-		  throw new IllegalStateException("The HttpClient is not an AbstractHttpClient!");
-		}
-
+    public void setContentEncoding(final Object... encodings) {
+        contentEncodingHandler.setInterceptors((AbstractHttpClient) getClient(), encodings);
     }
 
+    protected static URIBuilder populateUri(final Object uri) throws URISyntaxException {
+        return uri == null ? null : new URIBuilder(convertToURI(uri));
+    }
+    
     /**
      * Set the default URI used for requests that do not explicitly take a
      * <code>uri</code> param.
@@ -791,7 +820,7 @@ public class HTTPBuilder {
      * @throws URISyntaxException if the uri argument does not represent a valid URI
      */
     public void setUri( Object uri ) throws URISyntaxException {
-        this.defaultURI = uri != null ? new URIBuilder( convertToURI( uri ) ) : null;
+        this.defaultURI = populateUri(uri);
     }
 
     /**
@@ -834,28 +863,8 @@ public class HTTPBuilder {
      * Return the underlying HTTPClient that is used to handle HTTP requests.
      * @return the client instance.
      */
-    public HttpClient getClient() {
-        if (client == null) {
-            HttpParams defaultParams = new BasicHttpParams();
-            defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
-                    Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z") );
-            client = createClient(defaultParams);
-        }
+    protected final HttpClient getClient() {
         return client;
-    }
-
-    public void setClient(HttpClient client) {
-        this.client = client;
-    }
-
-    /**
-     * Override this method in a subclass to customize creation of the
-     * HttpClient instance.
-     * @param params
-     * @return
-     */
-    protected HttpClient createClient( HttpParams params ) {
-        return new DefaultHttpClient(params);
     }
 
     /**
@@ -950,7 +959,24 @@ public class HTTPBuilder {
         getClient().getConnectionManager().shutdown();
     }
 
+    protected static void assertValidArguments(final Set<String> expected, final Map<String,?> args) {
+        for(String arg : args.keySet()) {
+            if(!expected.contains(arg)) {
+                throw new IllegalArgumentException("Unexpected argument: " + arg);
+            }
+        }
+    }
 
+    protected static Map<String,?> extractValidArguments(final Set<String> expected, final Map<String,?> args) {
+        final Map<String,Object> ret = new HashMap<>();
+        for(String s : expected) {
+            if(args.containsKey(s)) {
+                ret.put(s, args.get(s));
+            }
+        }
+
+        return ret;
+    }
 
     /**
      * <p>Encloses all properties and method calls used within the

@@ -1,0 +1,7 @@
+Now using JsonBuilder instead of json-lib.
+
+HTTPBuilder.createClient no longer exists. To change the underlying http client, pass it to the constructor.
+
+HTTPBuilder.getClient() is now final; HTTPBuilder.setClient() has been removed.
+
+AsyncHTTPBuilder.finalize() no longer exists, use AutoCloseable for automatic resource management.

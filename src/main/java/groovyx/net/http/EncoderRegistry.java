@@ -298,9 +298,9 @@ public class EncoderRegistry implements Iterable<Map.Entry<String,Closure>> {
      */
     public HttpEntity encodeJSON(final Object model, final Object contentType) throws UnsupportedEncodingException {
         final Object type = contentType == null ? ContentType.JSON : contentType;
-        final String json = ((model instanceof String || model instanceof GString) ?
-                             model.toString() :
-                             new JsonBuilder(model).toString());
+        final String json = ((model instanceof String || model instanceof GString)
+                             ? model.toString()
+                             : new JsonBuilder(model).toString());
         return createEntity(type, json);
     }
 

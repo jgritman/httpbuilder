@@ -24,6 +24,12 @@ package groovyx.net.http;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +38,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.params.SyncBasicHttpParams;
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
@@ -56,15 +64,22 @@ import org.apache.http.params.HttpProtocolParams;
  *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
-public class AsyncHTTPBuilder extends HTTPBuilder {
+public class AsyncHTTPBuilder extends HTTPBuilder implements AutoCloseable {
 
     /**
      * Default pool size is one is not supplied in the constructor.
      */
     public static final int DEFAULT_POOL_SIZE = 4;
 
-    protected ExecutorService threadPool;
-//      = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+    private static final Set<String> EXPECTED_CONSTRUCTOR_ARGS;
+
+    static {
+        final Set<String> allArgs = new HashSet<>(HTTPBuilder.EXPECTED_CONSTRUCTOR_ARGS);
+        allArgs.addAll(Arrays.asList("threadPool", "poolSize", "timeout"));
+        EXPECTED_CONSTRUCTOR_ARGS = Collections.unmodifiableSet(allArgs);
+    }
+
+    protected final ExecutorService threadPool;
 
     /**
      * Accepts the following named parameters:
@@ -81,37 +96,76 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      *      be established and request to complete.</dd>
      * </dl>
      */
-    public AsyncHTTPBuilder( Map<String, ?> args ) throws URISyntaxException {
-        int poolSize = DEFAULT_POOL_SIZE;
-        ExecutorService threadPool = null;
-        if ( args != null ) {
-            threadPool = (ExecutorService)args.remove( "threadPool" );
-
-            if ( threadPool instanceof ThreadPoolExecutor )
-                poolSize = ((ThreadPoolExecutor)threadPool).getMaximumPoolSize();
-
-            Object poolSzArg = args.remove("poolSize");
-            if ( poolSzArg != null ) poolSize = Integer.parseInt( poolSzArg.toString() );
-
-            if ( args.containsKey( "url" ) ) throw new IllegalArgumentException(
-                "The 'url' parameter is deprecated; use 'uri' instead" );
-            Object defaultURI = args.remove("uri");
-            if ( defaultURI != null ) super.setUri(defaultURI);
-
-            Object defaultContentType = args.remove("contentType");
-            if ( defaultContentType != null )
-                super.setContentType(defaultContentType);
-
-            Object timeout = args.remove( "timeout" );
-            if ( timeout != null ) setTimeout( (Integer) timeout );
-
-            if ( args.size() > 0 ) {
-                String invalidArgs = "";
-                for ( String k : args.keySet() ) invalidArgs += k + ",";
-                throw new IllegalArgumentException("Unexpected keyword args: " + invalidArgs);
-            }
+    public AsyncHTTPBuilder(final Map<String,?> args) throws URISyntaxException {
+        super(extractValidArguments(HTTPBuilder.EXPECTED_CONSTRUCTOR_ARGS,
+                                    augment("client", createClient(args), args)));
+        
+        assertValidArguments(EXPECTED_CONSTRUCTOR_ARGS, args);
+        
+        if(args.containsKey("timeout")) {
+            timeout(getClient(), ((Number) args.get("timeout")).intValue());
         }
-        this.initThreadPools( poolSize, threadPool );
+        
+        if(args.containsKey("threadPool")) {
+            if(!(args.get("threadPool") instanceof ExecutorService)) {
+                throw new IllegalArgumentException("threadPool must be an instance of ExecutorService");
+            }
+            
+            this.threadPool = (ExecutorService) args.get("threadPool");
+        }
+        else {
+            final int poolSize = populatePoolSize(args);
+            this.threadPool = new ThreadPoolExecutor(poolSize, poolSize, 120, TimeUnit.SECONDS,
+                                                     new LinkedBlockingQueue<Runnable>());
+        }
+    }
+    
+    protected static Map<String,?> augment(final String key, final Object val, final Map<String,?> args) {
+        final Map<String,Object> ret = new HashMap<>(args);
+        ret.put(key, val);
+        return ret;
+    }
+    
+    protected static HttpClient createClient(final Map<String,?> args) {
+        final int poolSize = populatePoolSize(args);
+        
+        if(poolSize < 1) {
+            throw new IllegalArgumentException("poolSize may not be < 1");
+        }
+        
+        // Create and initialize HTTP parameters
+        final HttpParams params = new SyncBasicHttpParams();
+        ConnManagerParams.setMaxTotalConnections(params, poolSize);
+        ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRouteBean(poolSize));
+        
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        
+        // Create and initialize scheme registry
+        final SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+        
+        final ClientConnectionManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
+        return new DefaultHttpClient(cm, params);
+    }
+
+    protected static int populatePoolSize(final Map<String,?> args) {
+        Object service = args.get("threadPool");
+        if(service instanceof ThreadPoolExecutor) {
+            return ((ThreadPoolExecutor) service).getMaximumPoolSize();
+        }
+        else if(args.containsKey("poolSize")) {
+            final Object poolSize = args.get("poolSize");
+            return ((Number) poolSize).intValue();
+        }
+        else {
+            return DEFAULT_POOL_SIZE;
+        }
+    }
+
+    protected static void timeout(final HttpClient client, final int timeout) {
+        HttpConnectionParams.setConnectionTimeout(client.getParams(), timeout);
+        HttpConnectionParams.setSoTimeout(client.getParams(), timeout);
     }
 
     /**
@@ -126,16 +180,16 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     @Override
     protected Future<?> doRequest( final RequestConfigDelegate delegate ) {
         return threadPool.submit( new Callable<Object>() {
-            /*@Override*/ public Object call() throws Exception {
-                try {
-                    return doRequestSuper(delegate);
+                /*@Override*/ public Object call() throws Exception {
+                    try {
+                        return doRequestSuper(delegate);
+                    }
+                    catch( Exception ex ) {
+                        log.info( "Exception thrown from response delegate: " + delegate, ex );
+                        throw ex;
+                    }
                 }
-                catch( Exception ex ) {
-                    log.info( "Exception thrown from response delegate: " + delegate, ex );
-                    throw ex;
-                }
-            }
-        });
+            });
     }
 
     /*
@@ -145,37 +199,7 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
     private Object doRequestSuper( RequestConfigDelegate delegate ) throws IOException {
         return super.doRequest(delegate);
     }
-
-    /**
-     * Initializes threading parameters for the HTTPClient's
-     * {@link ThreadSafeClientConnManager}, and this class' ThreadPoolExecutor.
-     */
-    protected void initThreadPools( final int poolSize, final ExecutorService threadPool ) {
-        if (poolSize < 1) throw new IllegalArgumentException("poolSize may not be < 1");
-        // Create and initialize HTTP parameters
-        HttpParams params = super.getClient().getParams();
-        ConnManagerParams.setMaxTotalConnections(params, poolSize);
-        ConnManagerParams.setMaxConnectionsPerRoute(params,
-                new ConnPerRouteBean(poolSize));
-
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-
-        // Create and initialize scheme registry
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register( new Scheme( "http",
-                PlainSocketFactory.getSocketFactory(), 80 ) );
-        schemeRegistry.register( new Scheme( "https",
-                SSLSocketFactory.getSocketFactory(), 443));
-
-        ClientConnectionManager cm = new ThreadSafeClientConnManager(
-                params, schemeRegistry );
-        setClient(new DefaultHttpClient( cm, params ));
-
-        this.threadPool = threadPool != null ? threadPool :
-            new ThreadPoolExecutor( poolSize, poolSize, 120, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<Runnable>() );
-    }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -206,12 +230,8 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
      * @see HttpConnectionParams#setConnectionTimeout(HttpParams, int)
      * @param timeout time to wait in milliseconds.
      */
-    public void setTimeout( int timeout ) {
-        HttpConnectionParams.setConnectionTimeout( super.getClient().getParams(), timeout );
-        HttpConnectionParams.setSoTimeout( super.getClient().getParams(), timeout );
-        /* this will cause a thread waiting for an available connection instance
-         * to time-out   */
-//      ConnManagerParams.setTimeout( super.getClient().getParams(), timeout );
+    public void setTimeout(int timeout) {
+        timeout(getClient(), timeout);
     }
 
     /**
@@ -249,10 +269,8 @@ public class AsyncHTTPBuilder extends HTTPBuilder {
 
     /**
      * {@inheritDoc}
-     * @see #shutdown()
      */
-    @Override protected void finalize() throws Throwable {
+    @Override public void close() {
         this.shutdown();
-        super.finalize();
     }
 }

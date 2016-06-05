@@ -69,7 +69,7 @@ public class RESTClient extends HTTPBuilder {
      * Constructor.
      * @see HTTPBuilder#HTTPBuilder()
      */
-    public RESTClient() { super(); }
+    public RESTClient() throws URISyntaxException { super(); }
 
     /**
      * See {@link HTTPBuilder#HTTPBuilder(Object)}
