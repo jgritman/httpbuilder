@@ -23,6 +23,7 @@ package groovyx.net.http;
 
 import static groovyx.net.http.URIBuilder.convertToURI;
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -331,7 +332,7 @@ public class HTTPBuilder {
      * @throws IOException
      * @throws ClientProtocolException
      */
-    public Object get( Map<String,?> args )
+    public Object get(final Map<String,?> args)
             throws ClientProtocolException, IOException, URISyntaxException {
         return this.get( args, null );
     }
@@ -353,7 +354,7 @@ public class HTTPBuilder {
      * @throws URISyntaxException if a uri argument is given which does not
      *      represent a valid URI
      */
-    public Object get( Map<String,?> args, Closure responseClosure )
+    public Object get(final Map<String,?> args, @DelegatesTo(RequestConfigDelegate.class) final Closure responseClosure)
             throws ClientProtocolException, IOException, URISyntaxException {
         RequestConfigDelegate delegate = new RequestConfigDelegate( new HttpGet(),
                 this.defaultContentType,
@@ -364,6 +365,16 @@ public class HTTPBuilder {
         if ( responseClosure != null ) delegate.getResponse().put(
                 Status.SUCCESS, responseClosure );
         return this.doRequest( delegate );
+    }
+
+    public Object get(@DelegatesTo(RequestConfigDelegate.class) final Closure responseClosure)
+        throws ClientProtocolException, IOException, URISyntaxException {
+        return this.doRequest(convertToURI(defaultURI), Method.GET, defaultContentType, responseClosure);
+    }
+
+    public static Object get(final String uri, @DelegatesTo(RequestConfigDelegate.class) final Closure responseClosure)
+        throws ClientProtocolException, IOException, URISyntaxException {
+        return new HTTPBuilder(uri).get(responseClosure);
     }
 
     /**
@@ -1244,7 +1255,7 @@ public class HTTPBuilder {
          */
         @SuppressWarnings("unchecked")
         protected void setPropertiesFromMap(final Map<String,?> args) throws URISyntaxException {
-            if(args == null) {
+            if(args == null || args.size() == 0) {
                 return;
             }
             

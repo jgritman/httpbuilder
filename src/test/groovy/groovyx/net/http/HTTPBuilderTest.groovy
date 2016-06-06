@@ -1,11 +1,13 @@
 package groovyx.net.http
 
+import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import org.apache.http.client.HttpResponseException
 import spock.lang.*;
 
 import static groovyx.net.http.ContentType.*
 import static groovyx.net.http.Method.*
+import static groovyx.net.http.HTTPBuilder.get;
 
 class HTTPBuilderTest extends Specification {
 
@@ -30,6 +32,19 @@ class HTTPBuilderTest extends Specification {
                               html.HEAD.TITLE.size() == 1 &&
                               html.BODY.size() == 1);
         }
+    }
+
+    @CompileStatic
+    def "Get Delegates To"() {
+        setup:
+        def html = get('http://www.google.com') {
+            headers = ['User-Agent':"Firefox"]
+            uri.path = '/search'
+            uri.query = [q:'Groovy']
+        };
+
+        expect:
+        html;
     }
 
     def "Default Success Handler"() {
