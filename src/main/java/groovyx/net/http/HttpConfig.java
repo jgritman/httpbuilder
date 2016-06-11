@@ -17,19 +17,24 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
+import java.nio.charset.Charset;
+import java.util.function.Function;
+
 public interface HttpConfig {
 
     public enum Status { SUCCESS, FAILURE };
 
     public interface ContentHandler {
-        Function<Object,HttpEntity> getEncoder();
+        Function<Effective.Request,HttpEntity> getEncoder();
         Function<HttpResponse,Object> getParser();
     }
 
     public interface Request {
 
         void setContentType(String val);
-
+        void setCharset(String val);
+        void setCharset(Charset val);
+        
         URIBuilder getUri();
         void setUri(URIBuilder val);
         void setUri(String val);
@@ -50,8 +55,8 @@ public interface HttpConfig {
         void setFailure(Closure<Object> closure);
     }
 
-    void encoder(String[] contentTypes, Function<Object,HttpEntity> val);
-    Function<Object,HttpEntity> encoder(String contentType);
+    void encoder(String[] contentTypes, Function<Effective.Request,HttpEntity> val);
+    Function<Effective.Request,HttpEntity> encoder(String contentType);
     void parser(String[] contentTypes, Function<HttpResponse,Object> val);
     Function<HttpResponse,Object> parser(String contentType);
     

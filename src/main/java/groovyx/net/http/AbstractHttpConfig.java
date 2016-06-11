@@ -1,5 +1,6 @@
 package groovyx.net.http;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -22,19 +23,19 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
 public abstract class AbstractHttpConfig implements HttpConfig {
-
+    
     public class ImmutableContentHandler implements ContentHandler {
 
-        private final Function<Object,HttpEntity> encoder;
+        private final Function<Effective.Request,HttpEntity> encoder;
         private final Function<HttpResponse,Object> parser;
         
-        public ImmutableContentHandler(final Function<Object,HttpEntity> encoder,
+        public ImmutableContentHandler(final Function<Effective.Request,HttpEntity> encoder,
                                        final Function<HttpResponse,Object> parser) {
             this.encoder = encoder;
             this.parser = parser;
         }
 
-        public ImmutableContentHandler encoder(final Function<Object,HttpEntity> encoder) {
+        public ImmutableContentHandler encoder(final Function<Effective.Request,HttpEntity> encoder) {
             return new ImmutableContentHandler(encoder, parser);
         }
 
@@ -42,7 +43,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             return new ImmutableContentHandler(encoder, parser);
         }
 
-        public Function<Object,HttpEntity> getEncoder() {
+        public Function<Effective.Request,HttpEntity> getEncoder() {
             return encoder;
         }
         
@@ -51,10 +52,28 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         }
     }
 
-    public abstract class BaseRequest implements Request {
+    public abstract class BaseRequest implements Request, Effective.Request {
 
         protected abstract String getContentType();
         protected abstract Object getBody();
+        protected abstract Charset getCharset();
+
+        public void setCharset(final String val) {
+            setCharset(Charset.forName(val));
+        }
+
+        public Charset effectiveCharset() {
+            final Charset val = getCharset();
+            if(val != null) {
+                return val;
+            }
+
+            if(getParent() != null) {
+                return ((BaseRequest) getParent()).effectiveCharset();
+            }
+
+            return null;
+        }
         
         public String effectiveContentType() {
             if(getContentType() != null) {
@@ -104,6 +123,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
 
     public class BasicRequest extends BaseRequest {
         private String contentType;
+        private Charset charset;
         private URIBuilder uriBuilder;
         private Map<String,String> headers = new LinkedHashMap<>();
         private Object body;
@@ -114,6 +134,14 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         
         public void setContentType(final String val) {
             this.contentType = val;
+        }
+
+        public void setCharset(final Charset val) {
+            this.charset = val;
+        }
+
+        public Charset getCharset() {
+            return charset;
         }
         
         public URIBuilder getUri() {
@@ -162,6 +190,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
     public class ThreadSafeRequest extends BaseRequest {
         
         private volatile String contentType;
+        private volatile Charset charset;
         private URIBuilder uriBuilder;
         private final ConcurrentMap<String,String> headers = new ConcurrentHashMap<>();
         private volatile Object body;
@@ -172,6 +201,14 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         
         public void setContentType(final String val) {
             this.contentType = val;
+        }
+
+        public Charset getCharset() {
+            return charset;
+        }
+        
+        public void setCharset(final Charset val) {
+            this.charset = val;
         }
         
         public URIBuilder getUri() {
@@ -227,7 +264,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         }
     }
 
-    public abstract class BaseResponse implements Response {
+    public abstract class BaseResponse implements Response, Effective.Response {
 
         abstract protected Map<Integer,Closure<Object>> getByCode();
         abstract protected Closure<Object> getSuccess();
@@ -258,7 +295,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
         }
 
-        protected Closure<Object> effectiveAction(final Integer code) {
+        public Closure<Object> effectiveAction(final Integer code) {
             Closure<Object> ret = getByCode().get(code);
             if(ret != null) {
                 return ret;
@@ -273,8 +310,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
 
             if(getParent() != null) {
-                BaseResponse baseResponse = (BaseResponse) getParent().getResponse();
-                return baseResponse.effectiveAction(code);
+                return ((BaseResponse) getParent().getResponse()).effectiveAction(code);
             }
 
             return null;
@@ -322,17 +358,17 @@ public abstract class AbstractHttpConfig implements HttpConfig {
 
     abstract protected Map<String,ContentHandler> getContentHandlers();
 
-    public Function<Object,HttpEntity> encoder(final String contentType) {
+    public Function<Effective.Request,HttpEntity> encoder(final String contentType) {
         final ImmutableContentHandler handler = (ImmutableContentHandler) getContentHandlers().get(contentType);
         return handler == null ? null : handler.getEncoder();
     }
 
-    public  Function<HttpResponse,Object> parser(final String contentType) {
+    public Function<HttpResponse,Object> parser(final String contentType) {
         final ImmutableContentHandler handler = (ImmutableContentHandler) getContentHandlers().get(contentType);
         return handler == null ? null : handler.getParser();
     }
     
-    public void encoder(String[] contentTypes, Function<Object,HttpEntity> val) {
+    public void encoder(String[] contentTypes, Function<Effective.Request,HttpEntity> val) {
         for(String contentType : contentTypes) {
             final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
             if(before != null) {
@@ -355,8 +391,8 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
         }
     }
-
-    protected Function<HttpResponse,Object> effectiveParser(final String contentType) {
+    
+    public Function<HttpResponse,Object> effectiveParser(final String contentType) {
         ContentHandler ret = getContentHandlers().get(contentType);
         if(ret != null && ret.getParser() != null) {
             return ret.getParser();
@@ -369,7 +405,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         return null;
     }
 
-    protected Function<Object,HttpEntity> effectiveEncoder(final String contentType) {
+    public Function<Effective.Request,HttpEntity> effectiveEncoder(final String contentType) {
         ContentHandler ret = getContentHandlers().get(contentType);
         if(ret != null && ret.getEncoder() != null) {
             return ret.getEncoder();

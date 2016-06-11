@@ -2,8 +2,8 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'groovy'
 
-sourceCompatibility = 7
-targetCompatibility = 7
+sourceCompatibility = 8
+targetCompatibility = 8
 
 group = 'org.codehaus.groovy.modules.http-builder'
 version = '0.8.0-SNAPSHOT'
@@ -25,7 +25,8 @@ configurations {
 
 dependencies {
 
-    compile('org.apache.httpcomponents:httpclient:4.2.1')
+    compile('org.apache.httpcomponents:httpclient:4.5.2');
+    //compile('org.apache.httpcomponents:httpclient:4.2.1')
     compile('org.codehaus.groovy:groovy-all:2.4.6')
     compile('net.sourceforge.nekohtml:nekohtml:1.9.22');
     compile('xml-resolver:xml-resolver:1.2')
