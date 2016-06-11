@@ -58,7 +58,7 @@ import org.apache.http.message.BasicNameValuePair;
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class URIBuilder implements Cloneable {
-    protected URI base;
+    protected volatile URI base;
     private final String ENC = "UTF-8";
 
     public URIBuilder( String url ) throws URISyntaxException {
@@ -93,11 +93,11 @@ public class URIBuilder implements Cloneable {
         return new URI( uri.toString() ); // assume any other object type produces a valid URI string
     }
 
-    protected URI update( String scheme, String userInfo, String host, int port,
-            String path, String query, String fragment ) throws URISyntaxException {
-        URI u = new URI( scheme, userInfo, host, port, base.getPath(), null, null );
+    protected static URI update(URI copy, String scheme, String userInfo, String host, int port,
+                                String path, String query, String fragment) throws URISyntaxException {
+        final URI u = new URI(scheme, userInfo, host, port, copy.getPath(), null, null);
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if ( path != null ) sb.append( path );
         if ( query != null )
         sb.append( '?' ).append( query );
@@ -110,10 +110,11 @@ public class URIBuilder implements Cloneable {
      * <code>setScheme('https')</code>
      * @throws URISyntaxException if the given scheme contains illegal characters.
      */
-    public URIBuilder setScheme( String scheme ) throws URISyntaxException {
-        this.base = update( scheme, base.getUserInfo(),
-                base.getHost(), base.getPort(),
-                base.getRawPath(), base.getRawQuery(), base.getRawFragment() );
+    public URIBuilder setScheme(String scheme) throws URISyntaxException {
+        final URI copy = base;
+        this.base = update(copy, scheme, copy.getUserInfo(),
+                           copy.getHost(), copy.getPort(),
+                           copy.getRawPath(), copy.getRawQuery(), copy.getRawFragment() );
         return this;
     }
 
@@ -132,9 +133,10 @@ public class URIBuilder implements Cloneable {
      * @throws URISyntaxException
      */
     public URIBuilder setPort( int port ) throws URISyntaxException {
-        this.base = update( base.getScheme(), base.getUserInfo(),
-                base.getHost(), port, base.getRawPath(),
-                base.getRawQuery(), base.getRawFragment() );
+        final URI copy = base;
+        this.base = update(copy, copy.getScheme(), copy.getUserInfo(),
+                           copy.getHost(), port, copy.getRawPath(),
+                           copy.getRawQuery(), copy.getRawFragment());
         return this;
     }
 
@@ -153,9 +155,10 @@ public class URIBuilder implements Cloneable {
      * @throws URISyntaxException if the host parameter contains illegal characters.
      */
     public URIBuilder setHost( String host ) throws URISyntaxException {
-        this.base = update( base.getScheme(), base.getUserInfo(),
-                host, base.getPort(), base.getRawPath(),
-                base.getRawQuery(), base.getRawFragment() );
+        final URI copy = base;
+        this.base = update(copy, copy.getScheme(), copy.getUserInfo(),
+                           host, copy.getPort(), copy.getRawPath(),
+                           copy.getRawQuery(), copy.getRawFragment());
         return this;
     }
 
@@ -188,10 +191,11 @@ public class URIBuilder implements Cloneable {
      *   cannot be converted to a valid URI
      */
     public URIBuilder setPath( String path ) throws URISyntaxException {
-        this.base = update( base.getScheme(), base.getUserInfo(),
-                base.getHost(), base.getPort(),
-                new URI( null, null, path, null, null ).getRawPath(),
-                base.getRawQuery(), base.getRawFragment() );
+        final URI copy = base;
+        this.base = update(copy, copy.getScheme(), copy.getUserInfo(),
+                           copy.getHost(), copy.getPort(),
+                           new URI(null, null, path, null, null).getRawPath(),
+                           copy.getRawQuery(), copy.getRawFragment());
         return this;
     }
 
@@ -213,14 +217,21 @@ public class URIBuilder implements Cloneable {
          * double-escape query parameters and goober things up.  So we have
          * to create a full path+query+fragment and use URI#resolve() to
          * create the new URI.  */
-        StringBuilder sb = new StringBuilder();
-        String path = base.getRawPath();
-        if ( path != null ) sb.append( path );
-        sb.append( '?' );
-        sb.append( URLEncodedUtils.format( nvp, ENC ) );
-        String frag = base.getRawFragment();
-        if ( frag != null ) sb.append( '#' ).append( frag );
-        this.base = base.resolve( sb.toString() );
+        final URI copy = base;
+        final StringBuilder sb = new StringBuilder();
+        final String path = copy.getRawPath();
+        if(path != null) {
+            sb.append(path);
+        }
+        
+        sb.append('?');
+        sb.append(URLEncodedUtils.format(nvp, ENC));
+        String frag = copy.getRawFragment();
+        if (frag != null) {
+            sb.append('#').append(frag);
+        }
+        
+        this.base = copy.resolve(sb.toString());
 
         return this;
     }
@@ -237,9 +248,10 @@ public class URIBuilder implements Cloneable {
      */
     public URIBuilder setQuery( Map<?,?> params ) throws URISyntaxException {
         if ( params == null || params.size() < 1 ) {
-            this.base = new URI( base.getScheme(), base.getUserInfo(),
-                base.getHost(), base.getPort(), base.getPath(),
-                null, base.getFragment() );
+            final URI copy = base;
+            this.base = new URI(copy.getScheme(), copy.getUserInfo(),
+                                copy.getHost(), copy.getPort(), copy.getPath(),
+                                null, copy.getFragment());
         }
         else {
             List<NameValuePair> nvp = new ArrayList<NameValuePair>(params.size());
@@ -265,9 +277,10 @@ public class URIBuilder implements Cloneable {
      * @return
      */
     public URIBuilder setRawQuery( String query ) throws URISyntaxException {
-        this.base = update( base.getScheme(), base.getUserInfo(),
-                base.getHost(), base.getPort(),
-                base.getRawPath(), query, base.getRawFragment() );
+        final URI copy = base;
+        this.base = update(copy, copy.getScheme(), copy.getUserInfo(),
+                           copy.getHost(), copy.getPort(),
+                           copy.getRawPath(), query, copy.getRawFragment());
         return this;
     }
 
@@ -312,10 +325,17 @@ public class URIBuilder implements Cloneable {
     }
 
     protected List<NameValuePair> getQueryNVP() {
-        if ( this.base.getQuery() == null ) return null;
-        List<NameValuePair> nvps = URLEncodedUtils.parse( this.base, ENC );
+        final URI copy = base;
+        if(copy.getQuery() == null) {
+            return null;
+        }
+        
+        List<NameValuePair> nvps = URLEncodedUtils.parse(copy, ENC);
         List<NameValuePair> newList = new ArrayList<NameValuePair>();
-        if ( nvps != null ) newList.addAll( nvps );
+        if(nvps != null) {
+            newList.addAll(nvps);
+        }
+        
         return newList;
     }
 
@@ -429,9 +449,10 @@ public class URIBuilder implements Cloneable {
      * @throws URISyntaxException if the given value contains illegal characters.
      */
     public URIBuilder setFragment( String fragment ) throws URISyntaxException {
-        this.base = update( base.getScheme(), base.getUserInfo(),
-                base.getHost(), base.getPort(), base.getRawPath(),
-                base.getRawQuery(), new URI( null, null, null, fragment ).getRawFragment() );
+        final URI copy = base;
+        this.base = update(copy, copy.getScheme(), copy.getUserInfo(),
+                           copy.getHost(), copy.getPort(), copy.getRawPath(),
+                           copy.getRawQuery(), new URI( null, null, null, fragment ).getRawFragment());
         return this;
     }
 
@@ -451,9 +472,10 @@ public class URIBuilder implements Cloneable {
      * @throws URISyntaxException if the given value contains illegal characters.
      */
     public URIBuilder setUserInfo( String userInfo ) throws URISyntaxException {
-        this.base = update( base.getScheme(), userInfo,
-                base.getHost(), base.getPort(), base.getRawPath(),
-                base.getRawQuery(), base.getRawFragment() );
+        final URI copy = base;
+        this.base = update(copy, copy.getScheme(), userInfo,
+                           copy.getHost(), copy.getPort(), copy.getRawPath(),
+                           copy.getRawQuery(), copy.getRawFragment());
 
         return this;
     }
