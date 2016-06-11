@@ -51,7 +51,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         }
     }
 
-    public abstract class BaseRequestConfig implements Request {
+    public abstract class BaseRequest implements Request {
 
         protected abstract String getContentType();
         protected abstract Object getBody();
@@ -62,7 +62,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
 
             if(getParent() != null) {
-                return ((BaseRequestConfig) getParent().getRequest()).effectiveContentType();
+                return ((BaseRequest) getParent().getRequest()).effectiveContentType();
             }
 
             return null;
@@ -74,7 +74,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
 
             if(getParent() != null) {
-                return ((BaseRequestConfig) getParent().getRequest()).effectiveBody();
+                return ((BaseRequest) getParent().getRequest()).effectiveBody();
             }
 
             return null;
@@ -86,7 +86,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
 
             if(getParent() != null) {
-                return ((BaseRequestConfig) getParent().getRequest()).effectiveUri();
+                return ((BaseRequest) getParent().getRequest()).effectiveUri();
             }
 
             return null;
@@ -94,7 +94,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
 
         public Map<String,String> effectiveHeaders(final Map<String,String> map) {
             if(getParent() != null) {
-                ((BaseRequestConfig) getParent()).effectiveHeaders(map);
+                ((BaseRequest) getParent()).effectiveHeaders(map);
             }
 
             map.putAll(getHeaders());
@@ -102,7 +102,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         }
     }
 
-    public class BasicRequestConfig extends BaseRequestConfig {
+    public class BasicRequest extends BaseRequest {
         private String contentType;
         private URIBuilder uriBuilder;
         private Map<String,String> headers = new LinkedHashMap<>();
@@ -159,7 +159,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         }
     }
     
-    public class ThreadSafeRequestConfig extends BaseRequestConfig {
+    public class ThreadSafeRequest extends BaseRequest {
         
         private volatile String contentType;
         private URIBuilder uriBuilder;
@@ -322,23 +322,37 @@ public abstract class AbstractHttpConfig implements HttpConfig {
 
     abstract protected Map<String,ContentHandler> getContentHandlers();
 
-    public void encoder(String contentType, Function<Object,HttpEntity> val) {
-        final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
-        if(before != null) {
-            getContentHandlers().put(contentType, before.encoder(val));
-        }
-        else {
-            getContentHandlers().put(contentType, new ImmutableContentHandler(val, null));
+    public Function<Object,HttpEntity> encoder(final String contentType) {
+        final ImmutableContentHandler handler = (ImmutableContentHandler) getContentHandlers().get(contentType);
+        return handler == null ? null : handler.getEncoder();
+    }
+
+    public  Function<HttpResponse,Object> parser(final String contentType) {
+        final ImmutableContentHandler handler = (ImmutableContentHandler) getContentHandlers().get(contentType);
+        return handler == null ? null : handler.getParser();
+    }
+    
+    public void encoder(String[] contentTypes, Function<Object,HttpEntity> val) {
+        for(String contentType : contentTypes) {
+            final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
+            if(before != null) {
+                getContentHandlers().put(contentType, before.encoder(val));
+            }
+            else {
+                getContentHandlers().put(contentType, new ImmutableContentHandler(val, null));
+            }
         }
     }
     
-    public void parser(String contentType, Function<HttpResponse,Object> val) {
-        final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
-        if(before != null) {
-            getContentHandlers().put(contentType, before.parser(val));
-        }
-        else {
-            getContentHandlers().put(contentType, new ImmutableContentHandler(null, val));
+    public void parser(String[] contentTypes, Function<HttpResponse,Object> val) {
+        for(String contentType : contentTypes) {
+            final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
+            if(before != null) {
+                getContentHandlers().put(contentType, before.parser(val));
+            }
+            else {
+                getContentHandlers().put(contentType, new ImmutableContentHandler(null, val));
+            }
         }
     }
 
@@ -366,5 +380,34 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         }
 
         return null;
+    }
+
+    public class ThreadSafeHttpConfig extends AbstractHttpConfig {
+        final AbstractHttpConfig parent;
+        final ThreadSafeRequest request;
+        final ThreadSafeResponse response;
+        final ConcurrentMap<String,ContentHandler> contentHandlers = new ConcurrentHashMap<>();
+
+        public ThreadSafeHttpConfig(final AbstractHttpConfig parent) {
+            this.parent = parent;
+            this.request = new ThreadSafeRequest();
+            this.response = new ThreadSafeResponse();
+        }
+
+        protected Map<String,ContentHandler> getContentHandlers() {
+            return contentHandlers;
+        }
+
+        public Request getRequest() {
+            return request;
+        }
+
+        public Response getResponse() {
+            return response;
+        }
+
+        public HttpConfig getParent() {
+            return parent;
+        }
     }
 }

@@ -50,8 +50,11 @@ public interface HttpConfig {
         void setFailure(Closure<Object> closure);
     }
 
-    void encoder(String[] contentType, Function<Object,HttpEntity> val);
-    void parser(String[] contentType, Function<HttpResponse,Object> val);
+    void encoder(String[] contentTypes, Function<Object,HttpEntity> val);
+    Function<Object,HttpEntity> encoder(String contentType);
+    void parser(String[] contentTypes, Function<HttpResponse,Object> val);
+    Function<HttpResponse,Object> parser(String contentType);
+    
     Request getRequest();
     Response getResponse();
 }
