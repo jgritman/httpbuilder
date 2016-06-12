@@ -1,5 +1,6 @@
 package groovyx.net.http;
 
+import org.apache.http.util.EntityUtils;
 import groovy.json.JsonBuilder;
 import groovy.json.JsonSlurper;
 import groovy.lang.Closure;
@@ -11,12 +12,14 @@ import groovy.xml.StreamingMarkupBuilder;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,6 +48,34 @@ import org.xml.sax.XMLReader;
 
 public class NativeHandlers {
 
+    private static final Logger log = LoggerFactory.getLogger(NativeHandlers.class);
+    
+    public static Object success(final HttpResponse response, final Object data) throws IOException {
+        //If response is streaming, buffer it in a byte array:
+        if(data instanceof InputStream) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            DefaultGroovyMethods.leftShift(buffer, (InputStream) data);
+            return new ByteArrayInputStream(buffer.toByteArray());
+        }
+        else if(data instanceof Reader) {
+            StringWriter buffer = new StringWriter();
+            DefaultGroovyMethods.leftShift(buffer, (Reader) data);
+            return new StringReader(buffer.toString());
+        }
+        else if(data instanceof Closeable) {
+            if(log.isWarnEnabled()) {
+                log.warn("Parsed data is streaming, but will be accessible after " +
+                         "the network connection is closed.  Use at your own risk!");
+            }
+        }
+        
+        return data;
+    }
+
+    public static Object failure(final HttpResponse response) throws HttpResponseException {
+        throw new HttpResponseException(response);
+    }
+    
     public static class Encoders {
 
         private static Object checkNull(final Object body) {
@@ -77,7 +108,7 @@ public class NativeHandlers {
         private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class,
                                                                   byte[].class, ByteArrayOutputStream.class, Closure.class };
         
-        public static HttpEntity binary(final Effective.Request request) {
+        public static HttpEntity binary(final Effective.Req request) {
             final Object body = checkNull(request.effectiveBody());
             final String contentType = request.effectiveContentType();
             checkTypes(contentType, body, BINARY_TYPES);
@@ -115,7 +146,7 @@ public class NativeHandlers {
 
         private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };
 
-        public static HttpEntity text(final Effective.Request request) throws IOException {
+        public static HttpEntity text(final Effective.Req request) throws IOException {
             final Object body = checkNull(request.effectiveBody());
             final String contentType = request.effectiveContentType();
             checkTypes(contentType, body, TEXT_TYPES);
@@ -154,7 +185,7 @@ public class NativeHandlers {
 
         private static final Class[] FORM_TYPES = { Map.class, String.class };
 
-        public static HttpEntity form(final Effective.Request request) {
+        public static HttpEntity form(final Effective.Req request) {
             final Object body = checkNull(request.effectiveBody());
             final String contentType = request.effectiveContentType();
             checkTypes(contentType, body, FORM_TYPES);
@@ -191,7 +222,7 @@ public class NativeHandlers {
 
         private static final Class[] XML_TYPES = new Class[] { String.class, StreamingMarkupBuilder.class };
         
-        public static HttpEntity xml(final Effective.Request request) {
+        public static HttpEntity xml(final Effective.Req request) {
             final Object body = checkNull(request.effectiveBody());
             final String contentType = request.effectiveContentType();
             checkTypes(contentType, body, XML_TYPES);
@@ -212,7 +243,7 @@ public class NativeHandlers {
             return ret;
         }
 
-        public static HttpEntity json(final Effective.Request request) {
+        public static HttpEntity json(final Effective.Req request) {
             final Object body = checkNull(request.effectiveBody());
             final String contentType = request.effectiveContentType();
             final String json = ((body instanceof String || body instanceof GString)
@@ -287,50 +318,79 @@ public class NativeHandlers {
             }
         }
 
-        public static InputStream stream(final HttpResponse response) throws IOException {
-            return response.getEntity().getContent();
+        public static Object nothing(final HttpResponse response) {
+            return null;
         }
 
-        public static byte[] streamToBytes(final HttpResponse response) throws IOException {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DefaultGroovyMethods.leftShift(baos, stream(response));
-            return baos.toByteArray();
+        public static InputStream stream(final HttpResponse response) {
+            try {
+                return response.getEntity().getContent();
+            }
+            catch(IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
         }
 
-        public static Reader text(final HttpResponse response) throws IOException {
+        public static byte[] streamToBytes(final HttpResponse response) {
+            try {
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                DefaultGroovyMethods.leftShift(baos, stream(response));
+                return baos.toByteArray();
+            }
+            catch(IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+        }
+
+        public static Reader text(final HttpResponse response) {
             return new InputStreamReader(stream(response), charset(response));
         }
 
-        public static String textToString(final HttpResponse response) throws IOException {
+        public static String textToString(final HttpResponse response) {
             return text(response).toString();
         }
 
-        public Map<String,String> form(final HttpResponse response) throws IOException {
-            final HttpEntity entity = response.getEntity();
-            List<NameValuePair> params = URLEncodedUtils.parse(entity);
-            Map<String,String> paramMap = new HashMap<String,String>(params.size());
-            for(NameValuePair param : params) {
-                paramMap.put(param.getName(), param.getValue());
+        public static Map<String,String> form(final HttpResponse response) {
+            try {
+                final HttpEntity entity = response.getEntity();
+                List<NameValuePair> params = URLEncodedUtils.parse(entity);
+                Map<String,String> paramMap = new HashMap<String,String>(params.size());
+                for(NameValuePair param : params) {
+                    paramMap.put(param.getName(), param.getValue());
+                }
+                
+                return paramMap;
             }
-            
-            return paramMap;
+            catch(IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
         }
 
-        public GPathResult html(final HttpResponse response) throws IOException, SAXException {
-            final XMLReader p = new org.cyberneko.html.parsers.SAXParser();
-            p.setEntityResolver(catalogResolver);
-            return new XmlSlurper(p).parse(text(response));
+        public static GPathResult html(final HttpResponse response) {
+            try {
+                final XMLReader p = new org.cyberneko.html.parsers.SAXParser();
+                p.setEntityResolver(catalogResolver);
+                return new XmlSlurper(p).parse(text(response));
+            }
+            catch(IOException | SAXException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
-        public GPathResult xml(final HttpResponse response) throws IOException, SAXException, ParserConfigurationException {
-            final XmlSlurper xml = new XmlSlurper();
-            xml.setEntityResolver(catalogResolver);
-            xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
-            xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            return xml.parse(text(response));
+        public static GPathResult xml(final HttpResponse response) {
+            try {
+                final XmlSlurper xml = new XmlSlurper();
+                xml.setEntityResolver(catalogResolver);
+                xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+                xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                return xml.parse(text(response));
+            }
+            catch(IOException | SAXException | ParserConfigurationException ex) {
+                throw new RuntimeException(ex);
+            }
         }
-
-        public Object json(final  HttpResponse response) throws IOException {
+        
+        public static Object json(final HttpResponse response) {
             // there is a bug in the JsonSlurper.parse method...
             //String jsonTxt = DefaultGroovyMethods.getText( parseText( resp ) );
             return new JsonSlurper().parse(text(response));

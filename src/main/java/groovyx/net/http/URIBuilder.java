@@ -546,4 +546,9 @@ public class URIBuilder implements Cloneable {
         if ( ! ( obj instanceof URIBuilder) ) return false;
         return this.base.equals( ((URIBuilder)obj).toURI() );
     }
+
+    @Override
+    public int hashCode() {
+        return 31 * base.hashCode();
+    }
 }

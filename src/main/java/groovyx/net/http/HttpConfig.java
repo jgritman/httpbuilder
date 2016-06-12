@@ -1,12 +1,14 @@
 package groovyx.net.http;
 
-import java.util.function.Function;
-import java.util.Map;
-import java.net.URL;
+import groovy.lang.Closure;
 import java.net.URI;
 import java.net.URISyntaxException;
-import groovy.lang.Closure;
-
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Function;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
@@ -17,15 +19,12 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
-import java.nio.charset.Charset;
-import java.util.function.Function;
-
 public interface HttpConfig {
 
     public enum Status { SUCCESS, FAILURE };
 
     public interface ContentHandler {
-        Function<Effective.Request,HttpEntity> getEncoder();
+        Function<Effective.Req,HttpEntity> getEncoder();
         Function<HttpResponse,Object> getParser();
     }
 
@@ -37,9 +36,9 @@ public interface HttpConfig {
         
         URIBuilder getUri();
         void setUri(URIBuilder val);
-        void setUri(String val);
+        void setUri(String val) throws URISyntaxException;
         void setUri(URI val);
-        void setUri(URL val);
+        void setUri(URL val) throws URISyntaxException;
 
         Map<String,String> getHeaders();
 
@@ -55,9 +54,12 @@ public interface HttpConfig {
         void setFailure(Closure<Object> closure);
     }
 
-    void encoder(String[] contentTypes, Function<Effective.Request,HttpEntity> val);
-    Function<Effective.Request,HttpEntity> encoder(String contentType);
-    void parser(String[] contentTypes, Function<HttpResponse,Object> val);
+    void encoder(String contentType, Function<Effective.Req,HttpEntity> val);
+    void encoder(List<String> contentTypes, Function<Effective.Req,HttpEntity> val);
+    Function<Effective.Req,HttpEntity> encoder(String contentType);
+
+    void parser(String contentType, Function<HttpResponse,Object> val);
+    void parser(List<String> contentTypes, Function<HttpResponse,Object> val);
     Function<HttpResponse,Object> parser(String contentType);
     
     Request getRequest();

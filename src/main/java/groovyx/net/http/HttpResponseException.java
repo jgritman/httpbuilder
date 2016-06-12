@@ -21,6 +21,8 @@
  */
 package groovyx.net.http;
 
+import org.apache.http.HttpResponse;
+
 /**
  * Wraps an error response in an exception for flow control purposes.  That is,
  * you can still inspect response headers, but in a
@@ -33,15 +35,15 @@ public class HttpResponseException extends org.apache.http.client.HttpResponseEx
 
     private static final long serialVersionUID = -34809347677236L;
 
-    HttpResponseDecorator response;
-
-    public HttpResponseException( HttpResponseDecorator resp ) {
-        super( resp.getStatusLine().getStatusCode(),
-                resp.getStatusLine().getReasonPhrase() );
-        this.response = resp;
+    final HttpResponse response;
+    
+    public HttpResponseException(final HttpResponse response) {
+        super(response.getStatusLine().getStatusCode(),
+              response.getStatusLine().getReasonPhrase() );
+        this.response = response;
     }
 
-    public HttpResponseDecorator getResponse() {
+    public HttpResponse getResponse() {
         return response;
     }
 }
