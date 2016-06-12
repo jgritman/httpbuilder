@@ -81,4 +81,13 @@ class HttpConfigTest extends Specification {
 
         end.acceptHeader('application/xml') == XML as Set;
     }
+
+    def Script() {
+        setup:
+        def config = AbstractHttpConfig.basic(null).configure('script1.groovy');
+
+        expect:
+        config.request.contentType == 'application/json';
+        config.request.uri == new URIBuilder('http://www.google.com');
+    }
 }

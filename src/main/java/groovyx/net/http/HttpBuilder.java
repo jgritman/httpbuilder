@@ -1,23 +1,27 @@
 package groovyx.net.http;
 
-import org.apache.http.impl.client.HttpClients;
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Function;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
-import org.apache.http.HttpResponse;
-import java.util.function.Function;
-import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.*;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.http.Header;
-import groovy.lang.Closure;
-import org.apache.http.util.EntityUtils;
-import java.io.IOException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import groovy.lang.DelegatesTo;
-import org.apache.http.client.methods.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.CompletableFuture;
 
 //TODO: Write script wire for default handlers
 //TODO: Test basic and async get
@@ -28,22 +32,36 @@ public class HttpBuilder {
     private static class Handler implements ResponseHandler<Object> {
 
         private final Effective config;
+        private String contentType = "application/octet-stream";
+        private Charset charset = StandardCharsets.UTF_8;
         
         public Handler(final Effective config) {
             this.config = config;
         }
         
-        private String extractContentType(final HttpEntity entity) {
+        private void processContentType(final HttpEntity entity) {
             if(entity == null) {
-                return null;
+                return;
             }
-
+            
             final Header header = entity.getContentType();
             if(header == null) {
-                return null;
+                return;
             }
 
-            return header.getValue();
+            final HeaderElement[] elements = header.getElements();
+            if(elements == null) {
+                contentType = header.getValue();
+            }
+
+            HeaderElement element = elements[0];
+            contentType = element.getName();
+            if(element.getParameters() != null) {
+                final NameValuePair nvp = element.getParameter(0);
+                if(nvp.getName().toLowerCase().equals("charset")) {
+                    charset = Charset.forName(nvp.getValue());
+                }
+            }
         }
 
         private Function<HttpResponse,Object> findParser(final String contentType) {
@@ -83,7 +101,7 @@ public class HttpBuilder {
             try {
                 final int status = response.getStatusLine().getStatusCode();
                 final HttpEntity entity = response.getEntity();
-                final String contentType = extractContentType(entity);
+                processContentType(entity);
                 final Function<HttpResponse,Object> parser = findParser(contentType);
                 final Closure<Object> action = config.getResp().effectiveAction(status);
                 final Object o = parser.apply(response);

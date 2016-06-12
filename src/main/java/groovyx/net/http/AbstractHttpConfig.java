@@ -1,7 +1,15 @@
 package groovyx.net.http;
 
+import groovy.transform.TypeChecked;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import groovy.lang.GroovyShell;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -447,6 +455,9 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
             this.parent = parent;
             this.request = new ThreadSafeRequest();
             this.response = new ThreadSafeResponse();
+            if(parent != null && parent.getRequest().getUri() != null) {
+                this.request.setUri(parent.getRequest().getUri());
+            }
         }
 
         protected Map<String,ContentHandler> getContentHandlers() {
@@ -484,6 +495,9 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
             this.parent = parent;
             this.request = new BasicRequest();
             this.response = new BasicResponse();
+            if(parent != null && parent.getRequest().getUri() != null) {
+                this.request.setUri(parent.getRequest().getUri());
+            }
         }
 
         protected Map<String,ContentHandler> getContentHandlers() {
@@ -511,7 +525,8 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         }
     }
 
-    private static final ThreadSafeHttpConfig root = (ThreadSafeHttpConfig) threadSafe(null);
+    private static final String CONFIG = "59f7b2e5d5a78b25c6b21eb3b6b4f9ff77d11671.groovy";
+    private static final ThreadSafeHttpConfig root = (ThreadSafeHttpConfig) threadSafe(null).configure(CONFIG);
 
     public static AbstractHttpConfig root() {
         return root;
@@ -531,5 +546,26 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
 
     public static AbstractHttpConfig requestLevel(final HttpConfig parent) {
         return new BasicHttpConfig((AbstractHttpConfig) parent);
+    }
+
+    public AbstractHttpConfig configure(final String scriptClassPath) {
+        final CompilerConfiguration compilerConfig = new CompilerConfiguration();
+        compilerConfig.setScriptBaseClass(HttpConfigScript.class.getName());
+        final ImportCustomizer icustom = new ImportCustomizer();
+        icustom.addImports("groovyx.net.http.NativeHandlers");
+        icustom.addStaticStars("groovyx.net.http.Status", "groovyx.net.http.ContentTypes");
+        final ASTTransformationCustomizer ast = new ASTTransformationCustomizer(TypeChecked.class);
+        compilerConfig.addCompilationCustomizers(icustom, ast);
+        final GroovyShell shell = new GroovyShell(getClass().getClassLoader(), compilerConfig);
+        shell.setVariable(HttpConfigScript.TARGET, this);
+
+        try(final InputStream is = getClass().getClassLoader().getResourceAsStream(scriptClassPath)) {
+            final InputStreamReader reader = new InputStreamReader(is);
+            shell.evaluate(reader);
+            return this;
+        }
+        catch(IOException ioe) {
+            throw new RuntimeException();
+        }
     }
 }

@@ -8,16 +8,9 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Function;
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
 
 public interface HttpConfig {
 

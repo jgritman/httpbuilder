@@ -347,7 +347,19 @@ public class NativeHandlers {
         }
 
         public static String textToString(final HttpResponse response) {
-            return text(response).toString();
+            try(final Reader reader = text(response)) {
+                final char[] buffer = new char[1024];
+                final StringBuilder builder = new StringBuilder();
+                int num;
+                while((num = reader.read(buffer, 0, buffer.length)) != -1) {
+                    builder.append(buffer, 0, num);
+                }
+                
+                return builder.toString();
+            }
+            catch(IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
         }
 
         public static Map<String,String> form(final HttpResponse response) {
