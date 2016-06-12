@@ -1,5 +1,6 @@
 package groovyx.net.http;
 
+import org.codehaus.groovy.runtime.MethodClosure;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import java.io.IOException;
@@ -23,8 +24,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//TODO: Write script wire for default handlers
-//TODO: Test basic and async get
 public class HttpBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
@@ -56,7 +55,7 @@ public class HttpBuilder {
 
             HeaderElement element = elements[0];
             contentType = element.getName();
-            if(element.getParameters() != null) {
+            if(element.getParameters() != null && element.getParameters().length != 0) {
                 final NameValuePair nvp = element.getParameter(0);
                 if(nvp.getName().toLowerCase().equals("charset")) {
                     charset = Charset.forName(nvp.getValue());
@@ -140,6 +139,13 @@ public class HttpBuilder {
         }
     }
 
+    public HttpBuilder configure(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        closure.setDelegate(config);
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
+        return this;
+    }
+
     public static HttpBuilder singleThreaded() {
         return new HttpBuilder(HttpClients.createDefault(), AbstractHttpConfig.classLevel(false), new SingleThreaded());
     }
@@ -172,6 +178,27 @@ public class HttpBuilder {
             throw new RuntimeException(ioe);
         }
     }
+
+    private HttpEntity entity(final AbstractHttpConfig config) {
+        final String contentType = config.getReq().effectiveContentType();
+        if(contentType == null) {
+            throw new IllegalStateException("Found request body, but content type is undefined");
+        }
+        
+        final Function<Effective.Req,HttpEntity> encoder = config.effectiveEncoder(contentType);
+        if(encoder == null) {
+            throw new IllegalStateException("Found body, but did not find encoder");
+        }
+
+        return encoder.apply(config.getReq());
+    }
+
+    public static final void noOp() { }
+    private static final Closure NO_OP = new MethodClosure(HttpBuilder.class, "noOp");
+
+    public Object get() {
+        return get(NO_OP);
+    }
     
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
         final AbstractHttpConfig requestConfig = configureRequest(closure);
@@ -182,11 +209,29 @@ public class HttpBuilder {
         return type.cast(get(closure));
     }
 
+    public CompletableFuture<Object> getAsync() {
+        return CompletableFuture.supplyAsync(() -> get(), executor);
+    }
+    
     public CompletableFuture<Object> getAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> get(closure), executor);
     }
 
     public <T> CompletableFuture<T> getAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> get(type, closure), executor);
+    }
+
+    public Object post() {
+        return post(NO_OP);
+    }
+
+    public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        final AbstractHttpConfig requestConfig = configureRequest(closure);
+        final HttpPost post = new HttpPost(requestConfig.getReq().effectiveUri().toURI());
+        if(requestConfig.getReq().effectiveBody() != null) {
+            post.setEntity(entity(requestConfig));
+        }
+        
+        return exec(post, requestConfig);
     }
 }
