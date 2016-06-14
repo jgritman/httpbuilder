@@ -30,11 +30,11 @@ public class HttpBuilder {
     
     private static class Handler implements ResponseHandler<Object> {
 
-        private final Effective config;
+        private final HttpConfig config;
         private String contentType = "application/octet-stream";
         private Charset charset = StandardCharsets.UTF_8;
         
-        public Handler(final Effective config) {
+        public Handler(final HttpConfig config) {
             this.config = config;
         }
         
@@ -64,7 +64,7 @@ public class HttpBuilder {
         }
 
         private Function<HttpResponse,Object> findParser(final String contentType) {
-            final Function<HttpResponse,Object> found = config.effectiveParser(contentType);
+            final Function<HttpResponse,Object> found = config.getResponse().getEffective().parser(contentType);
             return found == null ? NativeHandlers.Parsers::stream : found;
         }
 
@@ -102,7 +102,7 @@ public class HttpBuilder {
                 final HttpEntity entity = response.getEntity();
                 processContentType(entity);
                 final Function<HttpResponse,Object> parser = findParser(contentType);
-                final Closure<Object> action = config.getResp().effectiveAction(status);
+                final Closure<Object> action = config.getResponse().getEffective().action(status);
                 final Object o = parser.apply(response);
                 return action.call(closureArgs(action, response, o));
             }

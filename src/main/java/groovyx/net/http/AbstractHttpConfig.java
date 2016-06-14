@@ -33,102 +33,139 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
-public abstract class AbstractHttpConfig implements HttpConfig, Effective {
-    
-    public static class ImmutableContentHandler implements ContentHandler {
+public abstract class AbstractHttpConfig implements HttpConfig {
 
-        private final Function<Effective.Req,HttpEntity> encoder;
-        private final Function<HttpResponse,Object> parser;
-        
-        public ImmutableContentHandler(final Function<Effective.Req,HttpEntity> encoder,
-                                       final Function<HttpResponse,Object> parser) {
-            this.encoder = encoder;
-            this.parser = parser;
-        }
+    abstract public AbstractHttpConfig getParent();
 
-        public ImmutableContentHandler encoder(final Function<Effective.Req,HttpEntity> encoder) {
-            return new ImmutableContentHandler(encoder, parser);
-        }
-
-        public ImmutableContentHandler parser(final Function<HttpResponse,Object> parser) {
-            return new ImmutableContentHandler(encoder, parser);
-        }
-
-        public Function<Effective.Req,HttpEntity> getEncoder() {
-            return encoder;
-        }
-        
-        public Function<HttpResponse,Object> getParser() {
-            return parser;
-        }
-    }
-
-    public abstract class BaseRequest implements Request, Effective.Req {
+    public abstract class BaseRequest implements Request {
 
         protected abstract String getContentType();
         protected abstract Object getBody();
         protected abstract Charset getCharset();
+        protected abstract Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap();
 
+        private final Effective effective = new Effective();
+        
         public void setCharset(final String val) {
             setCharset(Charset.forName(val));
         }
 
-        public Charset effectiveCharset() {
-            final Charset val = getCharset();
-            if(val != null) {
-                return val;
-            }
-
-            if(getParent() != null) {
-                return ((BaseRequest) getParent().getRequest()).effectiveCharset();
-            }
-
-            return null;
+        public Function<EffectiveRequest,HttpEntity> encoder(final String contentType) {
+            final Function<EffectiveRequest,HttpEntity> enc =  getEncoderMap().get(contentType);
+            return enc != null ? enc : null;
         }
         
-        public String effectiveContentType() {
-            if(getContentType() != null) {
-                return getContentType();
+        public void encoder(final String contentType, final Function<EffectiveRequest,HttpEntity> val) {
+            getEncoderMap().put(contentType, val);
+        }
+        
+        public void encoder(final List<String> contentTypes, final Function<EffectiveRequest,HttpEntity> val) {
+            for(String contentType : contentTypes) {
+                encoder(contentType, val);
             }
-
-            if(getParent() != null) {
-                return ((BaseRequest) getParent().getRequest()).effectiveContentType();
-            }
-
-            return null;
         }
 
-        public Object effectiveBody() {
-            if(getBody() != null) {
-                return getBody();
-            }
-
-            if(getParent() != null) {
-                return ((BaseRequest) getParent().getRequest()).effectiveBody();
-            }
-
-            return null;
+        public EffectiveRequest getEffective() {
+            return effective;
         }
 
-        public URIBuilder effectiveUri() {
-            if(getUri() != null) {
-                return getUri();
+        public class Effective implements EffectiveRequest {
+
+            public Charset charset() {
+                final Charset val = getCharset();
+                if(val != null) {
+                    return val;
+                }
+                
+                if(getParent() != null) {
+                    return getParent().getRequest().getEffective().charset();
+                }
+                
+                return null;
+            }
+        
+            public String contentType() {
+                if(getContentType() != null) {
+                    return getContentType();
+                }
+                
+                if(getParent() != null) {
+                    return getParent().getRequest().getEffective().contentType();
+                }
+                
+                return null;
             }
 
-            if(getParent() != null) {
-                return ((BaseRequest) getParent().getRequest()).effectiveUri();
+            public Object body() {
+                if(getBody() != null) {
+                    return getBody();
+                }
+                
+                if(getParent() != null) {
+                    return getParent().getRequest().getEffective().body();
+                }
+                
+                return null;
             }
 
-            return null;
-        }
-
-        public Map<String,String> effectiveHeaders(final Map<String,String> map) {
-            if(getParent() != null) {
-                ((BaseRequest) getParent()).effectiveHeaders(map);
+            public URIBuilder uri() {
+                if(getUri() != null) {
+                    return getUri();
+                }
+                
+                if(getParent() != null) {
+                    return getParent().getRequest().getEffective().uri();
+                }
+                
+                return null;
             }
 
-            map.putAll(getHeaders());
-            return map;
+            public Map<String,String> headers(final Map<String,String> map) {
+                if(getParent() != null) {
+                    getParent().getRequest().getEffective().headers(map);
+                }
+                
+                map.putAll(getHeaders());
+
+                if(!map.containsKey("Accept")) {
+                    map.put("Accept", String.join(";", acceptHeader(contentType())));
+                }
+                
+                return map;
+            }
+
+            public Function<EffectiveRequest,HttpEntity> encoder(final String contentType) {
+                final Function<EffectiveRequest,HttpEntity> e = getEncoderMap().get(contentType);
+                if(e != null) {
+                    return e;
+                }
+                
+                if(getParent() != null) {
+                    return getParent().getRequest().getEffective().encoder(contentType);
+                }
+                
+                return null;
+            }
+            
+            public Set<String> acceptHeader(final String contentType) {
+                Set<String> ret = new HashSet<>();
+                if(getParent() != null) {
+                    Set<String> set = getParent().getRequest().getEffective().acceptHeader(contentType);
+                    ret.addAll(set);
+                }
+
+                Function<HttpResponse,Object> p = getResponse().parser(contentType);
+                if(p != null) {
+                    Map<String,Function<HttpResponse,Object>> parsers = ((BaseResponse) getResponse()).getParserMap();
+                    for(Map.Entry<String,Function<HttpResponse,Object>> entry : parsers.entrySet()) {
+                        if(entry.getValue() == p) {
+                            ret.add(entry.getKey());
+                        }
+                    }
+                }
+
+                return ret;
+            }
         }
     }
 
@@ -136,8 +173,13 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         private String contentType;
         private Charset charset;
         private URIBuilder uriBuilder;
-        private Map<String,String> headers = new LinkedHashMap<>();
+        private final Map<String,String> headers = new LinkedHashMap<>();
         private Object body;
+        private final Map<String,Function<EffectiveRequest,HttpEntity>> encoderMap = new LinkedHashMap<>();
+
+        protected Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap() {
+            return encoderMap;
+        }
         
         public String getContentType() {
             return contentType;
@@ -195,6 +237,11 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         private volatile URIBuilder uriBuilder;
         private final ConcurrentMap<String,String> headers = new ConcurrentHashMap<>();
         private volatile Object body;
+        private final ConcurrentMap<String,Function<EffectiveRequest,HttpEntity>> encoderMap = new ConcurrentHashMap<>();
+
+        protected Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap() {
+            return encoderMap;
+        }
         
         public String getContentType() {
             return contentType;
@@ -245,12 +292,19 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         }
     }
 
-    public abstract class BaseResponse implements Response, Effective.Resp {
+    public abstract class BaseResponse implements Response {
 
         abstract protected Map<Integer,Closure<Object>> getByCode();
         abstract protected Closure<Object> getSuccess();
         abstract protected Closure<Object> getFailure();
+        abstract protected Map<String,Function<HttpResponse,Object>> getParserMap();
 
+        private final Effective effective = new Effective();
+
+        public EffectiveResponse getEffective() {
+            return effective;
+        }
+        
         public void when(String code, Closure<Object> closure) {
             when(Integer.valueOf(code), closure);
         }
@@ -267,34 +321,68 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
                 setFailure(closure);
             }
         }
-
-        public Closure<Object> effectiveAction(final Integer code) {
-            Closure<Object> ret = getByCode().get(code);
-            if(ret != null) {
-                return ret;
+        
+        public Function<HttpResponse,Object> parser(final String contentType) {
+            final Function<HttpResponse,Object> p = getParserMap().get(contentType);
+            return p != null ? p : null;
+        }
+        
+        public void parser(final String contentType, Function<HttpResponse,Object> val) {
+            getParserMap().put(contentType, val);
+        }
+        
+        public void parser(final List<String> contentTypes, Function<HttpResponse,Object> val) {
+            for(String contentType : contentTypes) {
+                parser(contentType, val);
             }
+        }
 
-            if(code < 399 && getSuccess() != null) {
-                return getSuccess();
+        public class Effective implements EffectiveResponse {
+            
+            public Closure<Object> action(final Integer code) {
+                Closure<Object> ret = getByCode().get(code);
+                if(ret != null) {
+                    return ret;
+                }
+                
+                if(code < 399 && getSuccess() != null) {
+                    return getSuccess();
+                }
+                
+                if(getFailure() != null) {
+                    return getFailure();
+                }
+                
+                if(getParent() != null) {
+                    return getParent().getResponse().getEffective().action(code);
+                }
+                
+                return null;
             }
+            
+            public Function<HttpResponse,Object> parser(final String contentType) {
+                Function<HttpResponse,Object> p = BaseResponse.this.parser(contentType);
+                if(p != null) {
+                    return p;
+                }
 
-            if(getFailure() != null) {
-                return getFailure();
+                if(getParent() != null) {
+                    return getParent().getResponse().getEffective().parser(contentType);
+                }
             }
-
-            if(getParent() != null) {
-                return ((BaseResponse) getParent().getResponse()).effectiveAction(code);
-            }
-
-            return null;
         }
     }
 
     public class BasicResponse extends BaseResponse {
-        private Map<Integer,Closure<Object>> byCode = new LinkedHashMap<>();
+        private final Map<Integer,Closure<Object>> byCode = new LinkedHashMap<>();
         private Closure<Object> successHandler;
         private Closure<Object> failureHandler;
+        private final Map<String,Function<HttpResponse,Object>> parserMap = new LinkedHashMap<>();
 
+        public Map<String,Function<HttpResponse,Object>> getParserMap() {
+            return parserMap;
+        }
+        
         protected Map<Integer,Closure<Object>> getByCode() {
             return byCode;
         }
@@ -317,11 +405,15 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
     }
 
     public class ThreadSafeResponse extends BaseResponse {
-
-        private ConcurrentMap<Integer,Closure<Object>> byCode = new ConcurrentHashMap<>();
+        private final ConcurrentMap<String,Function<HttpResponse,Object>> parserMap = new ConcurrentHashMap<>();
+        private final ConcurrentMap<Integer,Closure<Object>> byCode = new ConcurrentHashMap<>();
         private volatile Closure<Object> successHandler;
         private volatile Closure<Object> failureHandler;
 
+        protected Map<String,Function<HttpResponse,Object>> getParserMap() {
+            return parserMap;
+        }
+        
         protected Map<Integer,Closure<Object>> getByCode() {
             return byCode;
         }
@@ -343,100 +435,6 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         }
     }
 
-    abstract public HttpConfig getParent();
-
-    abstract protected Map<String,ContentHandler> getContentHandlers();
-
-    public Function<Effective.Req,HttpEntity> encoder(final String contentType) {
-        final ImmutableContentHandler handler = (ImmutableContentHandler) getContentHandlers().get(contentType);
-        return handler == null ? null : handler.getEncoder();
-    }
-
-    public Function<HttpResponse,Object> parser(final String contentType) {
-        final ImmutableContentHandler handler = (ImmutableContentHandler) getContentHandlers().get(contentType);
-        return handler == null ? null : handler.getParser();
-    }
-
-    public void encoder(final String contentType, final Function<Effective.Req,HttpEntity> val) {
-        final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
-        if(before != null) {
-            getContentHandlers().put(contentType, before.encoder(val));
-        }
-        else {
-            getContentHandlers().put(contentType, new ImmutableContentHandler(val, null));
-        }
-    }
-    
-    public void encoder(final List<String> contentTypes, final Function<Effective.Req,HttpEntity> val) {
-        for(String contentType : contentTypes) {
-            encoder(contentType, val);
-        }
-    }
-
-    public void parser(final String contentType, Function<HttpResponse,Object> val) {
-        final ImmutableContentHandler before = (ImmutableContentHandler) getContentHandlers().get(contentType);
-        if(before != null) {
-            getContentHandlers().put(contentType, before.parser(val));
-        }
-        else {
-            getContentHandlers().put(contentType, new ImmutableContentHandler(null, val));
-        }
-    }
-    
-    public void parser(final List<String> contentTypes, Function<HttpResponse,Object> val) {
-        for(String contentType : contentTypes) {
-            parser(contentType, val);
-        }
-    }
-
-    private Map<String,ContentHandler> parserContentHandlers(final String contentType) {
-        ContentHandler ret = getContentHandlers().get(contentType);
-        if(ret != null && ret.getParser() != null) {
-            return getContentHandlers();
-        }
-        
-        if(getParent() != null) {
-            return ((AbstractHttpConfig) getParent()).parserContentHandlers(contentType);
-        }
-
-        return null;
-    }
-    
-    public Function<HttpResponse,Object> effectiveParser(final String contentType) {
-        Map<String,ContentHandler> map = parserContentHandlers(contentType);
-        return map == null ? null : map.get(contentType).getParser();
-    }
-
-    public Set<String> acceptHeader(final String contentType) {
-        Map<String,ContentHandler> map = parserContentHandlers(contentType);
-        if(map == null) {
-            return Collections.emptySet();
-        }
-
-        final Set<String> ret = new HashSet<>();
-        final Function<HttpResponse,Object> parser = map.get(contentType).getParser();
-        for(Map.Entry<String,ContentHandler> entry : map.entrySet()) {
-            if(entry.getValue().getParser() == parser) {
-                ret.add(entry.getKey());
-            }
-        }
-
-        return ret;
-    }
-
-    public Function<Effective.Req,HttpEntity> effectiveEncoder(final String contentType) {
-        ContentHandler ret = getContentHandlers().get(contentType);
-        if(ret != null && ret.getEncoder() != null) {
-            return ret.getEncoder();
-        }
-
-        if(getParent() != null) {
-            return ((AbstractHttpConfig) getParent()).effectiveEncoder(contentType);
-        }
-
-        return null;
-    }
-
     public HttpConfig config(@DelegatesTo(HttpConfig.class) final Closure closure) {
         closure.setDelegate(this);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -449,7 +447,6 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         final AbstractHttpConfig parent;
         final ThreadSafeRequest request;
         final ThreadSafeResponse response;
-        final ConcurrentMap<String,ContentHandler> contentHandlers = new ConcurrentHashMap<>();
 
         public ThreadSafeHttpConfig(final AbstractHttpConfig parent) {
             this.parent = parent;
@@ -460,15 +457,7 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
             }
         }
 
-        protected Map<String,ContentHandler> getContentHandlers() {
-            return contentHandlers;
-        }
-
         public Request getRequest() {
-            return request;
-        }
-
-        public Req getReq() {
             return request;
         }
 
@@ -476,11 +465,7 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
             return response;
         }
 
-        public Resp getResp() {
-            return response;
-        }
-
-        public HttpConfig getParent() {
+        public AbstractHttpConfig getParent() {
             return parent;
         }
     }
@@ -489,7 +474,6 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         final AbstractHttpConfig parent;
         final BasicRequest request;
         final BasicResponse response;
-        final Map<String,ContentHandler> contentHandlers = new LinkedHashMap<>();
 
         public BasicHttpConfig(final AbstractHttpConfig parent) {
             this.parent = parent;
@@ -500,15 +484,7 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
             }
         }
 
-        protected Map<String,ContentHandler> getContentHandlers() {
-            return contentHandlers;
-        }
-
         public Request getRequest() {
-            return request;
-        }
-
-        public Req getReq() {
             return request;
         }
 
@@ -516,11 +492,7 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
             return response;
         }
 
-        public Resp getResp() {
-            return response;
-        }
-
-        public HttpConfig getParent() {
+        public AbstractHttpConfig getParent() {
             return parent;
         }
     }
@@ -528,7 +500,7 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
     private static final String CONFIG = "59f7b2e5d5a78b25c6b21eb3b6b4f9ff77d11671.groovy";
     private static final ThreadSafeHttpConfig root = (ThreadSafeHttpConfig) threadSafe(null).configure(CONFIG);
 
-    public static AbstractHttpConfig root() {
+    public static HttpConfig root() {
         return root;
     }
 
@@ -548,6 +520,7 @@ public abstract class AbstractHttpConfig implements HttpConfig, Effective {
         return new BasicHttpConfig((AbstractHttpConfig) parent);
     }
 
+    //TODO: Start here fixing bugs, back to type checking extensions
     public AbstractHttpConfig configure(final String scriptClassPath) {
         final CompilerConfiguration compilerConfig = new CompilerConfiguration();
         compilerConfig.setScriptBaseClass(HttpConfigScript.class.getName());

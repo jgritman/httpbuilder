@@ -108,9 +108,9 @@ public class NativeHandlers {
         private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class,
                                                                   byte[].class, ByteArrayOutputStream.class, Closure.class };
         
-        public static HttpEntity binary(final Effective.Req request) {
-            final Object body = checkNull(request.effectiveBody());
-            final String contentType = request.effectiveContentType();
+        public static HttpEntity binary(final HttpConfig.EffectiveRequest request) {
+            final Object body = checkNull(request.body());
+            final String contentType = request.contentType();
             checkTypes(contentType, body, BINARY_TYPES);
             
             InputStreamEntity entity = null;
@@ -146,9 +146,9 @@ public class NativeHandlers {
 
         private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };
 
-        public static HttpEntity text(final Effective.Req request) throws IOException {
-            final Object body = checkNull(request.effectiveBody());
-            final String contentType = request.effectiveContentType();
+        public static HttpEntity text(final HttpConfig.EffectiveRequest request) throws IOException {
+            final Object body = checkNull(request.body());
+            final String contentType = request.contentType();
             checkTypes(contentType, body, TEXT_TYPES);
             String text = null;
             
@@ -178,20 +178,20 @@ public class NativeHandlers {
                 throw new UnsupportedOperationException();
             }
 
-            final StringEntity ret = new StringEntity(text, request.effectiveCharset());
+            final StringEntity ret = new StringEntity(text, request.charset());
             ret.setContentType(contentType);
             return ret;
         }
 
         private static final Class[] FORM_TYPES = { Map.class, String.class };
 
-        public static HttpEntity form(final Effective.Req request) {
-            final Object body = checkNull(request.effectiveBody());
-            final String contentType = request.effectiveContentType();
+        public static HttpEntity form(final HttpConfig.EffectiveRequest request) {
+            final Object body = checkNull(request.body());
+            final String contentType = request.contentType();
             checkTypes(contentType, body, FORM_TYPES);
 
             if(body instanceof String) {
-                final StringEntity ret = new StringEntity(body.toString(), request.effectiveCharset());
+                final StringEntity ret = new StringEntity(body.toString(), request.charset());
                 ret.setContentType(contentType);
                 return ret;
             }
@@ -211,7 +211,7 @@ public class NativeHandlers {
                     }
                 }
 
-                final UrlEncodedFormEntity ret = new UrlEncodedFormEntity(paramList, request.effectiveCharset());
+                final UrlEncodedFormEntity ret = new UrlEncodedFormEntity(paramList, request.charset());
                 ret.setContentType(contentType);
                 return ret;
             }
@@ -222,18 +222,18 @@ public class NativeHandlers {
 
         private static final Class[] XML_TYPES = new Class[] { String.class, StreamingMarkupBuilder.class };
         
-        public static HttpEntity xml(final Effective.Req request) {
-            final Object body = checkNull(request.effectiveBody());
-            final String contentType = request.effectiveContentType();
+        public static HttpEntity xml(final HttpConfig.EffectiveRequest request) {
+            final Object body = checkNull(request.body());
+            final String contentType = request.contentType();
             checkTypes(contentType, body, XML_TYPES);
 
             StringEntity ret;
             if(body instanceof String) {
-                ret = new StringEntity(body.toString(), request.effectiveCharset());
+                ret = new StringEntity(body.toString(), request.charset());
             }
             else if(body instanceof Closure) {
                 final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
-                ret = new StringEntity(smb.bind(body).toString(), request.effectiveCharset());
+                ret = new StringEntity(smb.bind(body).toString(), request.charset());
             }
             else {
                 throw new UnsupportedOperationException();
@@ -243,13 +243,13 @@ public class NativeHandlers {
             return ret;
         }
 
-        public static HttpEntity json(final Effective.Req request) {
-            final Object body = checkNull(request.effectiveBody());
-            final String contentType = request.effectiveContentType();
+        public static HttpEntity json(final HttpConfig.EffectiveRequest request) {
+            final Object body = checkNull(request.body());
+            final String contentType = request.contentType();
             final String json = ((body instanceof String || body instanceof GString)
                                  ? body.toString()
                                  : new JsonBuilder(body).toString());
-            final StringEntity ret = new StringEntity(json, request.effectiveCharset());
+            final StringEntity ret = new StringEntity(json, request.charset());
             ret.setContentType(contentType);
             return ret;
         }

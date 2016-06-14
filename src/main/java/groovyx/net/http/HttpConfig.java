@@ -7,6 +7,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -16,13 +17,17 @@ public interface HttpConfig {
 
     public enum Status { SUCCESS, FAILURE };
 
-    public interface ContentHandler {
-        Function<Effective.Req,HttpEntity> getEncoder();
-        Function<HttpResponse,Object> getParser();
+    public interface EffectiveRequest {
+        Charset charset();
+        String contentType();
+        Object body();
+        URIBuilder uri();
+        Map<String,String> headers(Map<String,String> val);
+        Function<EffectiveRequest,HttpEntity> encoder(String contentType);
+        Set<String> acceptHeader(final String contentType);
     }
 
     public interface Request {
-
         void setContentType(String val);
         void setCharset(String val);
         void setCharset(Charset val);
@@ -36,8 +41,19 @@ public interface HttpConfig {
         Map<String,String> getHeaders();
 
         void setBody(Object val);
+
+        void encoder(String contentType, Function<EffectiveRequest,HttpEntity> val);
+        void encoder(List<String> contentTypes, Function<EffectiveRequest,HttpEntity> val);
+        Function<EffectiveRequest,HttpEntity> encoder(String contentType);
+
+        EffectiveRequest getEffective();
     }
 
+    public interface EffectiveResponse {
+        Closure<Object> action(Integer code);
+        Function<HttpResponse,Object> parser(String contentType);
+    }
+    
     public interface Response {
         void when(Status status, Closure<Object> closure);
         void when(Integer code, Closure<Object> closure);
@@ -45,16 +61,14 @@ public interface HttpConfig {
 
         void setSuccess(Closure<Object> closure);
         void setFailure(Closure<Object> closure);
+
+        void parser(String contentType, Function<HttpResponse,Object> val);
+        void parser(List<String> contentTypes, Function<HttpResponse,Object> val);
+        Function<HttpResponse,Object> parser(String contentType);
+
+        EffectiveResponse getEffective();
     }
 
-    void encoder(String contentType, Function<Effective.Req,HttpEntity> val);
-    void encoder(List<String> contentTypes, Function<Effective.Req,HttpEntity> val);
-    Function<Effective.Req,HttpEntity> encoder(String contentType);
-
-    void parser(String contentType, Function<HttpResponse,Object> val);
-    void parser(List<String> contentTypes, Function<HttpResponse,Object> val);
-    Function<HttpResponse,Object> parser(String contentType);
-    
     Request getRequest();
     Response getResponse();
 }
