@@ -1,17 +1,19 @@
 package groovyx.net.http;
 
-import org.codehaus.groovy.runtime.MethodClosure;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -21,6 +23,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import org.codehaus.groovy.runtime.MethodClosure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,17 +183,26 @@ public class HttpBuilder {
     }
 
     private HttpEntity entity(final AbstractHttpConfig config) {
-        final String contentType = config.getReq().effectiveContentType();
+        final HttpConfig.EffectiveRequest e = config.getRequest().getEffective();
+        final String contentType = e.contentType();
         if(contentType == null) {
             throw new IllegalStateException("Found request body, but content type is undefined");
         }
         
-        final Function<Effective.Req,HttpEntity> encoder = config.effectiveEncoder(contentType);
+        final Function<HttpConfig.EffectiveRequest,HttpEntity> encoder = e.encoder(contentType);
         if(encoder == null) {
             throw new IllegalStateException("Found body, but did not find encoder");
         }
 
-        return encoder.apply(config.getReq());
+        return encoder.apply(e);
+    }
+
+    private <T extends HttpUriRequest> T addHeaders(final HttpConfig.EffectiveRequest e, final T message) {
+        for(Map.Entry<String,String> entry : e.headers(new LinkedHashMap<>()).entrySet()) {
+            message.addHeader(entry.getKey(), entry.getValue());
+        }
+
+        return message;
     }
 
     public static final void noOp() { }
@@ -202,7 +214,8 @@ public class HttpBuilder {
     
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
         final AbstractHttpConfig requestConfig = configureRequest(closure);
-        return exec(new HttpGet(requestConfig.getReq().effectiveUri().toURI()), requestConfig);
+        HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
+        return exec(addHeaders(e, new HttpGet(e.uri().toURI())), requestConfig);
     }
 
     public <T> T get(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -227,11 +240,28 @@ public class HttpBuilder {
 
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
         final AbstractHttpConfig requestConfig = configureRequest(closure);
-        final HttpPost post = new HttpPost(requestConfig.getReq().effectiveUri().toURI());
-        if(requestConfig.getReq().effectiveBody() != null) {
+        final HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
+        final HttpPost post = addHeaders(e, new HttpPost(e.uri().toURI()));
+        if(e.body() != null) {
             post.setEntity(entity(requestConfig));
         }
         
         return exec(post, requestConfig);
+    }
+
+    public <T> T post(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return type.cast(post(closure));
+    }
+
+    public CompletableFuture<Object> postAsync() {
+        return CompletableFuture.supplyAsync(() -> post(NO_OP), executor);
+    }
+
+    public Object postAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> post(closure), executor);
+    }
+    
+    public <T> CompletableFuture<T> postAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> post(type, closure), executor);
     }
 }

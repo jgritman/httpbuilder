@@ -19,14 +19,14 @@ class HttpConfigTest extends Specification {
             request.body = [ one: 1, two: 2 ];
 
             def JSON = ["application/json", "application/javascript", "text/javascript"];
-            encoder JSON, jsonEncoder
-            parser JSON, jsonParser
+            request.encoder JSON, jsonEncoder
+            response.parser JSON, jsonParser
         }
 
         expect:
-        http.encoder("application/json") == jsonEncoder;
-        http.parser("text/javascript") == jsonParser;
-        http.encoder("application/javascript").apply(http.request) != null;
+        http.request.encoder("application/json") == jsonEncoder;
+        http.response.parser("text/javascript") == jsonParser;
+        http.request.encoder("application/javascript").apply(http.request.effective) != null;
         http.request.body == [ one: 1, two: 2 ];
     }
 
@@ -50,7 +50,7 @@ class HttpConfigTest extends Specification {
         
         def root = AbstractHttpConfig.threadSafe().config {
             request.charset = charset
-            encoder XML, xmlEncoder
+            request.encoder XML, xmlEncoder
             response.success = success;
             response.failure = failure;
         };
@@ -58,7 +58,7 @@ class HttpConfigTest extends Specification {
         def intermediate = AbstractHttpConfig.threadSafe(root).config {
             request.contentType = contentType
             request.uri = uriBuilder
-            parser XML, xmlParser
+            response.parser XML, xmlParser
         };
 
         def end = AbstractHttpConfig.basic(intermediate).config {
@@ -67,19 +67,17 @@ class HttpConfigTest extends Specification {
         };
 
         expect:
-        end.effectiveEncoder(contentType) == xmlEncoder;
-        end.effectiveParser(contentType) == xmlParser;
-        end.request.effectiveBody() == theBody;
-        end.request.effectiveContentType() == contentType;
-        end.request.effectiveCharset() == charset;
-        end.request.effectiveUri() == uriBuilder;
+        end.request.effective.encoder(contentType) == xmlEncoder;
+        end.response.effective.parser(contentType) == xmlParser;
+        end.request.effective.body() == theBody;
+        end.request.effective.contentType() == contentType;
+        end.request.effective.charset() == charset;
+        end.request.effective.uri() == uriBuilder;
 
-        end.response.effectiveAction(200) == success;
-        end.response.effectiveAction(400) == failure;
-        end.response.effectiveAction(404) == on404;
-        intermediate.response.effectiveAction(404) == failure;
-
-        end.acceptHeader('application/xml') == XML as Set;
+        end.response.effective.action(200) == success;
+        end.response.effective.action(400) == failure;
+        end.response.effective.action(404) == on404;
+        intermediate.response.effective.action(404) == failure;
     }
 
     def Script() {

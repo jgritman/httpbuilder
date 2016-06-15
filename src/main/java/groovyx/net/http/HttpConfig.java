@@ -24,7 +24,6 @@ public interface HttpConfig {
         URIBuilder uri();
         Map<String,String> headers(Map<String,String> val);
         Function<EffectiveRequest,HttpEntity> encoder(String contentType);
-        Set<String> acceptHeader(final String contentType);
     }
 
     public interface Request {
@@ -40,6 +39,8 @@ public interface HttpConfig {
 
         Map<String,String> getHeaders();
 
+        void setAccept(String[] values);
+        void setAccept(List<String> values);
         void setBody(Object val);
 
         void encoder(String contentType, Function<EffectiveRequest,HttpEntity> val);

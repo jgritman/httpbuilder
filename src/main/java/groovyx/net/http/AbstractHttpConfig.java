@@ -65,6 +65,14 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             }
         }
 
+        public void setAccept(final String[] values) {
+            getHeaders().put("Accept", String.join(";", values));
+        }
+
+        public void setAccept(final List<String> values) {
+            getHeaders().put("Accept", String.join(";", values));
+        }
+
         public EffectiveRequest getEffective() {
             return effective;
         }
@@ -126,11 +134,6 @@ public abstract class AbstractHttpConfig implements HttpConfig {
                 }
                 
                 map.putAll(getHeaders());
-
-                if(!map.containsKey("Accept")) {
-                    map.put("Accept", String.join(";", acceptHeader(contentType())));
-                }
-                
                 return map;
             }
 
@@ -145,26 +148,6 @@ public abstract class AbstractHttpConfig implements HttpConfig {
                 }
                 
                 return null;
-            }
-            
-            public Set<String> acceptHeader(final String contentType) {
-                Set<String> ret = new HashSet<>();
-                if(getParent() != null) {
-                    Set<String> set = getParent().getRequest().getEffective().acceptHeader(contentType);
-                    ret.addAll(set);
-                }
-
-                Function<HttpResponse,Object> p = getResponse().parser(contentType);
-                if(p != null) {
-                    Map<String,Function<HttpResponse,Object>> parsers = ((BaseResponse) getResponse()).getParserMap();
-                    for(Map.Entry<String,Function<HttpResponse,Object>> entry : parsers.entrySet()) {
-                        if(entry.getValue() == p) {
-                            ret.add(entry.getKey());
-                        }
-                    }
-                }
-
-                return ret;
             }
         }
     }
@@ -369,6 +352,8 @@ public abstract class AbstractHttpConfig implements HttpConfig {
                 if(getParent() != null) {
                     return getParent().getResponse().getEffective().parser(contentType);
                 }
+
+                return null;
             }
         }
     }
@@ -520,18 +505,20 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         return new BasicHttpConfig((AbstractHttpConfig) parent);
     }
 
-    //TODO: Start here fixing bugs, back to type checking extensions
+    private static final String TYPE_CHECKING_SCRIPT = "typecheckhttpconfig.groovy";
+    
     public AbstractHttpConfig configure(final String scriptClassPath) {
         final CompilerConfiguration compilerConfig = new CompilerConfiguration();
-        compilerConfig.setScriptBaseClass(HttpConfigScript.class.getName());
         final ImportCustomizer icustom = new ImportCustomizer();
         icustom.addImports("groovyx.net.http.NativeHandlers");
         icustom.addStaticStars("groovyx.net.http.Status", "groovyx.net.http.ContentTypes");
-        final ASTTransformationCustomizer ast = new ASTTransformationCustomizer(TypeChecked.class);
+        final Map<String,String> map = Collections.singletonMap("extensions", TYPE_CHECKING_SCRIPT);
+        final ASTTransformationCustomizer ast = new ASTTransformationCustomizer(map, TypeChecked.class);
         compilerConfig.addCompilationCustomizers(icustom, ast);
         final GroovyShell shell = new GroovyShell(getClass().getClassLoader(), compilerConfig);
-        shell.setVariable(HttpConfigScript.TARGET, this);
-
+        shell.setVariable("request", getRequest());
+        shell.setVariable("response", getResponse());
+        
         try(final InputStream is = getClass().getClassLoader().getResourceAsStream(scriptClassPath)) {
             final InputStreamReader reader = new InputStreamReader(is);
             shell.evaluate(reader);

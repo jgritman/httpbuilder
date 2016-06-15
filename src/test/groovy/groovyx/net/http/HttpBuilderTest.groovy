@@ -11,7 +11,7 @@ class HttpBuilderTest extends Specification {
     def "Basic GET"() {
         setup:
         def result = HttpBuilder.singleThreaded().get {
-            parser "text/html", NativeHandlers.Parsers.&textToString
+            response.parser "text/html", NativeHandlers.Parsers.&textToString
             request.uri = 'http://www.google.com';
         };
 
@@ -23,7 +23,7 @@ class HttpBuilderTest extends Specification {
     def "GET with Parameters"() {
         setup:
         def http = HttpBuilder.singleThreaded().configure {
-            parser "text/html", NativeHandlers.Parsers.&textToString
+            response.parser "text/html", NativeHandlers.Parsers.&textToString
             request.uri = 'http://www.google.com';
         }
 
@@ -76,11 +76,13 @@ class HttpBuilderTest extends Specification {
 
         def result = http.post {
             request.uri.query = [ one: '1', two: '2' ];
+            request.accept = ContentTypes.JSON;
             request.body = toSend;
         }
 
         expect:
         result instanceof Map;
+        result.headers.Accept.split(';') as List<String> == ContentTypes.JSON;
         new JsonSlurper().parseText(result.data) == toSend;
     }
 }
