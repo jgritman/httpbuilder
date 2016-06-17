@@ -73,6 +73,13 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             getHeaders().put("Accept", String.join(";", values));
         }
 
+        public void setHeaders(final Map<String,String> toAdd) {
+            final Map<String,String> h = getHeaders();
+            for(Map.Entry<String,String> entry : toAdd.entrySet()) {
+                h.put(entry.getKey(), entry.getValue());
+            }
+        }
+
         public EffectiveRequest getEffective() {
             return effective;
         }

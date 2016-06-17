@@ -234,6 +234,32 @@ public class HttpBuilder {
         return CompletableFuture.supplyAsync(() -> get(type, closure), executor);
     }
 
+    public Object head() {
+        return head(NO_OP);
+    }
+    
+    public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        final AbstractHttpConfig requestConfig = configureRequest(closure);
+        HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
+        return exec(addHeaders(e, new HttpHead(e.uri().toURI())), requestConfig);
+    }
+
+    public <T> T head(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return type.cast(head(closure));
+    }
+
+    public CompletableFuture<Object> headAsync() {
+        return CompletableFuture.supplyAsync(() -> head(), executor);
+    }
+    
+    public CompletableFuture<Object> headAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> head(closure), executor);
+    }
+
+    public <T> CompletableFuture<T> headAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> head(type, closure), executor);
+    }
+    
     public Object post() {
         return post(NO_OP);
     }
@@ -264,4 +290,37 @@ public class HttpBuilder {
     public <T> CompletableFuture<T> postAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> post(type, closure), executor);
     }
+
+    public Object put() {
+        return put(NO_OP);
+    }
+
+    public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        final AbstractHttpConfig requestConfig = configureRequest(closure);
+        final HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
+        final HttpPut put = addHeaders(e, new HttpPut(e.uri().toURI()));
+        if(e.body() != null) {
+            put.setEntity(entity(requestConfig));
+        }
+        
+        return exec(put, requestConfig);
+    }
+
+    public <T> T put(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return type.cast(put(closure));
+    }
+
+    public CompletableFuture<Object> putAsync() {
+        return CompletableFuture.supplyAsync(() -> put(NO_OP), executor);
+    }
+
+    public Object putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> put(closure), executor);
+    }
+    
+    public <T> CompletableFuture<T> putAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> put(type, closure), executor);
+    }
+
+    
 }

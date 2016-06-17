@@ -324,7 +324,14 @@ public class NativeHandlers {
 
         public static InputStream stream(final HttpResponse response) {
             try {
-                return response.getEntity().getContent();
+                HttpEntity entity = response.getEntity();
+                if(entity == null) {
+                    //case of head request
+                    return null;
+                }
+                else {
+                    return entity.getContent();
+                }
             }
             catch(IOException ioe) {
                 throw new RuntimeException(ioe);

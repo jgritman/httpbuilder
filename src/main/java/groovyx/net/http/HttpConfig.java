@@ -38,6 +38,7 @@ public interface HttpConfig {
         void setUri(URL val) throws URISyntaxException;
 
         Map<String,String> getHeaders();
+        void setHeaders(Map<String,String> toAdd);
 
         void setAccept(String[] values);
         void setAccept(List<String> values);

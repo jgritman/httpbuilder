@@ -13,7 +13,7 @@ response.with {
     success = NativeHandlers.&success
     failure = NativeHandlers.&failure
     
-    parser BINARY, NativeHandlers.Parsers.&binary
+    parser BINARY, NativeHandlers.Parsers.&stream
     parser TEXT, NativeHandlers.Parsers.&text
     parser URLENC, NativeHandlers.Parsers.&form
     parser XML, NativeHandlers.Parsers.&xml
