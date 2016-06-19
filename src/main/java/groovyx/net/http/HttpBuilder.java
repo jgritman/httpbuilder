@@ -1,10 +1,18 @@
 package groovyx.net.http;
 
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.client.CookieStore;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.auth.DigestScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.client.AuthCache;
+import org.apache.http.HttpHost;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -16,9 +24,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -26,6 +38,7 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.http.auth.AuthScope;
 
 public class HttpBuilder {
 
@@ -121,6 +134,8 @@ public class HttpBuilder {
         }
     }
 
+    final private AuthCache authCache;
+    final private CookieStore cookieStore;
     final private CloseableHttpClient client;
     final private AbstractHttpConfig config;
     final private Executor executor;
@@ -129,6 +144,8 @@ public class HttpBuilder {
         this.client = client;
         this.config = config;
         this.executor = executor;
+        this.cookieStore = new BasicCookieStore();
+        this.authCache = new BasicAuthCache();
     }
 
     public void close() {
@@ -173,9 +190,64 @@ public class HttpBuilder {
         return myConfig;
     }
 
+    private int port(final URI uri) {
+        if(uri.getPort() != -1) {
+            return uri.getPort();
+        }
+
+        if(uri.getScheme().startsWith("https")) {
+            return 443;
+        }
+
+        return 80;
+    }
+
+    private void basicAuth(final HttpClientContext c, final HttpConfig.EffectiveAuth ea, final URI uri) {
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        provider.setCredentials(new AuthScope(uri.getHost(), port(uri)),
+                                new UsernamePasswordCredentials(ea.getUser(), ea.getPassword()));
+        c.setCredentialsProvider(provider);
+    }
+
+    //TODO: Add auth cache at client level to specify this crap
+    private void digestAuth(final HttpClientContext c, final HttpConfig.EffectiveAuth ea, final URI uri) {
+        final HttpHost host = new HttpHost(uri.getHost());//, port(uri), uri.getScheme());
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        provider.setCredentials(AuthScope.ANY, //(uri.getHost(), port(uri)),
+                                new UsernamePasswordCredentials(ea.getUser(), ea.getPassword()));
+        c.setCredentialsProvider(provider);
+        DigestScheme digestScheme = new DigestScheme();
+        authCache.put(host, digestScheme);
+        c.setAuthCache(authCache);
+    }
+
+    //TODO: Add a way to specify cookies programmatically
+    private HttpClientContext context(final AbstractHttpConfig requestConfig) {
+        final HttpClientContext c = HttpClientContext.create();
+        BasicClientCookie cookie = new BasicClientCookie("fake", "fake_value");
+        cookie.setDomain("httpbin.org");
+        cookie.setPath("/");
+        cookieStore.addCookie(cookie);
+
+        c.setCookieStore(cookieStore);
+        final HttpConfig.EffectiveAuth ea = requestConfig.getRequest().getEffective().auth();
+        
+        if(ea != null) {
+            final URI uri = requestConfig.getRequest().getEffective().uri().toURI();
+            if(ea.getAuthType() == HttpConfig.AuthType.BASIC) {
+                basicAuth(c, ea, uri);
+            }
+            else if(ea.getAuthType() == HttpConfig.AuthType.DIGEST) {
+                digestAuth(c, ea, uri);
+            }
+        }
+        
+        return c;
+    }
+
     private Object exec(final HttpUriRequest request, final AbstractHttpConfig requestConfig) {
         try {
-            return client.execute(request, new Handler(requestConfig));
+            return client.execute(request, new Handler(requestConfig), context(requestConfig));
         }
         catch(IOException ioe) {
             throw new RuntimeException(ioe);

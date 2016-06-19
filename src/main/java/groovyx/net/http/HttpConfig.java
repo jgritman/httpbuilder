@@ -16,6 +16,7 @@ import org.apache.http.ProtocolVersion;
 public interface HttpConfig {
 
     public enum Status { SUCCESS, FAILURE };
+    public enum AuthType { BASIC, DIGEST };
 
     public interface EffectiveRequest {
         Charset charset();
@@ -24,9 +25,32 @@ public interface HttpConfig {
         URIBuilder uri();
         Map<String,String> headers(Map<String,String> val);
         Function<EffectiveRequest,HttpEntity> encoder(String contentType);
+        EffectiveAuth auth();
     }
 
+    public interface Auth {
+        default void basic(String user, String password) {
+            basic(user, password, false);
+        }
+        
+        void basic(String user, String password, boolean preemptive);
+
+        default void digest(String user, String password) {
+            digest(user, password, false);
+        }
+        
+        void digest(String user, String password, boolean preemptive);
+    }
+
+    public interface EffectiveAuth {
+        AuthType getAuthType();
+        String getUser();
+        String getPassword();
+        boolean getPreemptive();
+    }
+    
     public interface Request {
+        Auth getAuth();
         void setContentType(String val);
         void setCharset(String val);
         void setCharset(Charset val);

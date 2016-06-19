@@ -1,25 +1,22 @@
 package groovyx.net.http;
 
-import groovy.transform.TypeChecked;
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import groovy.lang.GroovyShell;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import groovy.lang.GroovyShell;
+import groovy.transform.TypeChecked;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -29,13 +26,89 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 public abstract class AbstractHttpConfig implements HttpConfig {
 
     abstract public AbstractHttpConfig getParent();
+
+    public class BasicAuth implements Auth, EffectiveAuth {
+        private String user;
+        private String password;
+        private boolean preemptive;
+        private AuthType authType;
+        
+        public void basic(final String user, final String password, final boolean preemptive) {
+            this.user = user;
+            this.password = password;
+            this.preemptive = preemptive;
+            this.authType = AuthType.BASIC;
+        }
+
+        public void digest(final String user, final String password, final boolean preemptive) {
+            basic(user, password, preemptive);
+            this.authType = AuthType.DIGEST;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public boolean getPreemptive() {
+            return preemptive;
+        }
+
+        public AuthType getAuthType() {
+            return authType;
+        }
+    }
+
+    public class ThreadSafeAuth implements Auth, EffectiveAuth {
+        volatile String user;
+        volatile String password;
+        volatile boolean preemptive;
+        volatile AuthType authType;
+        
+        public void basic(final String user, final String password, final boolean preemptive) {
+            this.user = user;
+            this.password = password;
+            this.preemptive = preemptive;
+            this.authType = AuthType.BASIC;
+        }
+
+        public void digest(final String user, final String password, final boolean preemptive) {
+            basic(user, password, preemptive);
+            this.authType = AuthType.DIGEST;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public boolean getPreemptive() {
+            return preemptive;
+        }
+
+        public AuthType getAuthType() {
+            return authType;
+        }
+    }
 
     public abstract class BaseRequest implements Request {
 
@@ -43,7 +116,8 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         protected abstract Object getBody();
         protected abstract Charset getCharset();
         protected abstract Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap();
-
+        protected abstract EffectiveAuth getEffectiveAuth();
+        
         private final Effective effective = new Effective();
         
         public void setCharset(final String val) {
@@ -156,6 +230,19 @@ public abstract class AbstractHttpConfig implements HttpConfig {
                 
                 return null;
             }
+
+            public EffectiveAuth auth() {
+                EffectiveAuth ea = getEffectiveAuth();
+                if(ea != null) {
+                    return ea;
+                }
+
+                if(getParent() != null) {
+                    return getParent().getRequest().getEffective().auth();
+                }
+
+                return null;
+            }
         }
     }
 
@@ -166,7 +253,8 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         private final Map<String,String> headers = new LinkedHashMap<>();
         private Object body;
         private final Map<String,Function<EffectiveRequest,HttpEntity>> encoderMap = new LinkedHashMap<>();
-
+        private BasicAuth auth = new BasicAuth();
+        
         protected Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap() {
             return encoderMap;
         }
@@ -217,6 +305,14 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         
         public void setBody(Object val) {
             this.body = val;
+        }
+
+        public BasicAuth getAuth() {
+            return auth;
+        }
+
+        public EffectiveAuth getEffectiveAuth() {
+            return auth.getAuthType() != null ? auth : null;
         }
     }
     
@@ -228,7 +324,8 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         private final ConcurrentMap<String,String> headers = new ConcurrentHashMap<>();
         private volatile Object body;
         private final ConcurrentMap<String,Function<EffectiveRequest,HttpEntity>> encoderMap = new ConcurrentHashMap<>();
-
+        private final ThreadSafeAuth auth = new ThreadSafeAuth();
+        
         protected Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap() {
             return encoderMap;
         }
@@ -279,6 +376,14 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         
         public void setBody(Object val) {
             this.body = val;
+        }
+
+        public ThreadSafeAuth getAuth() {
+            return auth;
+        }
+
+        public EffectiveAuth getEffectiveAuth() {
+            return auth.getAuthType() != null ? auth : null;
         }
     }
 

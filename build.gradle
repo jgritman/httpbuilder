@@ -36,3 +36,9 @@ dependencies {
     compile('org.slf4j:slf4j-api:1.7.21')
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
 }
+
+test {
+    systemProperty 'org.apache.commons.logging.Log', 'org.apache.commons.logging.impl.SimpleLog'
+    systemProperty 'org.apache.commons.logging.simplelog.showdatetime', 'true'
+    systemProperty 'org.apache.commons.logging.simplelog.log.org.apache.http', 'DEBUG'
+}
