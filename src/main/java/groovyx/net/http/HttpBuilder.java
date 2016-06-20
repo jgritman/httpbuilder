@@ -1,44 +1,52 @@
 package groovyx.net.http;
 
-import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.auth.DigestScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.client.AuthCache;
-import org.apache.http.HttpHost;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.net.URI;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
+import javax.net.ssl.SSLContext;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.protocol.ResponseProcessCookies;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.auth.DigestScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.http.auth.AuthScope;
 
 public class HttpBuilder {
 
@@ -134,18 +142,17 @@ public class HttpBuilder {
         }
     }
 
-    final private AuthCache authCache;
     final private CookieStore cookieStore;
     final private CloseableHttpClient client;
     final private AbstractHttpConfig config;
     final private Executor executor;
     
-    public HttpBuilder(final CloseableHttpClient client, final AbstractHttpConfig config, final Executor executor) {
+    public HttpBuilder(final CloseableHttpClient client, final CookieStore cookieStore,
+                       final AbstractHttpConfig config, final Executor executor) {
         this.client = client;
+        this.cookieStore = cookieStore;
         this.config = config;
         this.executor = executor;
-        this.cookieStore = new BasicCookieStore();
-        this.authCache = new BasicAuthCache();
     }
 
     public void close() {
@@ -167,19 +174,33 @@ public class HttpBuilder {
     }
 
     public static HttpBuilder singleThreaded() {
-        return new HttpBuilder(HttpClients.createDefault(), AbstractHttpConfig.classLevel(false), new SingleThreaded());
+        return singleThreaded(null);
+    }
+
+    public static HttpBuilder singleThreaded(final SSLContext sslContext) {
+        final CookieStore cookieStore = new BasicCookieStore();
+        final HttpClientBuilder builder = HttpClients.custom()
+            .setDefaultCookieStore(cookieStore);
+
+        if(sslContext != null) {
+            builder.setSSLContext(sslContext);
+        }
+        
+        return new HttpBuilder(builder.build(), cookieStore, AbstractHttpConfig.classLevel(false), new SingleThreaded());
     }
 
     public static HttpBuilder multiThreaded(final int max, final Executor executor) {
         final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(max);
         cm.setDefaultMaxPerRoute(max);
-        
+
+        final CookieStore cookieStore = new BasicCookieStore();
         final CloseableHttpClient client = HttpClients.custom()
             .setConnectionManager(cm)
+            .setDefaultCookieStore(cookieStore)
             .build();
         
-        return new HttpBuilder(client, AbstractHttpConfig.classLevel(true), executor);
+        return new HttpBuilder(client, cookieStore, AbstractHttpConfig.classLevel(true), executor);
     }
 
     private AbstractHttpConfig configureRequest(final Closure closure) {
@@ -209,27 +230,12 @@ public class HttpBuilder {
         c.setCredentialsProvider(provider);
     }
 
-    //TODO: Add auth cache at client level to specify this crap
     private void digestAuth(final HttpClientContext c, final HttpConfig.EffectiveAuth ea, final URI uri) {
-        final HttpHost host = new HttpHost(uri.getHost());//, port(uri), uri.getScheme());
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(AuthScope.ANY, //(uri.getHost(), port(uri)),
-                                new UsernamePasswordCredentials(ea.getUser(), ea.getPassword()));
-        c.setCredentialsProvider(provider);
-        DigestScheme digestScheme = new DigestScheme();
-        authCache.put(host, digestScheme);
-        c.setAuthCache(authCache);
+        basicAuth(c, ea, uri);
     }
 
-    //TODO: Add a way to specify cookies programmatically
     private HttpClientContext context(final AbstractHttpConfig requestConfig) {
         final HttpClientContext c = HttpClientContext.create();
-        BasicClientCookie cookie = new BasicClientCookie("fake", "fake_value");
-        cookie.setDomain("httpbin.org");
-        cookie.setPath("/");
-        cookieStore.addCookie(cookie);
-
-        c.setCookieStore(cookieStore);
         final HttpConfig.EffectiveAuth ea = requestConfig.getRequest().getEffective().auth();
         
         if(ea != null) {
@@ -272,6 +278,12 @@ public class HttpBuilder {
     private <T extends HttpUriRequest> T addHeaders(final HttpConfig.EffectiveRequest e, final T message) {
         for(Map.Entry<String,String> entry : e.headers(new LinkedHashMap<>()).entrySet()) {
             message.addHeader(entry.getKey(), entry.getValue());
+        }
+
+        //technically cookies are headers, so add them here
+        List<Cookie> cookies = e.cookies(new ArrayList());
+        for(Cookie cookie : cookies) {
+            cookieStore.addCookie(cookie);
         }
 
         return message;
@@ -393,6 +405,4 @@ public class HttpBuilder {
     public <T> CompletableFuture<T> putAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> put(type, closure), executor);
     }
-
-    
 }

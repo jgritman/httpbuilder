@@ -1,5 +1,10 @@
 package groovyx.net.http;
 
+import java.util.Date;
+import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyShell;
@@ -80,6 +85,15 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         volatile String password;
         volatile boolean preemptive;
         volatile AuthType authType;
+
+        public ThreadSafeAuth() { }
+
+        public ThreadSafeAuth(final BasicAuth toCopy) {
+            this.user = toCopy.user;
+            this.password = toCopy.password;
+            this.preemptive = toCopy.preemptive;
+            this.authType = toCopy.authType;
+        }
         
         public void basic(final String user, final String password, final boolean preemptive) {
             this.user = user;
@@ -117,6 +131,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         protected abstract Charset getCharset();
         protected abstract Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap();
         protected abstract EffectiveAuth getEffectiveAuth();
+        protected abstract List<Cookie> getCookies();
         
         private final Effective effective = new Effective();
         
@@ -152,6 +167,22 @@ public abstract class AbstractHttpConfig implements HttpConfig {
             for(Map.Entry<String,String> entry : toAdd.entrySet()) {
                 h.put(entry.getKey(), entry.getValue());
             }
+        }
+
+        public void cookie(final String name, final String value, final Date date) {
+            if(getUri() == null) {
+                throw new IllegalStateException("You must set the uri before setting cookies, in the same scope, " +
+                                                "so that domain and path can be property calculated");
+            }
+
+            final URI uri = getUri().toURI();
+            final BasicClientCookie cookie = new BasicClientCookie(name, value);
+            cookie.setDomain(uri.getHost());
+            cookie.setPath(uri.getPath());
+            if(date != null) {
+                cookie.setExpiryDate(date);
+            }
+            getCookies().add(cookie);
         }
 
         public EffectiveRequest getEffective() {
@@ -243,6 +274,15 @@ public abstract class AbstractHttpConfig implements HttpConfig {
 
                 return null;
             }
+
+            public List<Cookie> cookies(final List<Cookie> list) {
+                list.addAll(getCookies());
+                if(getParent() != null) {
+                    getParent().getRequest().getEffective().cookies(list);
+                }
+
+                return list;
+            }
         }
     }
 
@@ -254,6 +294,11 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         private Object body;
         private final Map<String,Function<EffectiveRequest,HttpEntity>> encoderMap = new LinkedHashMap<>();
         private BasicAuth auth = new BasicAuth();
+        private List<Cookie> cookies = new ArrayList(1);
+
+        protected List<Cookie> getCookies() {
+            return cookies;
+        }
         
         protected Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap() {
             return encoderMap;
@@ -324,7 +369,27 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         private final ConcurrentMap<String,String> headers = new ConcurrentHashMap<>();
         private volatile Object body;
         private final ConcurrentMap<String,Function<EffectiveRequest,HttpEntity>> encoderMap = new ConcurrentHashMap<>();
-        private final ThreadSafeAuth auth = new ThreadSafeAuth();
+        private final ThreadSafeAuth auth;
+        private final List<Cookie> cookies = new CopyOnWriteArrayList();
+
+        public ThreadSafeRequest() {
+            this.auth = new ThreadSafeAuth();
+        }
+
+        public ThreadSafeRequest(final BasicRequest toCopy) {
+            this.auth = new ThreadSafeAuth(toCopy.auth);
+            this.contentType = toCopy.contentType;
+            this.charset = toCopy.charset;
+            this.uriBuilder = toCopy.uriBuilder;
+            this.headers.putAll(toCopy.headers);
+            this.body = toCopy.body;
+            this.encoderMap.putAll(toCopy.encoderMap);
+            this.cookies.addAll(toCopy.cookies);
+        }
+        
+        protected List<Cookie> getCookies() {
+            return cookies;
+        }
         
         protected Map<String,Function<EffectiveRequest,HttpEntity>> getEncoderMap() {
             return encoderMap;
@@ -507,6 +572,15 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         private volatile Closure<Object> successHandler;
         private volatile Closure<Object> failureHandler;
 
+        public ThreadSafeResponse() { }
+
+        public ThreadSafeResponse(final BasicResponse toCopy) {
+            this.parserMap.putAll(toCopy.parserMap);
+            this.byCode.putAll(toCopy.byCode);
+            this.successHandler = toCopy.successHandler;
+            this.failureHandler = toCopy.failureHandler;
+        }
+        
         protected Map<String,Function<HttpResponse,Object>> getParserMap() {
             return parserMap;
         }
@@ -545,13 +619,24 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         final ThreadSafeRequest request;
         final ThreadSafeResponse response;
 
+        private void populateUri() {
+            if(parent != null && parent.getRequest().getUri() != null) {
+                this.request.setUri(parent.getRequest().getUri());
+            }
+        }
+        
         public ThreadSafeHttpConfig(final AbstractHttpConfig parent) {
             this.parent = parent;
             this.request = new ThreadSafeRequest();
             this.response = new ThreadSafeResponse();
-            if(parent != null && parent.getRequest().getUri() != null) {
-                this.request.setUri(parent.getRequest().getUri());
-            }
+            populateUri();
+        }
+
+        public ThreadSafeHttpConfig(final BasicHttpConfig toCopy) {
+            this.parent = toCopy.parent;
+            this.request = new ThreadSafeRequest(toCopy.request);
+            this.response = new ThreadSafeResponse(toCopy.response);
+            populateUri();
         }
 
         public Request getRequest() {
@@ -609,7 +694,7 @@ public abstract class AbstractHttpConfig implements HttpConfig {
         return threadSafe ? threadSafe(root) : basic(root);
     }
 
-    public static AbstractHttpConfig basic(final HttpConfig parent) {
+    public static BasicHttpConfig basic(final HttpConfig parent) {
         return new BasicHttpConfig((AbstractHttpConfig) parent);
     }
 

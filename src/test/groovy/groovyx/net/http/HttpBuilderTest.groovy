@@ -10,7 +10,6 @@ import java.util.concurrent.Executors;
 
 class HttpBuilderTest extends Specification {
 
-    @Ignore
     def "Basic GET"() {
         setup:
         def result = HttpBuilder.singleThreaded().get {
@@ -23,7 +22,6 @@ class HttpBuilderTest extends Specification {
         result.indexOf('</html>') != -1;
     }
 
-    @Ignore
     def "GET with Parameters"() {
         setup:
         def http = HttpBuilder.singleThreaded().configure {
@@ -39,7 +37,6 @@ class HttpBuilderTest extends Specification {
         result.contains('Big Bird');
     }
 
-    @Ignore
     def "Basic POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
@@ -55,7 +52,6 @@ class HttpBuilderTest extends Specification {
         result.form == toSend;
     }
 
-    @Ignore
     def "No Op POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
@@ -72,7 +68,6 @@ class HttpBuilderTest extends Specification {
         result.form == toSend;
     }
 
-    @Ignore
     def "POST Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
@@ -93,7 +88,6 @@ class HttpBuilderTest extends Specification {
         new JsonSlurper().parseText(result.data) == toSend;
     }
 
-    @Ignore
     def "Test POST Random Headers"() {
         setup:
         final headers = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
@@ -107,7 +101,6 @@ class HttpBuilderTest extends Specification {
         headers.every { key, value -> results.headers[key] == value; };
     }
 
-    @Ignore
     def "Test Head"() {
         setup:
         def result = HttpBuilder.singleThreaded().head {
@@ -118,7 +111,6 @@ class HttpBuilderTest extends Specification {
         !result
     }
 
-    @Ignore
     def "Test Multi-Threaded Head"() {
         setup:
         def http = HttpBuilder.multiThreaded(2, Executors.newFixedThreadPool(2));
@@ -133,7 +125,6 @@ class HttpBuilderTest extends Specification {
         futures.every { future -> future.get() == null; };
     }
 
-    @Ignore
     def "PUT Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
@@ -154,7 +145,6 @@ class HttpBuilderTest extends Specification {
         new JsonSlurper().parseText(result.data) == toSend;
     }
 
-    @Ignore
     def "Gzip and Deflate"() {
         when:
         def gzipped = HttpBuilder.singleThreaded().get {
@@ -173,7 +163,6 @@ class HttpBuilderTest extends Specification {
         deflated.deflated == true;
     }
 
-    @Ignore
     def "Basic Auth"() {
         setup:
         def http = HttpBuilder.singleThreaded().configure {
@@ -191,6 +180,9 @@ class HttpBuilderTest extends Specification {
     }
 
     def "Digest Auth"() {
+        //NOTE, httpbin.org oddly requires cookies to be set during digest authentication,
+        //which of course httpclient won't do. If you let the first request fail, then the cookie will
+        //be set, which means the next request will have the cookie and will allow auth to succeed.
         setup:
         def http = HttpBuilder.singleThreaded().configure {
             request.uri = 'http://httpbin.org'
@@ -200,10 +192,44 @@ class HttpBuilderTest extends Specification {
         when:
         def data = http.get {
             request.uri.path = '/digest-auth/auth/david/clark'
+            response.failure = { r -> "Ignored" } 
+        }
+
+        then:
+        data == "Ignored"
+
+        when:
+        data = http.get {
+            request.uri.path = '/digest-auth/auth/david/clark'
         }
 
         then:
         data.authenticated;
         data.user == 'david';
+    }
+
+    def "Test Set Cookies"() {
+        when:
+        def http = HttpBuilder.singleThreaded().configure {
+            request.uri = 'http://httpbin.org';
+            request.cookie 'foocookie', 'barcookie'
+        }
+
+        def data = http.get {
+            request.uri.path = '/cookies'
+        }
+
+        then:
+        data.cookies.foocookie == 'barcookie';
+
+        when:
+        data = http.get {
+            request.uri.path = '/cookies'
+            request.cookie 'requestcookie', '12345'
+        }
+
+        then:
+        data.cookies.foocookie == 'barcookie';
+        data.cookies.requestcookie == '12345';
     }
 }

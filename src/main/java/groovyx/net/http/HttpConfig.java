@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.function.Function;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
+import org.apache.http.cookie.Cookie;
 
 public interface HttpConfig {
 
@@ -25,6 +27,7 @@ public interface HttpConfig {
         URIBuilder uri();
         Map<String,String> headers(Map<String,String> val);
         Function<EffectiveRequest,HttpEntity> encoder(String contentType);
+        List<Cookie> cookies(List<Cookie> list);
         EffectiveAuth auth();
     }
 
@@ -67,6 +70,12 @@ public interface HttpConfig {
         void setAccept(String[] values);
         void setAccept(List<String> values);
         void setBody(Object val);
+
+        default void cookie(String name, String value) {
+            cookie(name, value, null);
+        }
+        
+        void cookie(String name, String value, Date expires);
 
         void encoder(String contentType, Function<EffectiveRequest,HttpEntity> val);
         void encoder(List<String> contentTypes, Function<EffectiveRequest,HttpEntity> val);
