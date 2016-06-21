@@ -236,4 +236,22 @@ class HttpBuilderTest extends Specification {
         data.cookies.foocookie == 'barcookie';
         data.cookies.requestcookie == '12345';
     }
+
+    def "Test Delete"() {
+        setup:
+        def args = [ one: 'i', two: 'ii' ]
+        def http = HttpBuilder.configure {
+            request.uri = 'http://httpbin.org'
+            execution.maxThreads = 5
+        }
+
+        when:
+        def data = http.delete {
+            request.uri.path = '/delete'
+            request.uri.query = args
+        }
+
+        then:
+        data.args == args;
+    }
 }

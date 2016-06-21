@@ -380,4 +380,32 @@ public class HttpBuilder {
     public <T> CompletableFuture<T> putAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> put(type, closure), executor);
     }
+
+    //deletes
+    public Object delete() {
+        return delete(NO_OP);
+    }
+
+    public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        final AbstractHttpConfig requestConfig = configureRequest(closure);
+        final HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
+        final HttpDelete del = addHeaders(e, new HttpDelete(e.uri().toURI()));
+        return exec(del, requestConfig);
+    }
+
+    public <T> T delete(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return type.cast(delete(closure));
+    }
+
+    public CompletableFuture<Object> deleteAsync() {
+        return CompletableFuture.supplyAsync(() -> delete(NO_OP), executor);
+    }
+
+    public Object deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> delete(closure), executor);
+    }
+    
+    public <T> CompletableFuture<T> deleteAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> delete(type, closure), executor);
+    }
 }
