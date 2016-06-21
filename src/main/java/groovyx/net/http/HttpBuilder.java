@@ -147,7 +147,7 @@ public class HttpBuilder {
     final private AbstractHttpConfig config;
     final private Executor executor;
     
-    public HttpBuilder(final CloseableHttpClient client, final CookieStore cookieStore,
+    protected HttpBuilder(final CloseableHttpClient client, final CookieStore cookieStore,
                        final AbstractHttpConfig config, final Executor executor) {
         this.client = client;
         this.cookieStore = cookieStore;
@@ -166,41 +166,16 @@ public class HttpBuilder {
         }
     }
 
-    public HttpBuilder configure(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        closure.setDelegate(config);
+    public static HttpBuilder configure() {
+        return configure(NO_OP);
+    }
+    
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        HttpObjectConfigImpl impl = new HttpObjectConfigImpl();
+        closure.setDelegate(impl);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
-        return this;
-    }
-
-    public static HttpBuilder singleThreaded() {
-        return singleThreaded(null);
-    }
-
-    public static HttpBuilder singleThreaded(final SSLContext sslContext) {
-        final CookieStore cookieStore = new BasicCookieStore();
-        final HttpClientBuilder builder = HttpClients.custom()
-            .setDefaultCookieStore(cookieStore);
-
-        if(sslContext != null) {
-            builder.setSSLContext(sslContext);
-        }
-        
-        return new HttpBuilder(builder.build(), cookieStore, AbstractHttpConfig.classLevel(false), new SingleThreaded());
-    }
-
-    public static HttpBuilder multiThreaded(final int max, final Executor executor) {
-        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(max);
-        cm.setDefaultMaxPerRoute(max);
-
-        final CookieStore cookieStore = new BasicCookieStore();
-        final CloseableHttpClient client = HttpClients.custom()
-            .setConnectionManager(cm)
-            .setDefaultCookieStore(cookieStore)
-            .build();
-        
-        return new HttpBuilder(client, cookieStore, AbstractHttpConfig.classLevel(true), executor);
+        return impl.getEffective().build();
     }
 
     private AbstractHttpConfig configureRequest(final Closure closure) {
