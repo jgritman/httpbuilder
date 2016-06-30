@@ -21,17 +21,39 @@
  */
 package groovyx.net.http;
 
-import static groovyx.net.http.URIBuilder.convertToURI;
+import com.google.appengine.repackaged.com.google.common.base.StringUtil;
 import groovy.lang.Closure;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.*;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.cookie.params.CookieSpecPNames;
+import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContexts;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.MethodClosure;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
+import javax.net.ssl.SSLContext;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,33 +66,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.cookie.params.CookieSpecPNames;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HttpContext;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.MethodClosure;
+import static groovyx.net.http.URIBuilder.convertToURI;
 
 /** <p>
  * Groovy DSL for easily making HTTP requests, and handling request and response
@@ -855,7 +851,18 @@ public class HTTPBuilder {
      * @return
      */
     protected HttpClient createClient( HttpParams params ) {
-        return new DefaultHttpClient(params);
+        String protocols = System.getProperty("https.protocols");
+        if(StringUtils.isNotBlank(protocols)) {
+            String[] protocolArray = protocols.split(",");
+            SSLContext sslContext = SSLContexts.createDefault();
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
+                    protocolArray,
+                    null,
+                    new NoopHostnameVerifier());
+            return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        } else {
+            return new DefaultHttpClient(params);
+        }
     }
 
     /**

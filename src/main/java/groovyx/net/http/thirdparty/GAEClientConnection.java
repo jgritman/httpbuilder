@@ -23,6 +23,7 @@ package groovyx.net.http.thirdparty;
 
 import java.io.*;
 import java.net.*;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.http.*;
 import org.apache.http.conn.*;
@@ -34,14 +35,16 @@ import org.apache.http.protocol.*;
 
 import com.google.appengine.api.urlfetch.*;
 
-class GAEClientConnection
-  implements ManagedClientConnection {
+class GAEClientConnection implements ManagedClientConnection {
+
+  final String id;
 
   public GAEClientConnection(ClientConnectionManager cm, HttpRoute route, Object state) {
     this.connManager = cm;
     this.route = route;
     this.state = state;
     this.closed = true;
+    id = UUID.randomUUID().toString();
   }
 
   // From interface ManagedClientConnection
@@ -281,6 +284,19 @@ class GAEClientConnection
   private HTTPRequest request;
   private HTTPResponse response;
   private boolean closed;
+  private Socket socket;
 
   private static URLFetchService urlFS = URLFetchServiceFactory.getURLFetchService();
+
+  public String getId() {
+    return id;
+  }
+
+  public void bind(Socket socket) throws IOException {
+     this.socket = socket;
+  }
+
+  public Socket getSocket() {
+    return socket;
+  }
 }
