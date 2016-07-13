@@ -21,13 +21,15 @@
  */
 package groovyx.net.http;
 
-import com.google.appengine.repackaged.com.google.common.base.StringUtil;
 import groovy.lang.Closure;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.*;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -42,9 +44,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.params.CookieSpecPNames;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.*;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
@@ -171,7 +171,7 @@ import static groovyx.net.http.URIBuilder.convertToURI;
  */
 public class HTTPBuilder {
 
-    private HttpClient client;
+	private HttpClient client;
     protected URIBuilder defaultURI = null;
     protected AuthConfig auth = new AuthConfig( this );
 
@@ -188,8 +188,14 @@ public class HTTPBuilder {
 
     protected EncoderRegistry encoders = new EncoderRegistry();
     protected ParserRegistry parsers = new ParserRegistry();
+	public static final HttpParams DEFAULT_PARAMS = new BasicHttpParams();
 
-    /**
+	static{
+		DEFAULT_PARAMS.setParameter( CookieSpecPNames.DATE_PATTERNS,
+				Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z") );
+	}
+
+	/**
      * Creates a new instance with a <code>null</code> default URI.
      */
     public HTTPBuilder() {
@@ -832,10 +838,7 @@ public class HTTPBuilder {
      */
     public HttpClient getClient() {
         if (client == null) {
-            HttpParams defaultParams = new BasicHttpParams();
-            defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
-                    Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z") );
-            client = createClient(defaultParams);
+            client = createClient(DEFAULT_PARAMS);
         }
         return client;
     }
@@ -850,22 +853,27 @@ public class HTTPBuilder {
      * @param params
      * @return
      */
-    protected HttpClient createClient( HttpParams params ) {
-        String protocols = System.getProperty("https.protocols");
-        if(StringUtils.isNotBlank(protocols)) {
-            String[] protocolArray = protocols.split(",");
-            SSLContext sslContext = SSLContexts.createDefault();
-            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
-                    protocolArray,
-                    null,
-                    new NoopHostnameVerifier());
-            return HttpClients.custom().setSSLSocketFactory(sslsf).build();
+    protected HttpClient createClient( HttpParams params) {
+        if(StringUtils.isNotBlank(System.getProperty("https.protocols"))) {
+			HttpClientBuilder httpClientBuilder = getHttpClientBuilder();
+			return httpClientBuilder.build();
         } else {
             return new DefaultHttpClient(params);
         }
     }
 
-    /**
+	private HttpClientBuilder getHttpClientBuilder() {
+		String protocols = System.getProperty("https.protocols");
+		String[] protocolArray = protocols.split(",");
+		SSLContext sslContext = SSLContexts.createDefault();
+		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
+				protocolArray,
+				null,
+				new NoopHostnameVerifier());
+		return HttpClients.custom().setSSLSocketFactory(sslsf);
+	}
+
+	/**
      * Used to access the {@link AuthConfig} handler used to configure common
      * authentication mechanism.  Example:
      * <pre>builder.auth.basic( 'myUser', 'somePassword' )</pre>
@@ -957,9 +965,14 @@ public class HTTPBuilder {
         getClient().getConnectionManager().shutdown();
     }
 
+	void setCredentials(AuthScope authScope, UsernamePasswordCredentials credentials) {
+		BasicCredentialsProvider basicCredentialsProvider = new BasicCredentialsProvider();
+		basicCredentialsProvider.setCredentials(authScope,credentials);
+		client = getHttpClientBuilder().setDefaultCredentialsProvider(basicCredentialsProvider).build();
+	}
 
 
-    /**
+	/**
      * <p>Encloses all properties and method calls used within the
      * {@link HTTPBuilder#request(Object, Method, Object, Closure)} 'config'
      * closure argument.  That is, an instance of this class is set as the
