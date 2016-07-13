@@ -36,7 +36,7 @@ class HttpURLClientTest {
     @Test public void testRedirect() {
         def http = new HttpURLClient(followRedirects:false)
 
-        def params = [ url:'http://www.google.com/search',
+        def params = [ url:'https://www.google.com/search',
                         query:[q:'HTTPBuilder', btnI:"I'm Feeling Lucky"],
                         headers:['User-Agent':'Firefox'] ]
         def resp = http.request( params )

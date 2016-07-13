@@ -21,6 +21,21 @@
  */
 package groovyx.net.http;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.exception.OAuthException;
+import org.apache.http.*;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -30,26 +45,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
-
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.exception.OAuthException;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.NTCredentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
 
 /**
  * Encapsulates all configuration related to HTTP authentication methods.
@@ -85,14 +80,19 @@ public class AuthConfig {
      * @param pass
      */
     public void basic( String host, int port, String user, String pass ) {
-	  final HttpClient client = builder.getClient();
-	  if ( !(client instanceof AbstractHttpClient )) {
-		throw new IllegalStateException("client is not an AbstractHttpClient");
-	  }
-      ((AbstractHttpClient)client).getCredentialsProvider().setCredentials(
-            new AuthScope( host, port ),
-            new UsernamePasswordCredentials( user, pass )
-        );
+        AuthScope authScope = new AuthScope(host, port);
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, pass);
+        final HttpClient client = builder.getClient();
+        if (client instanceof AbstractHttpClient) {
+            ((AbstractHttpClient)client).getCredentialsProvider().setCredentials(
+                    authScope,
+                    credentials
+            );
+        } else if(client instanceof CloseableHttpClient){
+            builder.setCredentials(authScope, credentials);
+        } else {
+            throw new IllegalStateException("client is not an AbstractHttpClient");
+        }
     }
 
     /**
