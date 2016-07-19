@@ -19,8 +19,9 @@ import java.nio.charset.StandardCharsets;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import static groovyx.net.http.Traverser.*;
 
-public abstract class UriBuilder implements Traversible<UriBuilder> {
+public abstract class UriBuilder {
 
     public static final int DEFAULT_PORT = -1;
 
@@ -39,37 +40,41 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
     public abstract UriBuilder setUserInfo(String val);
     public abstract String getUserInfo();
     public abstract UriBuilder getParent();
-    protected abstract Map<String,Object> freshMap();
     
-    public URI toURI(final Charset charset) throws URISyntaxException {
-        final URIBuilder b = new URIBuilder();
-        
-        final String scheme = traverse(this::getScheme, Traversible::notNull);
-        if(scheme != null) b.setScheme(scheme);
-
-        final Integer port = traverse(this::getPort, Traversible.notValue(DEFAULT_PORT));;
-        if(port != null) b.setPort(port);
-
-        final String host = traverse(this::getHost, Traversible::notNull);
-        if(host != null) b.setHost(host);
-
-        final String path = traverse(this::getPath, Traversible::notNull);
-        if(path != null) b.setPath(path);
-
-        final Map<String,Object> query = traverse(this::getQuery, Traversible::notNull);
-        if(query != null) {
-            for(Map.Entry<String,Object> entry : query.entrySet()) {
-                b.addParameter(entry.getKey(), entry.getValue().toString());
+    public URI toURI(final Charset charset) {
+        try {
+            final URIBuilder b = new URIBuilder();
+            
+            final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
+            if(scheme != null) b.setScheme(scheme);
+            
+            final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
+            if(port != null) b.setPort(port);
+            
+            final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
+            if(host != null) b.setHost(host);
+            
+            final String path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
+            if(path != null) b.setPath(path);
+            
+            final Map<String,Object> query = traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::notNull);
+            if(query != null) {
+                for(Map.Entry<String,Object> entry : query.entrySet()) {
+                    b.addParameter(entry.getKey(), entry.getValue().toString());
+                }
             }
+            
+            final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
+            if(fragment != null) b.setFragment(fragment);
+            
+            final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
+            if(userInfo != null) b.setUserInfo(userInfo);
+            
+            return b.build();
         }
-
-        final String fragment = traverse(this::getFragment, Traversible::notNull);
-        if(fragment != null) b.setFragment(fragment);
-
-        final String userInfo = traverse(this::getUserInfo, Traversible::notNull);
-        if(userInfo != null) b.setUserInfo(userInfo);
-
-        return b.build();
+        catch(URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected final void populateFrom(final URIBuilder builder) {
@@ -78,7 +83,7 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
         setHost(builder.getHost());
         setPath(builder.getPath());
 
-        Map<String,Object> tmp = freshMap();
+        Map<String,Object> tmp = new LinkedHashMap<>();
         for(NameValuePair nvp : builder.getQueryParams()) {
             tmp.put(nvp.getName(), nvp.getValue());
         }
@@ -94,13 +99,13 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
         return this;
     }
 
-    public final UriBuilder setFull(final URI uri) throws URISyntaxException {
+    public final UriBuilder setFull(final URI uri) {
         final URIBuilder builder = new URIBuilder(uri);
         populateFrom(builder);
         return this;
     }
 
-    public URI toURI() throws URISyntaxException {
+    public URI toURI() {
         return toURI(StandardCharsets.UTF_8);
     }
 
@@ -132,9 +137,9 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
         private String path;
         public UriBuilder setPath(String val) { path = val; return this; }
         public String getPath() { return path; }
-
-        private Map<String,Object> query = Collections.emptyMap();
-        public UriBuilder setQuery(Map<String,Object> val) { query = val; return this; }
+        
+        private Map<String,Object> query = new LinkedHashMap<>(1);
+        public UriBuilder setQuery(Map<String,Object> val) { query.putAll(val);; return this; }
         public Map<String,Object> getQuery() { return query; }
 
         private String fragment;
@@ -150,10 +155,6 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
 
         public Basic(final UriBuilder parent) {
             this.parent = parent;
-        }
-
-        protected Map<String,Object> freshMap() {
-            return new LinkedHashMap<>(1);
         }
     }
 
@@ -174,8 +175,8 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
         public UriBuilder setPath(String val) { path = val; return this; }
         public String getPath() { return path; }
 
-        private volatile Map<String,Object> query = Collections.emptyMap();
-        public UriBuilder setQuery(Map<String,Object> val) { query = val; return this; }
+        private Map<String,Object> query = new ConcurrentHashMap();
+        public UriBuilder setQuery(Map<String,Object> val) { query.putAll(val); return this; }
         public Map<String,Object> getQuery() { return query; }
 
         private volatile String fragment;
@@ -192,10 +193,5 @@ public abstract class UriBuilder implements Traversible<UriBuilder> {
         public ThreadSafe(final UriBuilder parent) {
             this.parent = parent;
         }
-
-        protected Map<String,Object> freshMap() {
-            return new ConcurrentHashMap<>();
-        }
     }
-
 }

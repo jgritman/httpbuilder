@@ -54,11 +54,11 @@ public class HttpBuilder {
     
     private static class Handler implements ResponseHandler<Object> {
 
-        private final HttpConfig config;
+        private final ChainedHttpConfig config;
         private String contentType = "application/octet-stream";
         private Charset charset = StandardCharsets.UTF_8;
         
-        public Handler(final HttpConfig config) {
+        public Handler(final ChainedHttpConfig config) {
             this.config = config;
         }
         
@@ -88,7 +88,7 @@ public class HttpBuilder {
         }
 
         private Function<HttpResponse,Object> findParser(final String contentType) {
-            final Function<HttpResponse,Object> found = config.getResponse().getEffective().parser(contentType);
+            final Function<HttpResponse,Object> found = config.getChainedResponse().actualParser(contentType);
             return found == null ? NativeHandlers.Parsers::stream : found;
         }
 
@@ -126,7 +126,7 @@ public class HttpBuilder {
                 final HttpEntity entity = response.getEntity();
                 processContentType(entity);
                 final Function<HttpResponse,Object> parser = findParser(contentType);
-                final Closure<Object> action = config.getResponse().getEffective().action(status);
+                final Closure<Object> action = config.getChainedResponse().actualAction(status);
                 final Object o = parser.apply(response);
                 return action.call(closureArgs(action, response, o));
             }
@@ -144,11 +144,11 @@ public class HttpBuilder {
 
     final private CookieStore cookieStore;
     final private CloseableHttpClient client;
-    final private AbstractHttpConfig config;
+    final private ChainedHttpConfig config;
     final private Executor executor;
     
     protected HttpBuilder(final CloseableHttpClient client, final CookieStore cookieStore,
-                       final AbstractHttpConfig config, final Executor executor) {
+                          final ChainedHttpConfig config, final Executor executor) {
         this.client = client;
         this.cookieStore = cookieStore;
         this.config = config;
@@ -175,11 +175,11 @@ public class HttpBuilder {
         closure.setDelegate(impl);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
-        return impl.getEffective().build();
+        return impl.build();
     }
 
-    private AbstractHttpConfig configureRequest(final Closure closure) {
-        final AbstractHttpConfig myConfig = AbstractHttpConfig.requestLevel(config);
+    private ChainedHttpConfig configureRequest(final Closure closure) {
+        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(config);
         closure.setDelegate(myConfig);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
@@ -198,35 +198,35 @@ public class HttpBuilder {
         return 80;
     }
 
-    private void basicAuth(final HttpClientContext c, final HttpConfig.EffectiveAuth ea, final URI uri) {
+    private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
         CredentialsProvider provider = new BasicCredentialsProvider();
         provider.setCredentials(new AuthScope(uri.getHost(), port(uri)),
-                                new UsernamePasswordCredentials(ea.getUser(), ea.getPassword()));
+                                new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
         c.setCredentialsProvider(provider);
     }
 
-    private void digestAuth(final HttpClientContext c, final HttpConfig.EffectiveAuth ea, final URI uri) {
-        basicAuth(c, ea, uri);
+    private void digestAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
+        basicAuth(c, auth, uri);
     }
 
-    private HttpClientContext context(final AbstractHttpConfig requestConfig) {
+    private HttpClientContext context(final ChainedHttpConfig requestConfig) {
         final HttpClientContext c = HttpClientContext.create();
-        final HttpConfig.EffectiveAuth ea = requestConfig.getRequest().getEffective().auth();
+        final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();
         
-        if(ea != null) {
-            final URI uri = requestConfig.getRequest().getEffective().uri().toURI();
-            if(ea.getAuthType() == HttpConfig.AuthType.BASIC) {
-                basicAuth(c, ea, uri);
+        if(auth != null) {
+            final URI uri = requestConfig.getRequest().getUri().toURI();
+            if(auth.getAuthType() == HttpConfig.AuthType.BASIC) {
+                basicAuth(c, auth, uri);
             }
-            else if(ea.getAuthType() == HttpConfig.AuthType.DIGEST) {
-                digestAuth(c, ea, uri);
+            else if(auth.getAuthType() == HttpConfig.AuthType.DIGEST) {
+                digestAuth(c, auth, uri);
             }
         }
         
         return c;
     }
 
-    private Object exec(final HttpUriRequest request, final AbstractHttpConfig requestConfig) {
+    private Object exec(final HttpUriRequest request, final ChainedHttpConfig requestConfig) {
         try {
             return client.execute(request, new Handler(requestConfig), context(requestConfig));
         }
@@ -235,28 +235,28 @@ public class HttpBuilder {
         }
     }
 
-    private HttpEntity entity(final AbstractHttpConfig config) {
-        final HttpConfig.EffectiveRequest e = config.getRequest().getEffective();
-        final String contentType = e.contentType();
+    private HttpEntity entity(final ChainedHttpConfig config) {
+        final ChainedHttpConfig.ChainedRequest cr = config.getChainedRequest();
+        final String contentType = cr.actualContentType();
         if(contentType == null) {
             throw new IllegalStateException("Found request body, but content type is undefined");
         }
         
-        final Function<HttpConfig.EffectiveRequest,HttpEntity> encoder = e.encoder(contentType);
+        final Function<ChainedHttpConfig.ChainedRequest,HttpEntity> encoder = cr.actualEncoder(contentType);
         if(encoder == null) {
             throw new IllegalStateException("Found body, but did not find encoder");
         }
 
-        return encoder.apply(e);
+        return encoder.apply(cr);
     }
 
-    private <T extends HttpUriRequest> T addHeaders(final HttpConfig.EffectiveRequest e, final T message) {
-        for(Map.Entry<String,String> entry : e.headers(new LinkedHashMap<>()).entrySet()) {
+    private <T extends HttpUriRequest> T addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) {
+        for(Map.Entry<String,String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             message.addHeader(entry.getKey(), entry.getValue());
         }
 
         //technically cookies are headers, so add them here
-        List<Cookie> cookies = e.cookies(new ArrayList());
+        List<Cookie> cookies = cr.actualCookies(new ArrayList());
         for(Cookie cookie : cookies) {
             cookieStore.addCookie(cookie);
         }
@@ -272,9 +272,9 @@ public class HttpBuilder {
     }
     
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final AbstractHttpConfig requestConfig = configureRequest(closure);
-        HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
-        return exec(addHeaders(e, new HttpGet(e.uri().toURI())), requestConfig);
+        final ChainedHttpConfig requestConfig = configureRequest(closure);
+        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+        return exec(addHeaders(cr, new HttpGet(cr.getUri().toURI())), requestConfig);
     }
 
     public <T> T get(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -298,9 +298,9 @@ public class HttpBuilder {
     }
     
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final AbstractHttpConfig requestConfig = configureRequest(closure);
-        HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
-        return exec(addHeaders(e, new HttpHead(e.uri().toURI())), requestConfig);
+        final ChainedHttpConfig requestConfig = configureRequest(closure);
+        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+        return exec(addHeaders(cr, new HttpHead(cr.getUri().toURI())), requestConfig);
     }
 
     public <T> T head(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -324,10 +324,10 @@ public class HttpBuilder {
     }
 
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final AbstractHttpConfig requestConfig = configureRequest(closure);
-        final HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
-        final HttpPost post = addHeaders(e, new HttpPost(e.uri().toURI()));
-        if(e.body() != null) {
+        final ChainedHttpConfig requestConfig = configureRequest(closure);
+        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+        final HttpPost post = addHeaders(cr, new HttpPost(cr.getUri().toURI()));
+        if(cr.actualBody() != null) {
             post.setEntity(entity(requestConfig));
         }
         
@@ -355,10 +355,10 @@ public class HttpBuilder {
     }
 
     public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final AbstractHttpConfig requestConfig = configureRequest(closure);
-        final HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
-        final HttpPut put = addHeaders(e, new HttpPut(e.uri().toURI()));
-        if(e.body() != null) {
+        final ChainedHttpConfig requestConfig = configureRequest(closure);
+        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+        final HttpPut put = addHeaders(cr, new HttpPut(cr.getUri().toURI()));
+        if(cr.actualBody() != null) {
             put.setEntity(entity(requestConfig));
         }
         
@@ -387,9 +387,9 @@ public class HttpBuilder {
     }
 
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final AbstractHttpConfig requestConfig = configureRequest(closure);
-        final HttpConfig.EffectiveRequest e = requestConfig.getRequest().getEffective();
-        final HttpDelete del = addHeaders(e, new HttpDelete(e.uri().toURI()));
+        final ChainedHttpConfig requestConfig = configureRequest(closure);
+        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+        final HttpDelete del = addHeaders(cr, new HttpDelete(cr.getUri().toURI()));
         return exec(del, requestConfig);
     }
 

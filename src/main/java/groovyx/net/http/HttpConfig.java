@@ -8,30 +8,22 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.cookie.Cookie;
 
 public interface HttpConfig {
 
     public enum Status { SUCCESS, FAILURE };
     public enum AuthType { BASIC, DIGEST };
 
-    public interface EffectiveRequest {
-        Charset charset();
-        String contentType();
-        Object body();
-        URIBuilder uri();
-        Map<String,String> headers(Map<String,String> val);
-        Function<EffectiveRequest,HttpEntity> encoder(String contentType);
-        List<Cookie> cookies(List<Cookie> list);
-        EffectiveAuth auth();
-    }
-
     public interface Auth {
+        AuthType getAuthType();
+        String getUser();
+        String getPassword();
+        boolean getPreemptive();
+        
         default void basic(String user, String password) {
             basic(user, password, false);
         }
@@ -45,21 +37,13 @@ public interface HttpConfig {
         void digest(String user, String password, boolean preemptive);
     }
 
-    public interface EffectiveAuth {
-        AuthType getAuthType();
-        String getUser();
-        String getPassword();
-        boolean getPreemptive();
-    }
-    
     public interface Request {
         Auth getAuth();
         void setContentType(String val);
         void setCharset(String val);
         void setCharset(Charset val);
         
-        URIBuilder getUri();
-        void setUri(URIBuilder val);
+        UriBuilder getUri();
         void setUri(String val) throws URISyntaxException;
         void setUri(URI val);
         void setUri(URL val) throws URISyntaxException;
@@ -77,22 +61,16 @@ public interface HttpConfig {
         
         void cookie(String name, String value, Date expires);
 
-        void encoder(String contentType, Function<EffectiveRequest,HttpEntity> val);
-        void encoder(List<String> contentTypes, Function<EffectiveRequest,HttpEntity> val);
-        Function<EffectiveRequest,HttpEntity> encoder(String contentType);
-
-        EffectiveRequest getEffective();
-    }
-
-    public interface EffectiveResponse {
-        Closure<Object> action(Integer code);
-        Function<HttpResponse,Object> parser(String contentType);
+        void encoder(String contentType, Function<ChainedHttpConfig.ChainedRequest,HttpEntity> val);
+        void encoder(List<String> contentTypes, Function<ChainedHttpConfig.ChainedRequest,HttpEntity> val);
+        Function<ChainedHttpConfig.ChainedRequest,HttpEntity> encoder(String contentType);
     }
     
     public interface Response {
         void when(Status status, Closure<Object> closure);
         void when(Integer code, Closure<Object> closure);
         void when(String code, Closure<Object> closure);
+        Closure<Object> when(Integer code);
 
         void setSuccess(Closure<Object> closure);
         void setFailure(Closure<Object> closure);
@@ -100,8 +78,6 @@ public interface HttpConfig {
         void parser(String contentType, Function<HttpResponse,Object> val);
         void parser(List<String> contentTypes, Function<HttpResponse,Object> val);
         Function<HttpResponse,Object> parser(String contentType);
-
-        EffectiveResponse getEffective();
     }
 
     Request getRequest();

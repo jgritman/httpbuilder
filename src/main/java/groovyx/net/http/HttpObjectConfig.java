@@ -11,11 +11,6 @@ public interface HttpObjectConfig extends HttpConfig {
         void setSslContext(SSLContext val);
     }
 
-    public interface EffectiveExecution {
-        HttpBuilder build();
-    }
-
     Execution getExecution();
-    EffectiveExecution getEffective();
 }
 
