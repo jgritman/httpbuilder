@@ -254,4 +254,22 @@ class HttpBuilderTest extends Specification {
         then:
         data.args == args;
     }
+
+    def "Test Custom Parser"() {
+        setup:
+        def http = HttpBuilder.configure {
+            request.uri = 'http://httpbin.org/'
+        }
+
+        when:
+        def lines = http.get {
+            request.uri.path = '/stream/25'
+            response.parser "application/json", { resp ->
+                NativeHandlers.Parsers.text(resp).readLines();
+            }
+        }
+
+        then:
+        lines.size() == 25
+    }
 }
