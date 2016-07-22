@@ -493,7 +493,7 @@ public class HttpConfigs {
             final CompilerConfiguration compilerConfig = new CompilerConfiguration();
             final ImportCustomizer icustom = new ImportCustomizer();
             icustom.addImports("groovyx.net.http.NativeHandlers");
-            icustom.addStaticStars("groovyx.net.http.Status", "groovyx.net.http.ContentTypes");
+            icustom.addStaticStars("groovyx.net.http.ContentTypes");
             final Map<String,String> map = Collections.singletonMap("extensions", TYPE_CHECKING_SCRIPT);
             final ASTTransformationCustomizer ast = new ASTTransformationCustomizer(map, TypeChecked.class);
             compilerConfig.addCompilationCustomizers(icustom, ast);

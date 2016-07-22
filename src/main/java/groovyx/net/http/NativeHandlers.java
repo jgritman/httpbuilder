@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.apache.http.client.HttpResponseException;
 
 public class NativeHandlers {
 
@@ -73,7 +74,8 @@ public class NativeHandlers {
     }
 
     public static Object failure(final HttpResponse response) throws HttpResponseException {
-        throw new HttpResponseException(response);
+        throw new HttpResponseException(response.getStatusLine().getStatusCode(),
+                                        response.getStatusLine().getReasonPhrase());
     }
     
     public static class Encoders {
@@ -276,8 +278,7 @@ public class NativeHandlers {
             
             try {
                 catalogResolver = new CatalogResolver( catalogManager );
-                catalogResolver.getCatalog().parseCatalog(
-                                                          ParserRegistry.class.getResource( "/catalog/html.xml" ) );
+                catalogResolver.getCatalog().parseCatalog(NativeHandlers.class.getResource("/catalog/html.xml"));
             }
             catch(IOException ex) {
                 if(log.isWarnEnabled()) {
