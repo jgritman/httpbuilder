@@ -198,22 +198,9 @@ public class NativeHandlers {
                 return ret;
             }
             else if(body instanceof Map) {
-                final Map<Object,Object> params = (Map<Object,Object>) body;
-                final List<NameValuePair> paramList = new ArrayList<NameValuePair>();
-                for(Map.Entry<Object,Object> entry : params.entrySet()) {
-                    if(entry.getValue() instanceof List) {
-                        for(Object subVal : (List<?>) entry.getValue()){
-                            paramList.add(new BasicNameValuePair(entry.getKey().toString(),
-                                                                 (subVal == null) ? "" : subVal.toString()));
-                        }
-                    }
-                    else {
-                        paramList.add(new BasicNameValuePair(entry.getKey().toString(),
-                                                             (entry.getValue() == null) ? "" : entry.getValue().toString()));
-                    }
-                }
-
-                final UrlEncodedFormEntity ret = new UrlEncodedFormEntity(paramList, request.actualCharset());
+                final Map<?,?> params = (Map) body;
+                final String encoded = Form.encode(params, request.actualCharset());
+                final StringEntity ret = new StringEntity(encoded, request.actualCharset());
                 ret.setContentType(contentType);
                 return ret;
             }
@@ -261,13 +248,13 @@ public class NativeHandlers {
 
         public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
         private static final Logger log = LoggerFactory.getLogger(Parsers.class);
-            /**
-             * This CatalogResolver is static to avoid the overhead of re-parsing
-             * the catalog definition file every time.  Unfortunately, there's no
-             * way to share a single Catalog instance between resolvers.  The
-             * {@link Catalog} class is technically not thread-safe, but as long as you
-             * do not parse catalog files while using the resolver, it should be fine.
-             */
+        /**
+         * This CatalogResolver is static to avoid the overhead of re-parsing
+         * the catalog definition file every time.  Unfortunately, there's no
+         * way to share a single Catalog instance between resolvers.  The
+         * {@link Catalog} class is technically not thread-safe, but as long as you
+         * do not parse catalog files while using the resolver, it should be fine.
+         */
         protected static CatalogResolver catalogResolver;
         
         static {
@@ -370,16 +357,11 @@ public class NativeHandlers {
             }
         }
 
-        public static Map<String,String> form(final HttpResponse response) {
+        public static Map<String,List<String>> form(final HttpResponse response) {
             try {
+                final Charset charset = charset(response);
                 final HttpEntity entity = response.getEntity();
-                List<NameValuePair> params = URLEncodedUtils.parse(entity);
-                Map<String,String> paramMap = new HashMap<String,String>(params.size());
-                for(NameValuePair param : params) {
-                    paramMap.put(param.getName(), param.getValue());
-                }
-                
-                return paramMap;
+                return Form.decode(entity.getContent(), charset);
             }
             catch(IOException ioe) {
                 throw new RuntimeException(ioe);

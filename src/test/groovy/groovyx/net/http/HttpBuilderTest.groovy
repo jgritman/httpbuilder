@@ -50,6 +50,7 @@ class HttpBuilderTest extends Specification {
         expect:
         result;
         result.form == toSend;
+        println("Returned Form: ${result.form}")
     }
 
     def "No Op POST Form"() {
