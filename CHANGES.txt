@@ -1,0 +1,21 @@
+Now using JsonBuilder instead of json-lib.
+
+HTTPBuilder.createClient no longer exists. To change the underlying http client, pass it to the constructor.
+
+HTTPBuilder.getClient() is now final; HTTPBuilder.setClient() has been removed.
+
+AsyncHTTPBuilder.finalize() no longer exists, use AutoCloseable for automatic resource management.
+
+HTTPBuilder and HttpURLClient no longer contain a protected log fields. The log fields are now private static.
+
+Internally now uses Slf4j instead of commons-logging.
+
+Lowest java version supported is Java 7.
+
+Lowest Groovy version supported is 2.4.
+
+Http verb methods in HTTPBuilder (get/post etc.) no longer remove arguments from passed argument map.
+
+Introduction of HttpConfig as the single configuration spot.
+
+Handlers are now defined on the response, not the request.

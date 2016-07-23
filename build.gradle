@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'groovy'
+
+sourceCompatibility = 8
+targetCompatibility = 8
+
+group = 'org.codehaus.groovy.modules.http-builder'
+version = '0.8.0-SNAPSHOT'
+
+repositories {
+    //jcenter()
+    mavenCentral()
+}
+
+configurations {
+    runtime {
+        exclude(module: 'signpost-commonshttp4')
+        exclude(module: 'signpost-core')
+        exclude(module: 'appengine-api-1.0-sdk')
+    }
+
+    testRuntime.extendsFrom = [compile, testCompile]
+}
+
+dependencies {
+
+    compile('org.apache.httpcomponents:httpclient:4.5.2');
+    //compile('org.apache.httpcomponents:httpclient:4.2.1')
+    compile('org.codehaus.groovy:groovy-all:2.4.6')
+    compile('net.sourceforge.nekohtml:nekohtml:1.9.22');
+    compile('xml-resolver:xml-resolver:1.2')
+    compile('oauth.signpost:signpost-commonshttp4:1.2.1.1')
+    compile('oauth.signpost:signpost-core:1.2.1.1')
+    compile('com.google.appengine:appengine-api-1.0-sdk:1.3.8')
+    compile('org.slf4j:slf4j-api:1.7.21')
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
+}
+
+test {
+    // systemProperty 'org.apache.commons.logging.Log', 'org.apache.commons.logging.impl.SimpleLog'
+    // systemProperty 'org.apache.commons.logging.simplelog.showdatetime', 'true'
+    // systemProperty 'org.apache.commons.logging.simplelog.log.org.apache.http', 'DEBUG'
+}
