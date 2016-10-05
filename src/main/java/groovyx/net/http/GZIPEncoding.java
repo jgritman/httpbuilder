@@ -21,13 +21,14 @@
  */
 package groovyx.net.http;
 
-import static groovyx.net.http.ContentEncoding.Type.GZIP;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 
+import static groovyx.net.http.ContentEncoding.Type.GZIP;
+
 /**
  * Content encoding used to handle GZIP responses.
+ *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class GZIPEncoding extends ContentEncoding {
@@ -42,11 +43,11 @@ public class GZIPEncoding extends ContentEncoding {
     }
 
     /**
-     * Wraps the raw entity in a {@link GZIPDecompressingEntity}.
+     * Wraps the raw entity in a {@link org.apache.http.client.entity.GzipDecompressingEntity}.
      */
     @Override
-    public HttpEntity wrapResponseEntity( HttpEntity raw ) {
-        return new GzipDecompressingEntity( raw );
+    public HttpEntity wrapResponseEntity(HttpEntity raw) {
+        return new GzipDecompressingEntity(raw);
     }
 
 }

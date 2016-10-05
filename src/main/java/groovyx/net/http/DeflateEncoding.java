@@ -21,13 +21,14 @@
  */
 package groovyx.net.http;
 
-import static groovyx.net.http.ContentEncoding.Type.DEFLATE;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.DeflateDecompressingEntity;
 
+import static groovyx.net.http.ContentEncoding.Type.DEFLATE;
+
 /**
  * Content encoding used to handle Deflate responses.
+ *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
 public class DeflateEncoding extends ContentEncoding {
@@ -43,11 +44,11 @@ public class DeflateEncoding extends ContentEncoding {
 
 
     /**
-     * Wraps the raw entity in a {@link InflaterEntity}.
+     * Wraps the raw entity in a {@link org.apache.http.client.entity.DeflateDecompressingEntity}.
      */
     @Override
-    public HttpEntity wrapResponseEntity( HttpEntity raw ) {
-        return new DeflateDecompressingEntity( raw );
+    public HttpEntity wrapResponseEntity(HttpEntity raw) {
+        return new DeflateDecompressingEntity(raw);
     }
 
 }

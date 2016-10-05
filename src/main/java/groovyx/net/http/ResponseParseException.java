@@ -40,10 +40,13 @@ public class ResponseParseException extends HttpResponseException {
        everything thrown from HttpBuilder. */
     private Throwable cause;
 
-    public ResponseParseException( HttpResponseDecorator response, Throwable cause ) {
-        super( response );
+    public ResponseParseException(HttpResponseDecorator response, Throwable cause) {
+        super(response);
         this.cause = cause;
     }
 
-    @Override public Throwable getCause() { return this.cause; }
+    @Override
+    public Throwable getCause() {
+        return this.cause;
+    }
 }

@@ -43,25 +43,27 @@ public class HttpContextDecorator implements HttpContext {
         this.delegate = new BasicHttpContext();
     }
 
-    public HttpContextDecorator( HttpContext delegate ) {
+    public HttpContextDecorator(HttpContext delegate) {
         this.delegate = new BasicHttpContext(delegate);
     }
 
     /**
      * Groovy support for the index [] operator
+     *
      * @param name
      * @return
      */
-    public Object getAt( String name ) {
+    public Object getAt(String name) {
         return this.getAttribute(name);
     }
 
     /**
      * Groovy support for the index [] operator
+     *
      * @param name
      * @param val
      */
-    public void setAt( String name, Object val ) {
+    public void setAt(String name, Object val) {
         this.setAttribute(name, val);
     }
 

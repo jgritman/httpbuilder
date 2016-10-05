@@ -32,43 +32,46 @@ import java.util.Map;
  * Basically, any given key will always be coerced to a String, and any retrieved
  * key (either via {@link #keySet()} or {@link #entrySet()} will always be a
  * String.
+ *
  * @author <a href='mailto:tomstrummer+httpbuilder@gmail.com'>Tom Nichols</a>
  */
-class StringHashMap<V> extends HashMap<Object,V> {
+class StringHashMap<V> extends HashMap<Object, V> {
 
     private static final long serialVersionUID = -92935672093270924L;
 
-    public StringHashMap() { super(); }
-
-    public StringHashMap( Map<?,? extends V> contents ) {
+    public StringHashMap() {
         super();
-        this.putAll( contents );
+    }
+
+    public StringHashMap(Map<?, ? extends V> contents) {
+        super();
+        this.putAll(contents);
     }
 
     @Override
-    public boolean containsKey( Object key ) {
-        if ( key == null ) return false;
-        return super.containsKey( key.toString() );
+    public boolean containsKey(Object key) {
+        if (key == null) return false;
+        return super.containsKey(key.toString());
     }
 
     @Override
-    public V get( Object key ) {
-        if ( key == null ) return null;
-        return super.get( key.toString() );
+    public V get(Object key) {
+        if (key == null) return null;
+        return super.get(key.toString());
     }
 
     public V put(Object key, V value) {
-        return key != null ? super.put( key.toString(), value ) : value;
+        return key != null ? super.put(key.toString(), value) : value;
     }
 
     @Override
-    public void putAll( Map<?, ? extends V> m ) {
-        for ( Object key : m.keySet() ) this.put(  key, m.get( key ) );
+    public void putAll(Map<?, ? extends V> m) {
+        for (Object key : m.keySet()) this.put(key, m.get(key));
     }
 
     @Override
-    public V remove( Object key ) {
-        if ( key == null ) return null;
-        return super.remove( key.toString() );
+    public V remove(Object key) {
+        if (key == null) return null;
+        return super.remove(key.toString());
     }
 }
