@@ -375,7 +375,7 @@
                         <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
                         <link>http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/</link>
                         <link>http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/</link>
-                        <link>http://groovy-lang.org/api/</link>
+                        <link>http://groovy-lang.org/api.html</link>
                         <link>http://json-lib.sourceforge.net/apidocs/jdk15</link>
                         <link>http://xml.apache.org/commons/components/apidocs/resolver</link>
                     </links>
