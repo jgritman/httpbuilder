@@ -10,7 +10,7 @@ Documentation: https://github.com/jgritman/httpbuilder/wiki
 Contributions:
 
  This project relies on the work of many open source projects including:
-  * Groovy: http://groovy.codehaus.org
+  * Groovy: http://www.groovy-lang.org
   * Apache HttpClient: http://hc.apache.org
   * Json-Lib: http://json-lib.sourceforge.net/
   * Neko HTML: http://nekohtml.sourceforge.net/
