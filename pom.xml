@@ -5,7 +5,7 @@
     <groupId>org.codehaus.groovy.modules.http-builder</groupId>
     <version>0.7.3-SNAPSHOT</version>
     <name>HTTP client framework for Groovy</name>
-    <url>http://groovy.codehaus.org/modules/http-builder/</url>
+    <url>http://groovy-lang.org/modules/http-builder/</url>
     <inceptionYear>2008</inceptionYear>
 
     <description>
@@ -375,7 +375,7 @@
                         <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
                         <link>http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/</link>
                         <link>http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/</link>
-                        <link>http://groovy.codehaus.org/api/</link>
+                        <link>http://groovy-lang.org/api/</link>
                         <link>http://json-lib.sourceforge.net/apidocs/jdk15</link>
                         <link>http://xml.apache.org/commons/components/apidocs/resolver</link>
                     </links>

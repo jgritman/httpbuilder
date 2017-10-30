@@ -33,7 +33,7 @@ Maven Users
 
 Using Grape
 
-  {{{http://groovy.codehaus.org/Grape}Grape}} is a neat dependency management
+  {{{http://groovy-lang.org/Grape}Grape}} is a neat dependency management
   feature in Groovy 1.6+ that allows you to download and add JARs to your classpath at runtime.
 
   You can automatically put HTTPBuilder in your classpath by using the following

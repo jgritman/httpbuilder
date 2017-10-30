@@ -206,7 +206,7 @@ News
   HTTPBuilder now 'tweets' its releases as an automated part of the build
   process.  This is a neat proof-of-concept that could easily be added to any
   Maven build thanks to
-  {{{http://groovy.codehaus.org/GMaven+-+Executing+Groovy+Code#GMaven-ExecutingGroovyCode-ExecuteaLocalGroovyScript}GMaven.}}
+  {{{http://groovy-lang.org/GMaven+-+Executing+Groovy+Code#GMaven-ExecutingGroovyCode-ExecuteaLocalGroovyScript}GMaven.}}
   See the
   {{{http://fisheye.codehaus.org/browse/gmod/httpbuilder/trunk/pom.xml?r=root:#l122}POM}}
    and

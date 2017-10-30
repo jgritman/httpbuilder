@@ -7,7 +7,7 @@
 Parsing XML data
 
   By default, HTTPBuilder classes will automatically parse XML responses using
-  an <<<{{{http://groovy.codehaus.org/gapi/groovy/util/XmlSlurper.html}XmlSlurper}}>>>.
+  an <<<{{{http://groovy-lang.org/gapi/groovy/util/XmlSlurper.html}XmlSlurper}}>>>.
 
   You can try the following example in the Groovy console (Groovy 1.6+ is needed
   for the <<<@Grab>>> macro):
@@ -44,7 +44,7 @@ Parsing XML data
 POSTing XML data
 
   XML data is serialized using
-  <<<{{{http://groovy.codehaus.org/gapi/index.html?groovy/xml/StreamingMarkupBuilder.html}StreamingMarkupBuilder}}>>>.
+  <<<{{{http://groovy-lang.org/gapi/index.html?groovy/xml/StreamingMarkupBuilder.html}StreamingMarkupBuilder}}>>>.
   You can define the <<<body>>> property as a closure like so:
 
 %{code-snippet|id=xml2|brush=groovy|file=src/site/examples.txt}

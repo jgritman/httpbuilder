@@ -17,7 +17,7 @@ Simplified GET Request
  HTML response based on the response's content-type header.  The HTML stream is
  normalized (thanks to {{{http://nekohtml.sourceforge.net/}Neko,}}) and then
  parsed by an
- {{{http://groovy.codehaus.org/Reading+XML+using+Groovy%27s+XmlSlurper}XmlSlurper}}
+ {{{http://groovy-lang.org/Reading+XML+using+Groovy%27s+XmlSlurper}XmlSlurper}}
  for easy DOM traversal.
 
  We are also taking advantage of HTTPBuilder's
