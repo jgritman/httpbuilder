@@ -411,7 +411,7 @@
     <pluginRepositories>
         <pluginRepository>
             <id>m2st-releases</id>
-            <url>http://anasoft-os-repo.googlecode.com/svn/repository/releases</url>
+            <url>https://anasoft-os-repo.googlecode.com/svn/repository/releases</url>
             <releases><enabled>true</enabled></releases>
         </pluginRepository>
     </pluginRepositories>
