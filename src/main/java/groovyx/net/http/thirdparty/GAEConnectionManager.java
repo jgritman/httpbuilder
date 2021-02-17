@@ -21,15 +21,20 @@
 
 package groovyx.net.http.thirdparty;
 
+import java.io.IOException;
 import java.net.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.http.HttpClientConnection;
 import org.apache.http.conn.*;
 import org.apache.http.params.*;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.*;
+import org.apache.http.protocol.HttpContext;
 
 public class GAEConnectionManager
-  implements ClientConnectionManager {
+  implements HttpClientConnectionManager {
 
   public GAEConnectionManager() {
     SocketFactory no_socket_factory = new SocketFactory() {
@@ -58,17 +63,47 @@ public class GAEConnectionManager
     return schemeRegistry;
   }
 
-  public ClientConnectionRequest requestConnection(final HttpRoute route,
+  public ConnectionRequest requestConnection(final HttpRoute route,
                                  final Object state) {
-    return new ClientConnectionRequest() {
+    return new ConnectionRequest() {
+      @Override
+      public boolean cancel() {
+        return false;
+      }
+
+      @Override
+      public HttpClientConnection get(long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
+        return null;
+      }
+
       public void abortRequest() {
     // Nothing to do
       }
 
-      public ManagedClientConnection getConnection(long timeout, TimeUnit tunit) {
+      public HttpClientConnection getConnection(long timeout, TimeUnit tunit) {
     return GAEConnectionManager.this.getConnection(route, state);
       }
     };
+  }
+
+  @Override
+  public void releaseConnection(HttpClientConnection conn, Object newState, long validDuration, TimeUnit timeUnit) {
+
+  }
+
+  @Override
+  public void connect(HttpClientConnection conn, HttpRoute route, int connectTimeout, HttpContext context) throws IOException {
+
+  }
+
+  @Override
+  public void upgrade(HttpClientConnection conn, HttpRoute route, HttpContext context) throws IOException {
+
+  }
+
+  @Override
+  public void routeComplete(HttpClientConnection conn, HttpRoute route, HttpContext context) throws IOException {
+
   }
 
   public void releaseConnection(ManagedClientConnection conn,
@@ -84,7 +119,7 @@ public class GAEConnectionManager
   public void shutdown() {
   }
 
-  private ManagedClientConnection getConnection(HttpRoute route, Object state) {
+  private HttpClientConnection getConnection(HttpRoute route, Object state) {
     return new GAEClientConnection(this, route, state);
   }
 

@@ -3,7 +3,15 @@ package groovyx.net.http.thirdparty
 import groovy.util.slurpersupport.GPathResult;
 import groovyx.net.http.HttpResponseException;
 import groovyx.net.http.ParserRegistry;
-import groovyx.net.http.thirdparty.GAEConnectionManager;
+import groovyx.net.http.thirdparty.GAEConnectionManager
+import org.apache.http.HttpHost
+import org.apache.http.HttpRequest
+import org.apache.http.client.ClientProtocolException
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.conn.ClientConnectionManager
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.protocol.HttpContext;
 
 import static groovyx.net.http.Method.*
 import static groovyx.net.http.ContentType.*
@@ -353,8 +361,28 @@ class GAETest {
 
     def newBuilder( uri ) {
         return new groovyx.net.http.HTTPBuilder(uri) {
-            @Override protected AbstractHttpClient getClient(HttpParams params) {
-                return new DefaultHttpClient( new GAEConnectionManager(), params)
+            @Override HttpClient getClient() {
+                return new CloseableHttpClient(new GAEConnectionManager()) {
+                    @Override
+                    protected CloseableHttpResponse doExecute(HttpHost target, HttpRequest request, HttpContext context) throws IOException, ClientProtocolException {
+                        return null
+                    }
+
+                    @Override
+                    void close() throws IOException {
+
+                    }
+
+                    @Override
+                    HttpParams getParams() {
+                        return null
+                    }
+
+                    @Override
+                    ClientConnectionManager getConnectionManager() {
+                        return null
+                    }
+                }
             }
         }
     }

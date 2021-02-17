@@ -35,9 +35,9 @@ import org.apache.http.protocol.*;
 import com.google.appengine.api.urlfetch.*;
 
 class GAEClientConnection
-  implements ManagedClientConnection {
+  implements HttpClientConnection {
 
-  public GAEClientConnection(ClientConnectionManager cm, HttpRoute route, Object state) {
+  public GAEClientConnection(HttpClientConnectionManager cm, HttpRoute route, Object state) {
     this.connManager = cm;
     this.route = route;
     this.state = state;
@@ -256,7 +256,8 @@ class GAEClientConnection
 
   public int getRemotePort() {
     HttpHost host = route.getTargetHost();
-    return connManager.getSchemeRegistry().getScheme(host).resolvePort(host.getPort());
+//    return connManager.getSchemeRegistry().getScheme(host).resolvePort(host.getPort());
+    return 0;
   }
 
 
@@ -264,7 +265,7 @@ class GAEClientConnection
 
   public void releaseConnection()
     throws IOException {
-    connManager.releaseConnection(this, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    connManager.releaseConnection(this, null,  Long.MAX_VALUE, TimeUnit.MILLISECONDS);
   }
 
   public void abortConnection()
@@ -273,7 +274,7 @@ class GAEClientConnection
     shutdown();
   }
 
-  private ClientConnectionManager connManager;
+  private HttpClientConnectionManager connManager;
   private HttpRoute route;
   private Object state;
   private boolean reusable;

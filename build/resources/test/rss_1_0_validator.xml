@@ -1,0 +1,331 @@
+<?xml version="1.0" ?>
+<!DOCTYPE schema
+[
+
+<!-- namespaces -->
+<!ENTITY rss.namespace  "http://purl.org/rss/1.0/">
+<!ENTITY rdf.namespace  "http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<!ENTITY rss091.namespace   "http://purl.org/rss/1.0/modules/rss091/">
+<!ENTITY dc.namespace   "http://purl.org/dc/elements/1.1/">
+
+<!-- imports -->
+
+<!-- suggested field lengths -->
+<!ENTITY lengths.sch    SYSTEM "field_lengths.sch">
+<!-- RSS091 module validation -->
+<!ENTITY module_091.sch SYSTEM "module_091.sch">
+<!-- DC module validation -->
+<!ENTITY module_dc.sch  SYSTEM "module_dc.sch">
+
+]>
+
+<!--
+    ===========================================================================
+                                RSS VALIDATOR
+                        A Schematron Schema For RSS 1.0
+
+                                Version 1.1
+    ===========================================================================
+
+    - Entities are defined for each of the core elements in the default namespace.
+      This improves the readability of the schema. The XSLT patterns must include
+      both the namespace and the local-name to properly match the elements.
+
+    - The validator currently does not check the ordering of elements, as this is
+      deemed unimportant. Note that a 'canonical form' of RSS may be defined
+      in which the order is significant. This is to allow validation using W3C
+      XML Schemas.
+
+    - Various parts of the schema are imported from separate external entities
+      to allow easier management. Additional modules should be placed into separately
+      imported file(s).
+
+    ===========================================================================
+    LICENSE:
+    ===========================================================================
+
+    The contents are dedicated to the public domain by the author,
+    Leigh Dodds <leigh@xmlhack.com>, except that Leigh Dodds retains the moral
+    right to be known as the author.
+
+    ===========================================================================
+
+
+-->
+
+<schema fpi="+//IDN www.purl.org/rss/1.0 //DTD RSS 1.0 Validator//EN">
+
+    <title>RSS 1.0 Validator</title>
+
+    <ns prefix="rdf" uri="&rdf.namespace;"/>
+    <ns prefix="rss" uri="&rss.namespace;"/>
+    <ns prefix="dc"  uri="&dc.namespace;"/>
+    <ns prefix="rss091" uri="&rss091.namespace;"/>
+
+    <pattern name="Namespace Checking" see="http://purl.org/rss/1.0/">
+
+        <!-- Report on elements from namespaces unknown to the validator -->
+        <rule context="*">
+            <assert test="namespace-uri()='&rss.namespace;' or
+                          namespace-uri()='&rss091.namespace;' or
+                          namespace-uri()='&rdf.namespace;' or
+                          namespace-uri()='&dc.namespace;'">
+            Element <name/> is from an unknown namespace. Please ensure that the namespace declarations
+            are correct.
+            </assert>
+
+        </rule>
+
+    </pattern>
+
+    <pattern name="Core Structural Validation" see="http://purl.org/rss/1.0/">
+
+        <!-- rdf:RDF element validation -->
+        <rule context="rdf:RDF">
+            <assert test="rss:channel">
+            You must provide a channel definition for this RSS file
+            </assert>
+
+            <assert test="rss:item">
+            You must provide at least one item
+            </assert>
+
+            <assert test="count(rss:item) &lt; 16">
+            You should only include at most 15 items within a single RSS file
+            </assert>
+            <assert test="count(rss:image) &lt; 2">
+            There can only be at most one image within a channel
+            </assert>
+            <assert test="count(rss:textinput) &lt; 2">
+            There can only be at most one textinput within a channel
+            </assert>
+
+        </rule>
+
+        <!-- channel element validation -->
+        <rule context="rss:channel">
+            <assert test="parent::rdf:RDF">
+            A channel element can only occur within an RDF element
+            </assert>
+            <assert test="rss:title">
+            A channel must have a title
+            </assert>
+            <assert test="rss:link">
+            A channel must have a link
+            </assert>
+            <assert test="rss:description">
+            A channel must have a description
+            </assert>
+            <assert test="@rdf:about">A channel must have an about attribute</assert>
+
+            <assert test="rss:items">A channel must list the items it contains within a items element</assert>
+
+            <assert test="count(rss:image) &lt; 2">
+            There can only be at most one image within a channel
+            </assert>
+            <assert test="count(rss:textinput) &lt; 2">
+            There can only be at most one textinput within a channel
+            </assert>
+
+            <report test="//@rdf:about[. = current()/@rdf:about and generate-id(.)!=generate-id(current()/@rdf:about)]">
+            The value of a channel rdf:about attribute must be unique
+            </report>
+
+        </rule>
+
+
+
+        <!-- item element validation -->
+        <rule context="rss:item">
+            <assert test="parent::rdf:RDF">An item element can only occur within an RDF element</assert>
+            <assert
+                test="rss:title">
+                Items must have a title
+            </assert>
+            <assert
+                test="rss:link">
+                Items must have a link
+            </assert>
+            <assert test="count(rss:description) &lt; 2">
+            There can only be at most one description per item
+            </assert>
+
+            <assert test="@rdf:about">Items must have an about attribute</assert>
+
+            <report test="//@rdf:about[. = current()/@rdf:about and generate-id(.)!=generate-id(current()/@rdf:about)]">
+            The value of a item rdf:about attribute must be unique
+            </report>
+
+        </rule>
+
+        <rule context="rss:items">
+            <assert test="rdf:Seq">An items element must define a sequence of
+            items.</assert>
+
+        </rule>
+
+        <rule context="rss:items/rdf:Seq">
+            <assert test="count(rdf:li) &lt; 16">Only 15 items may be defined within an
+            items sequence</assert>
+            <assert test="count(rdf:li) &gt; 0">There must be at least one item
+            with an items sequence</assert>
+        </rule>
+
+        <rule context="rss:channel/rss:image">
+            <assert test="@rdf:resource">Images defined within a channel must have an
+            rdf:resource attribute</assert>
+        </rule>
+
+        <rule context="rss:channel/rss:textinput">
+            <assert test="@rdf:resource">Textinputs defined within a channel must have an
+            rdf:resource attribute</assert>
+        </rule>
+
+        <rule context="rss:image">
+            <assert test="parent::rdf:RDF">An image element can only occur within an RDF element</assert>
+            <assert
+                test="rss:title">
+                Images must have titles. The title is used for the ALT text of the image.
+            </assert>
+            <assert
+                test="rss:url">
+                An image requires a url
+            </assert>
+            <assert
+                test="rss:link">
+                An image requires a link
+            </assert>
+
+            <!--
+            <assert test="&inchannel;">An image must have an inchannel element</assert>
+            -->
+
+            <assert test="@rdf:about">Images must have an about attribute</assert>
+
+            <report test="//@rdf:about[. = current()/@rdf:about and generate-id(.)!=generate-id(current()/@rdf:about)]">
+            The value of a image rdf:about attribute must be unique
+            </report>
+
+            <assert test="@rdf:about = rss:url">
+            If possible, the value of an items rdf:about attribute should be the same as its url
+            </assert>
+
+        </rule>
+
+        <rule context="rss:textinput">
+            <assert test="parent::rdf:RDF">A textinput element can only occur within a </assert>
+            <assert
+                test="rss:title">
+                A textinput must have a title. It is used to label the submit button for the field
+            </assert>
+            <assert
+                test="rss:name">
+                A textinput must have a name. It is used to identify the input element in the form
+            </assert>
+            <assert
+                test="rss:link">
+                A textinput must have a link. It is used to identify the target to which the form is sent
+            </assert>
+            <assert
+                test="rss:description">
+                A textinput element must have a description
+            </assert>
+
+            <!--
+            <assert test="&inchannel;">Images should have an inchannel element</assert>
+            -->
+
+            <assert test="@rdf:about">Images should have an about attribute</assert>
+
+            <report test="//@rdf:about[. = current()/@rdf:about and generate-id(.)!=generate-id(current()/@rdf:about)]">
+            The value of a textinput rdf:about attribute must be unique
+            </report>
+
+            <assert test="@rdf:about = rss:link">
+            If possible, the value of a textinputs rdf:about attribute should be the same as its link
+            </assert>
+
+        </rule>
+
+        <rule context="rss:title|rss:link">
+            <assert
+                test="parent::rss:channel or parent::rss:image or parent::rss:item or parent::rss:textinput">
+                A <name/> element can only be contained with a channel, image, item or textinput element.
+            </assert>
+            <report test="child::*">A <name/> element cannot contain sub-elements, remove any
+            additional markup</report>
+        </rule>
+
+        <!--
+        <rule context="&inchannel;">
+            <assert test="@rdf:resource">inchannel elements must have a resource attribute</assert>
+        </rule>
+        -->
+
+        <rule context="rss:description">
+            <assert test="parent::rss:channel or parent::rss:textinput or parent::rss:item">
+            A <name/> element can only be contained with a channel, or textinput element.
+            </assert>
+            <report test="child::*">A <name/> element cannot contain sub-elements, remove any
+            additional markup</report>
+        </rule>
+
+        <rule context="rss:name">
+            <assert test="parent::rss:textinput">A name element can only be contained within a
+            textinput element</assert>
+            <report test="child::*">A <name/> element cannot contain sub-elements, remove any
+            additional markup</report>
+        </rule>
+
+        <rule context="rss:url">
+            <assert test="parent::rss:image">A url element can only be contained within an
+            image element</assert>
+            <report test="child::*">A <name/> element cannot contain sub-elements, remove any
+            additional markup</report>
+        </rule>
+
+    </pattern>
+
+
+    <pattern name="Core Content Validation" see="http://purl.org/rss/1.0/">
+
+        <rule context="rss:channel/rss:link|rss:image/rss:link|rss:item/rss:link">
+            <assert test="starts-with(., 'http://') or starts-with(., 'https://') or starts-with(., 'ftp://')">
+            Channel, image and item links can only contain http, https, and ftp urls
+            </assert>
+        </rule>
+
+        <rule context="rss:textinput/rss:link">
+            <assert test="starts-with(., 'http://') or starts-with(., 'https://') or starts-with(., 'ftp://') or (parent::textinput and starts-with(., 'mailto://'))">
+            Textinput links can only contain http, https, ftp and mailto urls
+            </assert>
+        </rule>
+
+        <rule context="rss:url">
+            <assert test="starts-with(., 'http://') or starts-with(., 'https://') or starts-with(., 'ftp://')">
+            Images can only be referenced through http, https or ftp urls.
+            </assert>
+        </rule>
+
+        <!--
+        <rule context="&inchannel;">
+            <assert test="@rdf:resource = //&channel;/@rdf:about">
+            rdf:resource attributes on inchannel elements should have the same value as the rdf:about attribute on the root element.
+            </assert>
+
+        </rule>
+        -->
+
+    </pattern>
+
+<!--
+    ===========================================================================
+                                    IMPORTS
+    ===========================================================================
+-->
+
+&lengths.sch;
+&module_091.sch;
+&module_dc.sch;
+
+</schema>

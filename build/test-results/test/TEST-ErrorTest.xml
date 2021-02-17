@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ErrorTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2021-02-17T13:48:06" hostname="mlc702" time="1.519">
+  <properties/>
+  <testcase name="wireMockFault" classname="ErrorTest" time="1.508">
+    <failure message="org.apache.http.NoHttpResponseException: localhost:8080 failed to respond" type="org.apache.http.NoHttpResponseException">org.apache.http.NoHttpResponseException: localhost:8080 failed to respond
+	at org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:141)
+	at org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:56)
+	at org.apache.http.impl.io.AbstractMessageParser.parse(AbstractMessageParser.java:259)
+	at org.apache.http.impl.DefaultBHttpClientConnection.receiveResponseHeader(DefaultBHttpClientConnection.java:163)
+	at org.apache.http.impl.conn.CPoolProxy.receiveResponseHeader(CPoolProxy.java:157)
+	at org.apache.http.protocol.HttpRequestExecutor.doReceiveResponse(HttpRequestExecutor.java:273)
+	at org.apache.http.protocol.HttpRequestExecutor.execute(HttpRequestExecutor.java:125)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:272)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:72)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:221)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:165)
+	at groovyx.net.http.HTTPBuilder.doRequest(HTTPBuilder.java:521)
+	at groovyx.net.http.RESTClient.get(RESTClient.java:119)
+	at groovyx.net.http.RESTClient$get.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:47)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:116)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:128)
+	at ErrorTest.wireMockFault(ErrorTest.groovy:26)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at com.github.tomakehurst.wiremock.junit.WireMockRule$1.evaluate(WireMockRule.java:79)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:110)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)
+	at org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:38)
+	at org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:62)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:51)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)
+	at com.sun.proxy.$Proxy2.processTestClass(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.processTestClass(TestWorker.java:119)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:182)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:164)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:414)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:48)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:56)
+	at java.lang.Thread.run(Thread.java:748)
+</failure>
+  </testcase>
+  <testcase name="firstTest" classname="ErrorTest" time="0.011"/>
+  <system-out><![CDATA[2021-02-17 08:48:08,066 DEBUG  RESTClient - GET http://localhost:8080/fault
+2021-02-17 08:48:08,108 DEBUG  headers - http-outgoing-0 >> GET /fault HTTP/1.1
+2021-02-17 08:48:08,109 DEBUG  headers - http-outgoing-0 >> Accept: */*
+2021-02-17 08:48:08,109 DEBUG  headers - http-outgoing-0 >> Host: localhost:8080
+2021-02-17 08:48:08,109 DEBUG  headers - http-outgoing-0 >> Connection: Keep-Alive
+2021-02-17 08:48:08,109 DEBUG  headers - http-outgoing-0 >> User-Agent: Apache-HttpClient/4.5.12 (Java/1.8.0_252)
+2021-02-17 08:48:08,109 DEBUG  headers - http-outgoing-0 >> Accept-Encoding: gzip,deflate
+2021-02-17 08:48:08,467 INFO   RetryExec - I/O exception (org.apache.http.NoHttpResponseException) caught when processing request to {}->http://localhost:8080: The target server failed to respond
+2021-02-17 08:48:08,467 INFO   RetryExec - Retrying request to {}->http://localhost:8080
+2021-02-17 08:48:08,468 DEBUG  headers - http-outgoing-1 >> GET /fault HTTP/1.1
+2021-02-17 08:48:08,468 DEBUG  headers - http-outgoing-1 >> Accept: */*
+2021-02-17 08:48:08,468 DEBUG  headers - http-outgoing-1 >> Host: localhost:8080
+2021-02-17 08:48:08,469 DEBUG  headers - http-outgoing-1 >> Connection: Keep-Alive
+2021-02-17 08:48:08,469 DEBUG  headers - http-outgoing-1 >> User-Agent: Apache-HttpClient/4.5.12 (Java/1.8.0_252)
+2021-02-17 08:48:08,469 DEBUG  headers - http-outgoing-1 >> Accept-Encoding: gzip,deflate
+2021-02-17 08:48:08,477 INFO   RetryExec - I/O exception (org.apache.http.NoHttpResponseException) caught when processing request to {}->http://localhost:8080: The target server failed to respond
+2021-02-17 08:48:08,477 INFO   RetryExec - Retrying request to {}->http://localhost:8080
+2021-02-17 08:48:08,478 DEBUG  headers - http-outgoing-2 >> GET /fault HTTP/1.1
+2021-02-17 08:48:08,478 DEBUG  headers - http-outgoing-2 >> Accept: */*
+2021-02-17 08:48:08,478 DEBUG  headers - http-outgoing-2 >> Host: localhost:8080
+2021-02-17 08:48:08,478 DEBUG  headers - http-outgoing-2 >> Connection: Keep-Alive
+2021-02-17 08:48:08,478 DEBUG  headers - http-outgoing-2 >> User-Agent: Apache-HttpClient/4.5.12 (Java/1.8.0_252)
+2021-02-17 08:48:08,478 DEBUG  headers - http-outgoing-2 >> Accept-Encoding: gzip,deflate
+2021-02-17 08:48:08,484 INFO   RetryExec - I/O exception (org.apache.http.NoHttpResponseException) caught when processing request to {}->http://localhost:8080: The target server failed to respond
+2021-02-17 08:48:08,485 INFO   RetryExec - Retrying request to {}->http://localhost:8080
+2021-02-17 08:48:08,486 DEBUG  headers - http-outgoing-3 >> GET /fault HTTP/1.1
+2021-02-17 08:48:08,486 DEBUG  headers - http-outgoing-3 >> Accept: */*
+2021-02-17 08:48:08,486 DEBUG  headers - http-outgoing-3 >> Host: localhost:8080
+2021-02-17 08:48:08,486 DEBUG  headers - http-outgoing-3 >> Connection: Keep-Alive
+2021-02-17 08:48:08,486 DEBUG  headers - http-outgoing-3 >> User-Agent: Apache-HttpClient/4.5.12 (Java/1.8.0_252)
+2021-02-17 08:48:08,486 DEBUG  headers - http-outgoing-3 >> Accept-Encoding: gzip,deflate
+]]></system-out>
+  <system-err><![CDATA[SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+]]></system-err>
+</testsuite>

@@ -42,6 +42,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -53,19 +54,27 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.config.Lookup;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.conn.util.PublicSuffixMatcherLoader;
+import org.apache.http.cookie.*;
 import org.apache.http.cookie.params.CookieSpecPNames;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.DefaultCookieSpecProvider;
+import org.apache.http.impl.cookie.IgnoreSpecProvider;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
@@ -466,49 +475,46 @@ public class HTTPBuilder {
             else reqMethod.setHeader( key.toString(), val.toString() );
         }
 
-        ResponseHandler<Object> responseHandler = new ResponseHandler<Object>() {
-            public Object handleResponse(HttpResponse response)
-                throws ClientProtocolException, IOException {
-                HttpResponseDecorator resp = new HttpResponseDecorator(
-                        response, delegate.getContext(), null );
-                try {
-                    int status = resp.getStatusLine().getStatusCode();
-                    Closure responseClosure = delegate.findResponseHandler( status );
-                    log.debug( "Response code: " + status + "; found handler: " + responseClosure );
+        ResponseHandler<Object> responseHandler = response -> {
+            HttpResponseDecorator resp = new HttpResponseDecorator(
+                    response, delegate.getContext(), null );
+            try {
+                int status = resp.getStatusLine().getStatusCode();
+                Closure responseClosure = delegate.findResponseHandler( status );
+                log.debug( "Response code: " + status + "; found handler: " + responseClosure );
 
-                    Object[] closureArgs = null;
-                    switch ( responseClosure.getMaximumNumberOfParameters() ) {
-                    case 1 :
-                        closureArgs = new Object[] { resp };
-                        break;
-                    case 2 : // parse the response entity if the response handler expects it:
-                        HttpEntity entity = resp.getEntity();
-                        try {
-                            if ( entity == null || entity.getContentLength() == 0 )
-                                closureArgs = new Object[] { resp, null };
-                            else closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
-                        }
-                        catch ( Exception ex ) {
-                            Header h = entity.getContentType();
-                            String respContentType = h != null ? h.getValue() : null;
-                            log.warn( "Error parsing '" + respContentType + "' response", ex );
-                            throw new ResponseParseException( resp, ex );
-                        }
-                        break;
-                    default:
-                        throw new IllegalArgumentException(
-                                "Response closure must accept one or two parameters" );
-                    }
-
-                    Object returnVal = responseClosure.call( closureArgs );
-                    log.trace( "response handler result: " + returnVal );
-
-                    return returnVal;
-                }
-                finally {
+                Object[] closureArgs = null;
+                switch ( responseClosure.getMaximumNumberOfParameters() ) {
+                case 1 :
+                    closureArgs = new Object[] { resp };
+                    break;
+                case 2 : // parse the response entity if the response handler expects it:
                     HttpEntity entity = resp.getEntity();
-                    if ( entity != null ) entity.consumeContent();
+                    try {
+                        if ( entity == null || entity.getContentLength() == 0 )
+                            closureArgs = new Object[] { resp, null };
+                        else closureArgs = new Object[] { resp, parseResponse( resp, contentType ) };
+                    }
+                    catch ( Exception ex ) {
+                        Header h = entity.getContentType();
+                        String respContentType = h != null ? h.getValue() : null;
+                        log.warn( "Error parsing '" + respContentType + "' response", ex );
+                        throw new ResponseParseException( resp, ex );
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Response closure must accept one or two parameters" );
                 }
+
+                Object returnVal = responseClosure.call( closureArgs );
+                log.trace( "response handler result: " + returnVal );
+
+                return returnVal;
+            }
+            finally {
+                HttpEntity entity = resp.getEntity();
+                if ( entity != null ) entity.getContent();
             }
         };
 
@@ -836,10 +842,21 @@ public class HTTPBuilder {
      */
     public HttpClient getClient() {
         if (client == null) {
-            HttpParams defaultParams = new BasicHttpParams();
-            defaultParams.setParameter( CookieSpecPNames.DATE_PATTERNS,
-                    Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z") );
-            client = createClient(defaultParams);
+            CookieSpecProvider cookieSpecProvider = new DefaultCookieSpecProvider(
+                    null,
+                    PublicSuffixMatcherLoader.getDefault(),
+                    (String[]) Arrays.asList("EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd MMM yyyy HH:mm:ss z").toArray(),
+                    false
+            );
+            Lookup<CookieSpecProvider> cookieSpecRegistry = RegistryBuilder.<CookieSpecProvider>create()//
+                    .register(CookieSpecs.DEFAULT, cookieSpecProvider)//
+                    .register(CookieSpecs.STANDARD, cookieSpecProvider)//
+                    .register(CookieSpecs.STANDARD_STRICT, cookieSpecProvider)//
+                    .build();
+
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            httpClientBuilder.setDefaultCookieSpecRegistry(cookieSpecRegistry);
+            client = createClient(httpClientBuilder);
         }
         return client;
     }
@@ -854,8 +871,8 @@ public class HTTPBuilder {
      * @param params
      * @return
      */
-    protected HttpClient createClient( HttpParams params ) {
-        return new DefaultHttpClient(params);
+    protected HttpClient createClient( HttpClientBuilder httpClientBuilder ) {
+        return httpClientBuilder.build();
     }
 
     /**
