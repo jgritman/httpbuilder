@@ -70,6 +70,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 /** <p>
@@ -617,12 +618,12 @@ public class HTTPBuilder {
             //If response is streaming, buffer it in a byte array:
             if ( parsedData instanceof InputStream ) {
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
+                IOGroovyMethods.leftShift( buffer, (InputStream)parsedData );
                 parsedData = new ByteArrayInputStream( buffer.toByteArray() );
             }
             else if ( parsedData instanceof Reader ) {
                 StringWriter buffer = new StringWriter();
-                DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
+                IOGroovyMethods.leftShift( buffer, (Reader)parsedData );
                 parsedData = new StringReader( buffer.toString() );
             }
             else if ( parsedData instanceof Closeable )
