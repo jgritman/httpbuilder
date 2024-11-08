@@ -1,16 +1,52 @@
-HTTPBuilder = Easy HTTP client for Groovy.
+## HTTPBuilder = Easy HTTP client for Groovy.
 
 Build Instructions:
 
- HTTPBuilder is built using Apache Maven (http://maven.apache.org)
- $ mvn install
+ HTTPBuilder is built using Gradle (https://gradle.org/)
+ 
+ $ ./gradlew publishToMavenLocal
 
 Documentation: https://github.com/jgritman/httpbuilder/wiki
 
-Contributions:
+### Installation
+Add dependency to your build.gradle
+
+```
+repositories {
+  ...
+  maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile 'com.github.jgritman:httpbuilder:1.0-M1-snapshot'
+}
+```
+
+In addition if you don't want to use jitpack.io then use following github package registry:
+
+```groovy
+repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/jgritman/httpbuilder")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    
+    dependencies {
+        compile 'org.codehaus.groovy.modules.http-builder:http-builder:1.0-M1-snapshot'
+    }
+
+```
+
+
+### Contributions:
 
  This project relies on the work of many open source projects including:
-  * Groovy: http://groovy.codehaus.org
+  * Groovy: http://groovy-lang.org
   * Apache HttpClient: http://hc.apache.org
   * Json-Lib: http://json-lib.sourceforge.net/
   * Neko HTML: http://nekohtml.sourceforge.net/
@@ -21,7 +57,7 @@ Contributions:
  re-distributed with permission from the author.
 
 
-License:
+### License:
 
  HTTPBuilder is copyright 2009-2011 Thomas Nichols except where otherwise noted.
 

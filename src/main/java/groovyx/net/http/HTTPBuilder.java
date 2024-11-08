@@ -69,7 +69,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 /** <p>
@@ -617,12 +617,12 @@ public class HTTPBuilder {
             //If response is streaming, buffer it in a byte array:
             if ( parsedData instanceof InputStream ) {
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
+                IOGroovyMethods.leftShift( buffer, (InputStream)parsedData );
                 parsedData = new ByteArrayInputStream( buffer.toByteArray() );
             }
             else if ( parsedData instanceof Reader ) {
                 StringWriter buffer = new StringWriter();
-                DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
+                IOGroovyMethods.leftShift( buffer, (Reader)parsedData );
                 parsedData = new StringReader( buffer.toString() );
             }
             else if ( parsedData instanceof Closeable )
@@ -914,19 +914,19 @@ public class HTTPBuilder {
                 ConnRoutePNames.DEFAULT_PROXY,
                 new HttpHost(host,port,scheme) );
     }
-    
+
     /**
-     * Ignores certificate issues for SSL connections. Cert does not have to be from a trusted authority 
-     * 	and the hostname does not need to be verified. 
-     * This is primarily for dev situations that make use of localhost, build, and test servers. 
-     * 
-     * @throws KeyStoreException 
-     * @throws NoSuchAlgorithmException 
-     * @throws UnrecoverableKeyException 
-     * @throws KeyManagementException 
-     * 
+     * Ignores certificate issues for SSL connections. Cert does not have to be from a trusted authority
+     * 	and the hostname does not need to be verified.
+     * This is primarily for dev situations that make use of localhost, build, and test servers.
+     *
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableKeyException
+     * @throws KeyManagementException
+     *
      */
-    public void ignoreSSLIssues() 
+    public void ignoreSSLIssues()
     		throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException{
         TrustStrategy trustStrat = new TrustStrategy(){
             public boolean isTrusted(X509Certificate[] chain, String authtype)
@@ -934,9 +934,9 @@ public class HTTPBuilder {
                          return true;
                   }
         };
-	  
-        SSLSocketFactory sslSocketFactory = new SSLSocketFactory(trustStrat,SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);		  			 
-     
+
+        SSLSocketFactory sslSocketFactory = new SSLSocketFactory(trustStrat,SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
         getClient().getConnectionManager().getSchemeRegistry().register(
             new Scheme("https",443,sslSocketFactory ) );
 

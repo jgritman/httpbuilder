@@ -3,8 +3,11 @@ package groovyx.net.http
 import org.apache.http.ProtocolVersion
 import org.apache.http.entity.StringEntity
 import org.apache.http.message.BasicHttpResponse
-import org.junit.Testimport java.io.StringReaderimport java.io.ByteArrayInputStream
-import static groovyx.net.http.ContentType.*
+import org.junit.Test
+import java.io.StringReader
+import java.io.ByteArrayInputStream
+import static groovyx.net.http.ContentType.*
+
 /**
  * @author tnichols
  */

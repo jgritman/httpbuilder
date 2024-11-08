@@ -59,7 +59,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHeaderIterator;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.params.HttpParams;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 
 /**
@@ -214,7 +214,7 @@ public class HttpURLClient {
                 // OAuth Sign if necessary.
                 if ( oauth != null ) conn = oauth.sign( conn, body );
                 // send request data
-                DefaultGroovyMethods.leftShift( conn.getOutputStream(),
+                IOGroovyMethods.leftShift( conn.getOutputStream(),
                         body.getContent() );
             }
             finally { conn.getOutputStream().close(); }
@@ -259,12 +259,12 @@ public class HttpURLClient {
             //If response is streaming, buffer it in a byte array:
             if ( parsedData instanceof InputStream ) {
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                DefaultGroovyMethods.leftShift( buffer, (InputStream)parsedData );
+                IOGroovyMethods.leftShift( buffer, (InputStream)parsedData );
                 parsedData = new ByteArrayInputStream( buffer.toByteArray() );
             }
             else if ( parsedData instanceof Reader ) {
                 StringWriter buffer = new StringWriter();
-                DefaultGroovyMethods.leftShift( buffer, (Reader)parsedData );
+                IOGroovyMethods.leftShift( buffer, (Reader)parsedData );
                 parsedData = new StringReader( buffer.toString() );
             }
             else if ( parsedData instanceof Closeable )
@@ -439,7 +439,7 @@ public class HttpURLClient {
                 }
 
                 public void writeTo( OutputStream out ) throws IOException {
-                    DefaultGroovyMethods.leftShift( out, conn.getInputStream() );
+                    IOGroovyMethods.leftShift( out, conn.getInputStream() );
                 }
 
             };
